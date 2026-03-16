@@ -1,0 +1,63 @@
+name: document_management_system
+description: "A new Flutter project."
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase core
+  firebase_core: ^4.5.0
+  firebase_auth: ^6.2.0
+  cloud_firestore: ^6.1.3
+  firebase_storage: ^13.1.0
+  firebase_messaging: ^16.1.2
+
+  # State management
+  get: ^4.7.3
+
+  # File handling
+  file_picker: ^10.3.10
+  image_pickers: ^2.0.6
+  path_provider: ^2.1.5
+  cunning_document_scanner: ^1.4.0
+
+  # PDF
+  flutter_pdfview: ^1.4.4
+  syncfusion_flutter_pdf: ^32.2.9
+
+  # Signature
+  signature: ^6.3.0
+
+  # Local storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  flutter_secure_storage: ^10.0.0
+
+  # Networking / utils
+  uuid: ^4.5.3
+  intl: ^0.20.2
+  cached_network_image: ^3.4.1
+  flutter_svg: ^2.2.4
+  shimmer: ^3.0.0
+  lottie: ^3.3.2
+
+  # UI
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.13
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/

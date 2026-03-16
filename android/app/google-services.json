@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "107459462787",
+    "project_id": "document-management-syst-fdbc1",
+    "storage_bucket": "document-management-syst-fdbc1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107459462787:android:9f53ba75ea429f7cf53db6",
+        "android_client_info": {
+          "package_name": "com.example.document_management_system"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzcIISlKab65xTI-Hntvab2YE0ZrIKJpo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

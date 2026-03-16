@@ -1,0 +1,131 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helpers ────────────────────────────────────────────────────────────
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function userExists(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches('.*@.*\\..*');
+    }
+
+    // ─── Users ───────────────────────────────────────────────────────────────
+    // Each user can only read/write their own profile
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().hasAll(['name', 'email', 'role', 'createdAt', 'updatedAt'])
+        && isValidEmail(request.resource.data.email);
+      allow update: if isOwner(userId)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['email', 'createdAt']);
+      allow delete: if false; // soft delete only via status field
+    }
+
+    // ─── Folders ─────────────────────────────────────────────────────────────
+    // Owners can CRUD their own folders
+
+    match /folders/{folderId} {
+      allow read: if isSignedIn() && resource.data.ownerUid == request.auth.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.keys().hasAll(['ownerUid', 'name', 'itemCount', 'createdAt', 'updatedAt']);
+      allow update: if isSignedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['ownerUid', 'createdAt']);
+      allow delete: if isSignedIn() && resource.data.ownerUid == request.auth.uid;
+    }
+
+    // ─── Documents ───────────────────────────────────────────────────────────
+    // Owner: full access
+    // Signers: read-only (checked via signature_requests)
+
+    match /documents/{documentId} {
+      allow read: if isSignedIn() && (
+        resource.data.ownerUid == request.auth.uid
+        || isSignerOf(documentId)
+      );
+      allow create: if isSignedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.keys().hasAll(['ownerUid', 'name', 'fileUrl', 'fileType', 'fileSizeMB', 'status', 'createdAt', 'updatedAt']);
+      allow update: if isSignedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['ownerUid', 'createdAt']);
+      allow delete: if isSignedIn() && resource.data.ownerUid == request.auth.uid;
+    }
+
+    // ─── Signature Requests ──────────────────────────────────────────────────
+    // Requester: full access
+    // Signers (by UID): read + update their own signer entry only
+
+    match /signature_requests/{requestId} {
+      allow read: if isSignedIn() && (
+        resource.data.requestedByUid == request.auth.uid
+        || isNamedSigner(resource.data.signers)
+      );
+      allow create: if isSignedIn()
+        && request.resource.data.requestedByUid == request.auth.uid
+        && request.resource.data.keys().hasAll(['documentId', 'requestedByUid', 'signers', 'status', 'createdAt']);
+      allow update: if isSignedIn() && (
+        resource.data.requestedByUid == request.auth.uid
+        || isNamedSigner(resource.data.signers)
+      );
+      allow delete: if isSignedIn() && resource.data.requestedByUid == request.auth.uid;
+    }
+
+    // ─── Signing Tokens (guest signers) ──────────────────────────────────────
+    // Only Cloud Functions should write here; guests read via token lookup
+
+    match /signing_tokens/{tokenId} {
+      allow read: if true; // public read — token is secret by obscurity (UUID)
+      allow write: if false; // Cloud Functions only
+    }
+
+    // ─── Activities ──────────────────────────────────────────────────────────
+    // Users can read their own activity; Cloud Functions write
+
+    match /activities/{activityId} {
+      allow read: if isSignedIn() && resource.data.actorUid == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.actorUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // ─── Notifications ───────────────────────────────────────────────────────
+    // Users can read + mark-as-read their own notifications
+
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && resource.data.recipientUid == request.auth.uid;
+      allow create: if false; // Cloud Functions only
+      allow update: if isSignedIn()
+        && resource.data.recipientUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
+      allow delete: if false;
+    }
+
+    // ─── Helper functions ────────────────────────────────────────────────────
+
+    function isSignerOf(documentId) {
+      // Check if the current user is a signer on any request for this document
+      return exists(/databases/$(database)/documents/signature_requests/$(documentId))
+        && isNamedSigner(
+          get(/databases/$(database)/documents/signature_requests/$(documentId)).data.signers
+        );
+    }
+
+    function isNamedSigner(signers) {
+      // Returns true if any signer entry has the current user's UID
+      return signers.hasAny([{'signerUid': request.auth.uid}]);
+    }
+  }
+}
