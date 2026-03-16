@@ -8,20 +8,14 @@ import '../Repository/auth_repository.dart';
 class SignInController extends GetxController {
   final AuthRepository _repo = AuthRepository();
 
-  // ─── Form ────────────────────────────────────────────────────────────────
-
   final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-
-  // ─── State ───────────────────────────────────────────────────────────────
 
   final RxBool isLoading = false.obs;
   final RxBool obscurePassword = true.obs;
   final RxBool rememberMe = false.obs;
   final RxString errorMessage = ''.obs;
-
-  // ─── Actions ─────────────────────────────────────────────────────────────
 
   Future<void> signIn() async {
     if (!formKey.currentState!.validate()) return;
