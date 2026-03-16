@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'Template/Commons/style.dart';
+import 'Template/Commons/Styles/style.dart';
 import 'firebase_options.dart';
 import 'Template/Bindings/general_bindings.dart';
 import 'Template/Utils/Routes/routes.dart';
