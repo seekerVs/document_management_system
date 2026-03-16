@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../Utils/Exceptions/exceptions.dart';
-import '../../../../../Utils/Routes/main_routes.dart';
-import '../../../../../Utils/Services/user_controller.dart';
+import '../../../../../../Template/Utils/Exceptions/exceptions.dart';
+import '../../../../../../Template/Utils/Routes/main_routes.dart';
+import '../../../../../../Template/Utils/Services/user_controller.dart';
 import '../Repository/auth_repository.dart';
-
-// 📁 lib/Template/OperatingSystem/Android/Page/SignIn/Controller/sign_in_controller.dart
 
 class SignInController extends GetxController {
   final AuthRepository _repo = AuthRepository();
@@ -20,6 +18,7 @@ class SignInController extends GetxController {
 
   final RxBool isLoading = false.obs;
   final RxBool obscurePassword = true.obs;
+  final RxBool rememberMe = false.obs;
   final RxString errorMessage = ''.obs;
 
   // ─── Actions ─────────────────────────────────────────────────────────────
