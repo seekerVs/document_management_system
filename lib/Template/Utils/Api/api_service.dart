@@ -2,11 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-// 📁 lib/Template/Utils/Api/api_service.dart
-//
-// Base HTTP client for all Express backend API calls.
-// All Flutter → Express requests go through here.
-
 class ApiService {
   ApiService._();
 

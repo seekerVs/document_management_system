@@ -24,7 +24,6 @@ class ProfileView extends GetView<ProfileController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ─── Avatar + name + email ───────────────────────────────────
             Center(
               child: Column(
                 children: [
@@ -62,7 +61,6 @@ class ProfileView extends GetView<ProfileController> {
 
             const SizedBox(height: 32),
 
-            // ─── Account section ─────────────────────────────────────────
             const _SectionLabel(label: 'Account'),
             const SizedBox(height: 8),
             Container(
@@ -98,7 +96,6 @@ class ProfileView extends GetView<ProfileController> {
 
             const SizedBox(height: 24),
 
-            // ─── Preferences section ─────────────────────────────────────
             const _SectionLabel(label: 'Preferences'),
             const SizedBox(height: 8),
             Container(
@@ -126,7 +123,6 @@ class ProfileView extends GetView<ProfileController> {
 
             const SizedBox(height: 24),
 
-            // ─── Danger section ──────────────────────────────────────────
             const _SectionLabel(label: 'Account Actions'),
             const SizedBox(height: 8),
             Container(
@@ -160,8 +156,6 @@ class ProfileView extends GetView<ProfileController> {
   }
 }
 
-// ─── Section label ────────────────────────────────────────────────────────────
-
 class _SectionLabel extends StatelessWidget {
   final String label;
   const _SectionLabel({required this.label});
@@ -181,8 +175,6 @@ class _SectionLabel extends StatelessWidget {
     );
   }
 }
-
-// ─── Profile list tile ────────────────────────────────────────────────────────
 
 class _ProfileTile extends StatelessWidget {
   final IconData icon;

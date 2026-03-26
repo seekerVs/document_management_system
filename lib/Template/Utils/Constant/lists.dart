@@ -1,13 +1,7 @@
 import 'enum.dart';
 
-// 📁 lib/Template/Utils/Constant/list.dart
-//
-// Static lists and maps used for dropdowns, pickers, and display logic.
-
 class AppLists {
   AppLists._();
-
-  // ─── Document upload sources ──────────────────────────────────────────────
 
   static const List<Map<String, String>> uploadSources = [
     {'label': 'Scan', 'icon': 'scan'},
@@ -19,8 +13,6 @@ class AppLists {
     {'label': 'Files', 'icon': 'folder'},
   ];
 
-  // ─── Document sort options ────────────────────────────────────────────────
-
   static const List<Map<String, dynamic>> sortOptions = [
     {'label': 'Name (A–Z)', 'value': SortOrder.nameAsc},
     {'label': 'Name (Z–A)', 'value': SortOrder.nameDesc},
@@ -29,8 +21,6 @@ class AppLists {
     {'label': 'Size (smallest)', 'value': SortOrder.sizeAsc},
     {'label': 'Size (largest)', 'value': SortOrder.sizeDesc},
   ];
-
-  // ─── Document action menu items ───────────────────────────────────────────
 
   static const List<String> documentActions = [
     'Copy',
@@ -41,11 +31,7 @@ class AppLists {
     'Request Signature',
   ];
 
-  // ─── Folder action menu items ─────────────────────────────────────────────
-
   static const List<String> folderActions = ['Rename', 'Delete', 'Move'];
-
-  // ─── Folder colors ────────────────────────────────────────────────────────
 
   static const List<Map<String, dynamic>> folderColors = [
     {'label': 'Blue', 'value': FolderColor.blue, 'hex': 0xFF378ADD},
@@ -56,15 +42,11 @@ class AppLists {
     {'label': 'Orange', 'value': FolderColor.orange, 'hex': 0xFFD85A30},
   ];
 
-  // ─── Signature type options ───────────────────────────────────────────────
-
   static const List<Map<String, dynamic>> signatureTypes = [
     {'label': 'Draw', 'value': SignatureType.drawn, 'icon': 'draw'},
     {'label': 'Type', 'value': SignatureType.typed, 'icon': 'keyboard'},
     {'label': 'Upload', 'value': SignatureType.uploaded, 'icon': 'upload'},
   ];
-
-  // ─── Allowed document file extensions ────────────────────────────────────
 
   static const List<String> allowedExtensions = [
     'pdf',
@@ -75,11 +57,7 @@ class AppLists {
     'docx',
   ];
 
-  // ─── Supported PDF mime types ─────────────────────────────────────────────
-
   static const List<String> pdfMimeTypes = ['application/pdf'];
-
-  // ─── Supported image mime types ───────────────────────────────────────────
 
   static const List<String> imageMimeTypes = [
     'image/jpeg',
@@ -88,15 +66,9 @@ class AppLists {
     'image/webp',
   ];
 
-  // ─── OTP expiry options (minutes) ────────────────────────────────────────
-
   static const List<int> otpExpiryOptions = [5, 10, 15, 30];
 
-  // ─── Signing link expiry options (hours) ─────────────────────────────────
-
   static const List<int> signingLinkExpiryOptions = [24, 48, 72];
-
-  // ─── Activity action labels ───────────────────────────────────────────────
 
   static const Map<ActivityAction, String> activityLabels = {
     ActivityAction.uploaded: 'uploaded',
@@ -111,8 +83,6 @@ class AppLists {
     ActivityAction.folderDeleted: 'deleted a folder',
     ActivityAction.shared: 'shared',
   };
-
-  // ─── Notification type labels ─────────────────────────────────────────────
 
   static const Map<NotificationType, String> notificationLabels = {
     NotificationType.signatureRequested: 'Signature requested',

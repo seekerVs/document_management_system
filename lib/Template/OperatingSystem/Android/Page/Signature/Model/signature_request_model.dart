@@ -2,10 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../../Utils/Constant/enum.dart';
 import 'signature_field_model.dart';
 
-// SignerStatus, SignerRole, SignatureFieldType, SignatureRequestStatus live in enum.dart
-
-// ─── Signer sub-model ─────────────────────────────────────────────────────────
-
 class SignerModel {
   final String signerEmail;
   final String? signerUid;

@@ -109,8 +109,6 @@ class _DocumentViewerViewState extends State<DocumentViewerView> {
           onPressed: () => Get.back(),
         ),
       ),
-      // Use body + Column instead of bottomNavigationBar
-      // to avoid layout rebuild collapsing SfPdfViewer
       body: _buildBody(),
     );
   }

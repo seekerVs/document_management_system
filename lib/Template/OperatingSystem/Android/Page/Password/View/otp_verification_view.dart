@@ -7,8 +7,6 @@ import '../../../../../Commons/Widgets/app_error_box.dart';
 import '../Controller/forgot_password_controller.dart';
 import '../../../../../Utils/Constant/colors.dart';
 
-// 📁 lib/Template/OperatingSystem/Android/Page/Password/View/otp_verify_view.dart
-
 class OtpVerifyView extends GetView<ForgotPasswordController> {
   const OtpVerifyView({super.key});
 

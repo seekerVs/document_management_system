@@ -6,8 +6,6 @@ import '../Constant/texts.dart';
 class AppDialogs {
   AppDialogs._();
 
-  // ─── Confirm dialog ───────────────────────────────────────────────────────
-
   static Future<void> showConfirm({
     required String title,
     required String message,
@@ -43,8 +41,6 @@ class AppDialogs {
     );
   }
 
-  // ─── Delete confirm ───────────────────────────────────────────────────────
-
   static Future<void> showDeleteConfirm({
     required String itemName,
     required VoidCallback onConfirm,
@@ -58,8 +54,6 @@ class AppDialogs {
     );
   }
 
-  // ─── Sign out confirm ─────────────────────────────────────────────────────
-
   static Future<void> showSignOutConfirm({required VoidCallback onConfirm}) {
     return showConfirm(
       title: AppText.signOut,
@@ -69,8 +63,6 @@ class AppDialogs {
       onConfirm: onConfirm,
     );
   }
-
-  // ─── Error dialog ─────────────────────────────────────────────────────────
 
   static Future<void> showError({required String message, String? title}) {
     return Get.dialog(
@@ -89,8 +81,6 @@ class AppDialogs {
       ),
     );
   }
-
-  // ─── Success dialog ───────────────────────────────────────────────────────
 
   static Future<void> showSuccess({
     required String message,
@@ -124,8 +114,6 @@ class AppDialogs {
     );
   }
 
-  // ─── Info dialog ──────────────────────────────────────────────────────────
-
   static Future<void> showInfo({
     required String title,
     required String message,
@@ -146,9 +134,6 @@ class AppDialogs {
       ),
     );
   }
-
-  // ─── Input dialog ─────────────────────────────────────────────────────────
-  // Single text input — used for rename folder, rename document.
 
   static Future<void> showInput({
     required String title,
@@ -186,9 +171,6 @@ class AppDialogs {
       ),
     );
   }
-
-  // ─── Bottom sheet options ─────────────────────────────────────────────────
-  // Action sheet for document/folder "more" (⋮) button.
 
   static Future<T?> showOptions<T>({
     required String title,
@@ -256,8 +238,6 @@ class AppDialogs {
     );
   }
 
-  // ─── Snackbar helpers ─────────────────────────────────────────────────────
-
   static void showSnackSuccess(String message) {
     Get.snackbar(
       '',
@@ -313,8 +293,6 @@ class AppDialogs {
     );
   }
 }
-
-// ─── Option model for showOptions ─────────────────────────────────────────────
 
 class AppDialogOption<T> {
   final String label;

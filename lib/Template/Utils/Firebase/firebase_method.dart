@@ -1,15 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// 📁 lib/Template/Utils/Firebase/firebase_method.dart
-//
-// Generic reusable Firestore operations.
-// All methods return a result type — never throw directly to the UI.
-// Repositories call these instead of writing raw Firestore calls everywhere.
-
 class FirebaseMethod {
   FirebaseMethod._();
-
-  // ─── Create ──────────────────────────────────────────────────────────────
 
   /// Add a document with an auto-generated ID.
   static Future<DocumentReference?> addDocument({
@@ -36,8 +28,6 @@ class FirebaseMethod {
       return false;
     }
   }
-
-  // ─── Read ────────────────────────────────────────────────────────────────
 
   /// Fetch a single document by reference.
   static Future<DocumentSnapshot?> getDocument({
@@ -71,13 +61,9 @@ class FirebaseMethod {
   }
 
   /// Stream a collection query for real-time updates.
-  static Stream<QuerySnapshot> streamDocuments({
-    required Query query,
-  }) {
+  static Stream<QuerySnapshot> streamDocuments({required Query query}) {
     return query.snapshots();
   }
-
-  // ─── Update ──────────────────────────────────────────────────────────────
 
   /// Update specific fields without overwriting the whole document.
   static Future<bool> updateDocument({
@@ -92,12 +78,8 @@ class FirebaseMethod {
     }
   }
 
-  // ─── Delete ──────────────────────────────────────────────────────────────
-
   /// Permanently delete a document.
-  static Future<bool> deleteDocument({
-    required DocumentReference ref,
-  }) async {
+  static Future<bool> deleteDocument({required DocumentReference ref}) async {
     try {
       await ref.delete();
       return true;
@@ -105,8 +87,6 @@ class FirebaseMethod {
       return false;
     }
   }
-
-  // ─── Batch & Transaction ─────────────────────────────────────────────────
 
   /// Run multiple writes atomically. All succeed or all fail.
   static Future<bool> runBatch({
@@ -133,11 +113,8 @@ class FirebaseMethod {
     }
   }
 
-  // ─── Helpers ─────────────────────────────────────────────────────────────
-
   /// Increment a numeric field atomically (e.g. folder itemCount).
-  static FieldValue increment(num value) =>
-      FieldValue.increment(value);
+  static FieldValue increment(num value) => FieldValue.increment(value);
 
   /// Server-side timestamp — always use this instead of DateTime.now()
   /// for createdAt / updatedAt fields.

@@ -10,8 +10,6 @@ import '../../../../../Utils/Constant/images.dart';
 import '../Controller/sign_in_controller.dart';
 import '../../../../../../Template/Utils/Validators/validators.dart';
 
-// 📁 lib/Template/OperatingSystem/Android/Page/SignIn/View/sign_in_view.dart
-
 class SignInView extends GetView<SignInController> {
   const SignInView({super.key});
 

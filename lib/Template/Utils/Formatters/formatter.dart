@@ -56,8 +56,6 @@ class AppFormatter {
     return 'Expires in ${diff.inMinutes}m';
   }
 
-  // ─── File ─────────────────────────────────────────────────────────────────
-
   /// Converts bytes to human-readable size.
   static String fileSize(int bytes) {
     if (bytes <= 0) return '0 B';
@@ -89,8 +87,6 @@ class AppFormatter {
     if (parts.length <= 1) return fileName;
     return parts.sublist(0, parts.length - 1).join('.');
   }
-
-  // ─── Document status ──────────────────────────────────────────────────────
 
   static String documentStatus(DocumentStatus status) {
     switch (status) {
@@ -133,8 +129,6 @@ class AppFormatter {
     }
   }
 
-  // ─── Signer & signature status ────────────────────────────────────────────
-
   static String signerStatus(SignerStatus status) {
     switch (status) {
       case SignerStatus.pending:
@@ -161,8 +155,6 @@ class AppFormatter {
     }
   }
 
-  // ─── Activity ─────────────────────────────────────────────────────────────
-
   /// "Juan uploaded My Document.pdf"
   static String activityDescription({
     required String actorName,
@@ -174,12 +166,8 @@ class AppFormatter {
     return '$actorName $verb$doc';
   }
 
-  // ─── Notification ─────────────────────────────────────────────────────────
-
   static String notificationTitle(NotificationType type) =>
       AppLists.notificationLabels[type] ?? 'Notification';
-
-  // ─── User / name ──────────────────────────────────────────────────────────
 
   /// "juan dela cruz" → "Juan Dela Cruz"
   static String capitalizeName(String name) {
@@ -211,8 +199,6 @@ class AppFormatter {
     if (local.length <= 2) return '${local[0]}***@$domain';
     return '${local.substring(0, 2)}***@$domain';
   }
-
-  // ─── Text ─────────────────────────────────────────────────────────────────
 
   /// "Very long document name here" → "Very long doc..."
   static String truncate(String text, {int maxLength = 30}) {

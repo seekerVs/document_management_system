@@ -1,7 +1,6 @@
 import 'dart:io';
 import '../../../../../Utils/Formatters/formatter.dart';
 
-// Local-only model — not persisted to Firestore until request is submitted
 class SelectedDocument {
   final String name;
   final File file;

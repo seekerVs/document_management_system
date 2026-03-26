@@ -7,8 +7,6 @@ import '../../Notifications/Repository/notification_repository.dart';
 
 class InAppSigningRepository {
   final NotificationRepository _notifRepo = NotificationRepository();
-
-  // Update signer status and fields in Firestore, then notify owner
   Future<void> submitSigning({
     required String requestId,
     required String signerEmail,

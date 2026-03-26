@@ -2,14 +2,6 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-// 📁 lib/Template/Utils/Services/supabase_service.dart
-//
-// All Supabase Storage operations go through Express backend.
-// Service role key never leaves the server.
-//
-// Flutter env vars needed:
-//   API_BASE_URL — Express backend URL (already in .env.json)
-
 class SupabaseService {
   SupabaseService._();
 

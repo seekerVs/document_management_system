@@ -56,8 +56,6 @@ class NetworkManager extends GetxService {
     );
   }
 
-  // ─── State update ─────────────────────────────────────────────────────────
-
   void _updateState(List<ConnectivityResult> results) {
     if (results.contains(ConnectivityResult.wifi)) {
       connectionType.value = ConnectivityResult.wifi;
@@ -73,8 +71,6 @@ class NetworkManager extends GetxService {
       isConnected.value = false;
     }
   }
-
-  // ─── Guard method ─────────────────────────────────────────────────────────
 
   void checkBeforeRequest() {
     if (isOffline) throw const NetworkException();

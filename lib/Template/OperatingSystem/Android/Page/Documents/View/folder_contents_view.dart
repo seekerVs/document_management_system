@@ -283,7 +283,7 @@ class _FolderContentsViewState extends State<FolderContentsView> {
   }
 }
 
-// ─── Folder body ──────────────────────────────────────────────────────────────
+// Folder body
 
 class _FolderBody extends StatelessWidget {
   final RxList<DocumentModel> docs;

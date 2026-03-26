@@ -1,7 +1,5 @@
 enum UserRole { owner, signer, viewer }
 
-// ─── Document ─────────────────────────────────────────────────────────────────
-
 enum DocumentStatus { draft, pending, completed, declined }
 
 enum DocumentFileType { pdf }
@@ -18,11 +16,7 @@ enum SortOrder {
   type,
 }
 
-// ─── Folder ───────────────────────────────────────────────────────────────────
-
 enum FolderColor { blue, green, red, yellow, purple, orange }
-
-// ─── Signature ────────────────────────────────────────────────────────────────
 
 enum SignatureRequestStatus {
   pending,
@@ -42,8 +36,6 @@ enum SignatureType { drawn, typed, uploaded }
 
 enum TokenStatus { valid, expired, used, invalid }
 
-// ─── Activity ─────────────────────────────────────────────────────────────────
-
 enum ActivityAction {
   uploaded,
   signed,
@@ -58,8 +50,6 @@ enum ActivityAction {
   shared,
 }
 
-// ─── Notification ─────────────────────────────────────────────────────────────
-
 enum NotificationType {
   signatureRequested,
   documentSigned,
@@ -70,10 +60,6 @@ enum NotificationType {
   generalInfo,
 }
 
-// ─── UI state ─────────────────────────────────────────────────────────────────
-
 enum ViewState { idle, loading, success, error, empty }
-
-// ─── OTP ──────────────────────────────────────────────────────────────────────
 
 enum OtpVerifyResult { valid, notFound, expired, alreadyUsed, wrongCode }

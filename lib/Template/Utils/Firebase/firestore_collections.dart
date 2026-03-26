@@ -1,6 +1,3 @@
-// Firestore collection and field name constants
-// Use these everywhere instead of raw strings to prevent typos
-
 class FirestoreCollections {
   FirestoreCollections._();
 

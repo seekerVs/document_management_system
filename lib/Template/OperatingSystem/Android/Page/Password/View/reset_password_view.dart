@@ -7,8 +7,6 @@ import '../Controller/forgot_password_controller.dart';
 import '../../../../../Utils/Constant/colors.dart';
 import '../../../../../../Template/Utils/Validators/validators.dart';
 
-// 📁 lib/Template/OperatingSystem/Android/Page/Password/View/new_password_view.dart
-
 class NewPasswordView extends GetView<ForgotPasswordController> {
   const NewPasswordView({super.key});
 

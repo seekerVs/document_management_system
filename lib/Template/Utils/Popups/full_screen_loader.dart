@@ -91,8 +91,6 @@ class _LoaderWidget extends StatelessWidget {
   }
 }
 
-// ─── Upload progress loader ───────────────────────────────────────────────────
-
 class AppUploadLoader {
   AppUploadLoader._();
 

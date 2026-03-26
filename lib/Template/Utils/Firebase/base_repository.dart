@@ -3,17 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../Exceptions/exceptions.dart';
 import 'firebase_utils.dart';
 
-// 📁 lib/Template/Utils/Helpers/base_repository.dart
-//
-// Abstract base class that all feature repositories extend.
-// Provides shared Firestore helpers and standardised error handling
-// so each repository only needs to write its own query logic.
-
 abstract class BaseRepository {
-  // ─── Shared access ───────────────────────────────────────────────────────
-  // FirebaseUtils and FirebaseMethod are static-only classes.
-  // Use them directly: FirebaseUtils.currentUid, FirebaseMethod.getDocument()
-
   String get currentUid {
     final uid = FirebaseUtils.currentUid;
     if (uid == null) throw const SessionExpiredException();
@@ -23,18 +13,6 @@ abstract class BaseRepository {
   // Nullable version — use this when you want to guard instead of throw
   String? get currentUidOrNull => FirebaseUtils.currentUid;
 
-  // ─── Error handler ───────────────────────────────────────────────────────
-
-  /// Wrap any async repository call with this to get typed exceptions.
-  ///
-  /// Usage in a repository:
-  /// ```dart
-  /// Future<UserModel?> getUser(String uid) =>
-  ///     handleRequest(() async {
-  ///       final doc = await FirebaseMethod.getDocument(ref: FirebaseUtils.userDoc(uid));
-  ///       return doc != null ? UserModel.fromFirestore(doc) : null;
-  ///     });
-  /// ```
   Future<T?> handleRequest<T>(Future<T?> Function() request) async {
     try {
       return await request();
@@ -53,10 +31,6 @@ abstract class BaseRepository {
     }
   }
 
-  // ─── Pagination helper ───────────────────────────────────────────────────
-
-  /// Returns a paginated query starting after [lastDoc].
-  /// Pass null for [lastDoc] to get the first page.
   Query paginate({
     required Query query,
     required int limit,

@@ -147,7 +147,7 @@ class ProfileController extends GetxController {
   }
 }
 
-// ─── Edit name bottom sheet ───────────────────────────────────────────────────
+// Edit name bottom sheet
 
 class _EditNameSheet extends StatelessWidget {
   final ProfileController controller;
@@ -226,8 +226,7 @@ class _EditNameSheet extends StatelessWidget {
   }
 }
 
-// ─── Change password bottom sheet ────────────────────────────────────────────
-
+// Change password bottom sheet
 class _ChangePasswordSheet extends StatelessWidget {
   final ProfileController controller;
   const _ChangePasswordSheet({required this.controller});

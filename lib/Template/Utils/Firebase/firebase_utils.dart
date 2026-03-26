@@ -4,19 +4,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 class FirebaseUtils {
   FirebaseUtils._();
 
-  // ─── Service instances ───────────────────────────────────────────────────
-
   static FirebaseAuth get auth => FirebaseAuth.instance;
   static FirebaseFirestore get firestore => FirebaseFirestore.instance;
-
-  // ─── Current user helpers ────────────────────────────────────────────────
 
   static User? get currentUser => auth.currentUser;
   static String? get currentUid => auth.currentUser?.uid;
   static String? get currentEmail => auth.currentUser?.email;
   static bool get isLoggedIn => auth.currentUser != null;
-
-  // ─── Collection references ───────────────────────────────────────────────
 
   static CollectionReference get usersRef => firestore.collection('users');
 
@@ -36,8 +30,6 @@ class FirebaseUtils {
 
   static CollectionReference get signingTokensRef =>
       firestore.collection('signing_tokens');
-
-  // ─── Document references ─────────────────────────────────────────────────
 
   static DocumentReference userDoc(String uid) => usersRef.doc(uid);
   static DocumentReference folderDoc(String id) => foldersRef.doc(id);

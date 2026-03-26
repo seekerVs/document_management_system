@@ -7,8 +7,6 @@ import '../Controller/forgot_password_controller.dart';
 import '../../../../../Utils/Constant/colors.dart';
 import '../../../../../../Template/Utils/Validators/validators.dart';
 
-// 📁 lib/Template/OperatingSystem/Android/Page/Password/View/forgot_email_view.dart
-
 class ForgotEmailView extends GetView<ForgotPasswordController> {
   const ForgotEmailView({super.key});
 

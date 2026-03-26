@@ -6,8 +6,6 @@ class AppException implements Exception {
   String toString() => message;
 }
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
-
 class UserNotFoundException extends AppException {
   const UserNotFoundException()
     : super('No account found with this email address.');
@@ -43,8 +41,6 @@ class AccountDisabledException extends AppException {
     : super('This account has been disabled. Please contact support.');
 }
 
-// ─── OTP ──────────────────────────────────────────────────────────────────────
-
 class OtpNotFoundException extends AppException {
   const OtpNotFoundException()
     : super('No reset code found for this email. Please request a new one.');
@@ -62,8 +58,6 @@ class OtpAlreadyUsedException extends AppException {
 class OtpWrongCodeException extends AppException {
   const OtpWrongCodeException() : super('Incorrect code. Please try again.');
 }
-
-// ─── Firestore / data ─────────────────────────────────────────────────────────
 
 class DocumentNotFoundException extends AppException {
   const DocumentNotFoundException()
@@ -89,8 +83,6 @@ class DataSyncException extends AppException {
     : super('Data sync failed. Please pull to refresh.');
 }
 
-// ─── Network / API ────────────────────────────────────────────────────────────
-
 class NetworkException extends AppException {
   const NetworkException()
     : super('No internet connection. Please check your network.');
@@ -108,8 +100,6 @@ class RequestTimeoutException extends AppException {
 class ApiException extends AppException {
   const ApiException(super.message);
 }
-
-// ─── File / upload ────────────────────────────────────────────────────────────
 
 class FileTooLargeException extends AppException {
   const FileTooLargeException({double maxMB = 20})
@@ -129,8 +119,6 @@ class FileNotFoundException extends AppException {
   const FileNotFoundException() : super('The file could not be found.');
 }
 
-// ─── Signing token ────────────────────────────────────────────────────────────
-
 class TokenExpiredException extends AppException {
   const TokenExpiredException()
     : super('This signing link has expired. Please request a new one.');
@@ -144,8 +132,6 @@ class TokenAlreadyUsedException extends AppException {
 class TokenInvalidException extends AppException {
   const TokenInvalidException() : super('This signing link is invalid.');
 }
-
-// ─── Signature ────────────────────────────────────────────────────────────────
 
 class SignatureRequestNotFoundException extends AppException {
   const SignatureRequestNotFoundException()
@@ -161,8 +147,6 @@ class SignatureDeclinedException extends AppException {
   const SignatureDeclinedException()
     : super('The signature request was declined.');
 }
-
-// ─── Firebase Auth code → typed exception ────────────────────────────────────
 
 AppException authExceptionFromCode(String code) {
   switch (code) {
@@ -188,8 +172,6 @@ AppException authExceptionFromCode(String code) {
   }
 }
 
-// ─── Firestore error code → typed exception ───────────────────────────────────
-
 AppException firestoreExceptionFromCode(String code) {
   switch (code) {
     case 'permission-denied':
@@ -209,9 +191,6 @@ AppException firestoreExceptionFromCode(String code) {
       return AppException('Database error. Please try again. ($code)');
   }
 }
-
-// ─── OTP result string → typed exception ─────────────────────────────────────
-// Maps the result strings returned by the Express backend
 
 AppException otpExceptionFromResult(String result) {
   switch (result) {
