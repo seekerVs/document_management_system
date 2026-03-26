@@ -1,12 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-
-// 📁 lib/Template/Utils/Firebase/firebase_utils.dart
-//
-// Central access point for all Firebase service instances.
-// Use these getters everywhere instead of calling FirebaseAuth.instance
-// directly — makes it easy to mock in tests later.
 
 class FirebaseUtils {
   FirebaseUtils._();
@@ -15,7 +8,6 @@ class FirebaseUtils {
 
   static FirebaseAuth get auth => FirebaseAuth.instance;
   static FirebaseFirestore get firestore => FirebaseFirestore.instance;
-  static FirebaseMessaging get messaging => FirebaseMessaging.instance;
 
   // ─── Current user helpers ────────────────────────────────────────────────
 
@@ -26,11 +18,9 @@ class FirebaseUtils {
 
   // ─── Collection references ───────────────────────────────────────────────
 
-  static CollectionReference get usersRef =>
-      firestore.collection('users');
+  static CollectionReference get usersRef => firestore.collection('users');
 
-  static CollectionReference get foldersRef =>
-      firestore.collection('folders');
+  static CollectionReference get foldersRef => firestore.collection('folders');
 
   static CollectionReference get documentsRef =>
       firestore.collection('documents');

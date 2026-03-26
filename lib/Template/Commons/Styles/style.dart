@@ -1,76 +1,65 @@
 import 'package:flutter/material.dart';
-
-// 📁 lib/Template/Common/Styles/style.dart
+import '../../Utils/Constant/colors.dart';
 
 class AppStyle {
   AppStyle._();
 
-  static const Color _primary = Color(0xFF2563EB);
-  static const Color _primaryDark = Color(0xFF3B82F6);
+  // White card
+  static BoxDecoration card({double radius = 12}) => BoxDecoration(
+    color: AppColors.backgroundWhite,
+    borderRadius: BorderRadius.circular(radius),
+    border: Border.all(color: AppColors.borderLight),
+  );
 
-  static ThemeData get lightTheme => ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: _primary,
-          brightness: Brightness.light,
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _primary,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            textStyle: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        appBarTheme: const AppBarTheme(
-          centerTitle: true,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-        ),
-      );
+  // Document icon container
+  static BoxDecoration documentIconContainer(Color color) => BoxDecoration(
+    color: color.withOpacity(0.1),
+    borderRadius: BorderRadius.circular(8),
+  );
 
-  static ThemeData get darkTheme => ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: _primaryDark,
-          brightness: Brightness.dark,
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _primaryDark,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            textStyle: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        appBarTheme: const AppBarTheme(
-          centerTitle: true,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-        ),
-      );
+  // OTP digit box
+  static InputDecoration otpBoxDecoration() => const InputDecoration(
+    counterText: '',
+    contentPadding: EdgeInsets.zero,
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.all(Radius.circular(10)),
+      borderSide: BorderSide(color: AppColors.borderInput),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.all(Radius.circular(10)),
+      borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+    ),
+    filled: true,
+    fillColor: AppColors.backgroundInput,
+  );
+
+  // Bottom sheet handle
+  static const BoxDecoration bottomSheetHandle = BoxDecoration(
+    color: AppColors.borderLight,
+    borderRadius: BorderRadius.all(Radius.circular(4)),
+  );
+
+  // Status badge
+
+  static BoxDecoration statusBadge(Color backgroundColor) => BoxDecoration(
+    color: backgroundColor,
+    borderRadius: BorderRadius.circular(40),
+  );
+
+  static const TextStyle appName = TextStyle(
+    fontFamily: 'Kameron',
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
+    color: AppColors.primary,
+    letterSpacing: 0.5,
+  );
+
+  // Dark variant background for splash text
+  static const TextStyle appNameLight = TextStyle(
+    fontFamily: 'Kameron',
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
+    color: AppColors.backgroundWhite,
+    letterSpacing: 0.5,
+  );
 }

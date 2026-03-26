@@ -1,31 +1,28 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-enum NotificationType {
-  signatureRequested,
-  documentSigned,
-  signatureDeclined,
-  tokenExpired,
-  documentCompleted,
-}
+import '../../../../../Utils/Constant/enum.dart';
 
 class NotificationModel {
   final String notificationId;
   final String recipientUid;
-  final String title;
-  final String message;
-  final String? documentId;
   final NotificationType type;
+  final String title;
+  final String body;
   final bool isRead;
+  final String? requestId;
+  final String? documentName;
+  final String? actorName;
   final DateTime createdAt;
 
   NotificationModel({
     required this.notificationId,
     required this.recipientUid,
-    required this.title,
-    required this.message,
-    this.documentId,
     required this.type,
+    required this.title,
+    required this.body,
     this.isRead = false,
+    this.requestId,
+    this.documentName,
+    this.actorName,
     required this.createdAt,
   });
 
@@ -34,40 +31,29 @@ class NotificationModel {
     return NotificationModel(
       notificationId: doc.id,
       recipientUid: data['recipientUid'] ?? '',
-      title: data['title'] ?? '',
-      message: data['message'] ?? '',
-      documentId: data['documentId'],
       type: NotificationType.values.firstWhere(
-        (t) => t.name == (data['type'] ?? 'signatureRequested'),
-        orElse: () => NotificationType.signatureRequested,
+        (t) => t.name == (data['type'] ?? 'generalInfo'),
+        orElse: () => NotificationType.generalInfo,
       ),
+      title: data['title'] ?? '',
+      body: data['body'] ?? '',
       isRead: data['isRead'] ?? false,
+      requestId: data['requestId'],
+      documentName: data['documentName'],
+      actorName: data['actorName'],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
 
-  Map<String, dynamic> toFirestore() {
-    return {
-      'recipientUid': recipientUid,
-      'title': title,
-      'message': message,
-      'documentId': documentId,
-      'type': type.name,
-      'isRead': isRead,
-      'createdAt': Timestamp.fromDate(createdAt),
-    };
-  }
-
-  NotificationModel copyWith({bool? isRead}) {
-    return NotificationModel(
-      notificationId: notificationId,
-      recipientUid: recipientUid,
-      title: title,
-      message: message,
-      documentId: documentId,
-      type: type,
-      isRead: isRead ?? this.isRead,
-      createdAt: createdAt,
-    );
-  }
+  Map<String, dynamic> toFirestore() => {
+    'recipientUid': recipientUid,
+    'type': type.name,
+    'title': title,
+    'body': body,
+    'isRead': isRead,
+    'requestId': requestId,
+    'documentName': documentName,
+    'actorName': actorName,
+    'createdAt': Timestamp.fromDate(createdAt),
+  };
 }

@@ -1,15 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-enum DocumentStatus { draft, pending, completed, declined }
-
-enum DocumentFileType { pdf, image, other }
+import '../../../../../Utils/Constant/enum.dart';
 
 class DocumentModel {
   final String documentId;
   final String ownerUid;
-  final String? folderId; // null = root level
+  final String? folderId;
   final String name;
-  final String fileUrl; // Firebase Storage URL
+  final String fileUrl;
+  final String? storagePath;
   final DocumentFileType fileType;
   final double fileSizeMB;
   final DocumentStatus status;
@@ -22,6 +20,7 @@ class DocumentModel {
     this.folderId,
     required this.name,
     required this.fileUrl,
+    this.storagePath,
     this.fileType = DocumentFileType.pdf,
     required this.fileSizeMB,
     this.status = DocumentStatus.draft,
@@ -31,12 +30,14 @@ class DocumentModel {
 
   factory DocumentModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    final now = DateTime.now();
     return DocumentModel(
       documentId: doc.id,
       ownerUid: data['ownerUid'] ?? '',
       folderId: data['folderId'],
       name: data['name'] ?? '',
       fileUrl: data['fileUrl'] ?? '',
+      storagePath: data['storagePath'],
       fileType: DocumentFileType.values.firstWhere(
         (t) => t.name == (data['fileType'] ?? 'pdf'),
         orElse: () => DocumentFileType.pdf,
@@ -46,9 +47,17 @@ class DocumentModel {
         (s) => s.name == (data['status'] ?? 'draft'),
         orElse: () => DocumentStatus.draft,
       ),
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      createdAt: _parseDate(data['createdAt']) ?? now,
+      updatedAt: _parseDate(data['updatedAt']) ?? now,
     );
+  }
+
+  // Handle both Timestamp and ISO string for backwards compatibility
+  static DateTime? _parseDate(dynamic value) {
+    if (value == null) return null;
+    if (value is Timestamp) return value.toDate();
+    if (value is String) return DateTime.tryParse(value);
+    return null;
   }
 
   Map<String, dynamic> toFirestore() {
@@ -57,6 +66,7 @@ class DocumentModel {
       'folderId': folderId,
       'name': name,
       'fileUrl': fileUrl,
+      'storagePath': storagePath,
       'fileType': fileType.name,
       'fileSizeMB': fileSizeMB,
       'status': status.name,
@@ -69,6 +79,7 @@ class DocumentModel {
     String? folderId,
     String? name,
     String? fileUrl,
+    String? storagePath,
     DocumentFileType? fileType,
     double? fileSizeMB,
     DocumentStatus? status,
@@ -80,6 +91,7 @@ class DocumentModel {
       folderId: folderId ?? this.folderId,
       name: name ?? this.name,
       fileUrl: fileUrl ?? this.fileUrl,
+      storagePath: storagePath ?? this.storagePath,
       fileType: fileType ?? this.fileType,
       fileSizeMB: fileSizeMB ?? this.fileSizeMB,
       status: status ?? this.status,

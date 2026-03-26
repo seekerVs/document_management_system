@@ -1,1 +1,29 @@
+# analysis_options.yaml (place in project root)
 include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # Style
+    prefer_single_quotes: true
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_final_locals: true
+    prefer_final_fields: true
+
+    # Code quality
+    avoid_print: true
+    avoid_unnecessary_containers: true
+    avoid_empty_else: true
+    avoid_redundant_argument_values: true
+
+    # Naming
+    camel_case_types: true
+    camel_case_extensions: true
+    file_names: true
+    non_constant_identifier_names: true
+
+    # Flutter specific
+    use_key_in_widget_constructors: true
+    sized_box_for_whitespace: true
+    use_full_hex_values_for_flutter_colors: true
+    sort_child_properties_last: true

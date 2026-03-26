@@ -1,0 +1,215 @@
+### **Assets Folder Structure**
+assets/
+├── animations/
+├── fonts/
+│   ├── DancingScript-Regular.ttf
+│   ├── GreatVibes-Regular.ttf
+│   ├── Inter-Bold.ttf
+│   ├── Inter-Medium.ttf
+│   ├── Inter-Regular.ttf
+│   ├── Inter-SemiBold.ttf
+│   ├── Kameron-Bold.ttf
+│   ├── Kameron-Regular.ttf
+│   ├── Pacifico-Regular.ttf
+│   └── Satisfy-Regular.ttf
+├── icons/
+│   ├── ic_folder.svg
+│   ├── ic_google.png
+│   ├── ic_google_drive.svg
+│   └── ic_pdf.svg
+└── images/
+    ├── cloud_storage.svg
+    ├── logo.svg
+    ├── logo_splash.png
+    └── phone_banner.png
+
+### **Lib Folder Structure**
+lib/
+├── firebase_options.dart
+├── main.dart
+└── Template/
+    ├── Bindings/
+    │   └── general_bindings.dart
+    ├── Commons/
+    │   ├── Styles/
+    │   │   └── style.dart
+    │   └── Widgets/
+    │       ├── app_avatar.dart
+    │       ├── app_badge.dart
+    │       ├── app_button.dart
+    │       ├── app_error_box.dart
+    │       ├── app_text_field.dart
+    │       ├── document_details_sheet.dart
+    │       ├── empty_state.dart
+    │       ├── loading_shimmer.dart
+    │       ├── or_divider.dart
+    │       ├── placeholder_view.dart
+    │       └── section_header.dart
+    ├── OperatingSystem/
+    │   └── Android/
+    │       └── Page/
+    │           ├── Activity/
+    │           │   ├── Controller/
+    │           │   ├── Model/
+    │           │   │   └── activity_model.dart
+    │           │   ├── Repository/
+    │           │   ├── View/
+    │           │   └── Widget/
+    │           ├── Dashboard/
+    │           │   ├── Controller/
+    │           │   │   └── dashboard_controller.dart
+    │           │   ├── Repository/
+    │           │   │   └── dashboard_repository.dart
+    │           │   ├── View/
+    │           │   │   └── dashboard_view.dart
+    │           │   └── Widget/
+    │           │       ├── activity_section.dart
+    │           │       ├── assigned_tasks_section.dart
+    │           │       ├── dashboard_banner.dart
+    │           │       ├── dashboard_fab.dart
+    │           │       ├── document_display_tile.dart
+    │           │       └── recent_documents_section.dart
+    │           ├── Documents/
+    │           │   ├── Controller/
+    │           │   │   ├── documents_controller.dart
+    │           │   │   ├── documents_document_mixin.dart
+    │           │   │   ├── documents_folder_mixin.dart
+    │           │   │   ├── documents_multiselect_mixin.dart
+    │           │   │   └── upload_controller.dart
+    │           │   ├── Model/
+    │           │   │   ├── document_model.dart
+    │           │   │   └── folder_model.dart
+    │           │   ├── Repository/
+    │           │   │   ├── document_repository.dart
+    │           │   │   └── folder_repository.dart
+    │           │   ├── View/
+    │           │   │   ├── documents_view.dart
+    │           │   │   ├── document_viewer_view.dart
+    │           │   │   └── folder_contents_view.dart
+    │           │   └── Widget/
+    │           │       ├── breadcrumb_trail.dart
+    │           │       ├── documents_toolbar.dart
+    │           │       ├── document_grid_card.dart
+    │           │       ├── document_list_tile.dart
+    │           │       ├── folder_grid_card.dart
+    │           │       ├── folder_list_tile.dart
+    │           │       ├── folder_picker_sheet.dart
+    │           │       ├── image_viewer.dart
+    │           │       ├── multiselect_bar.dart
+    │           │       ├── pdf_viewer.dart
+    │           │       ├── sort_menu.dart
+    │           │       ├── storage_banner.dart
+    │           │       ├── viewer_error_state.dart
+    │           │       └── viewer_loading_state.dart
+    │           ├── Notifications/
+    │           │   ├── Controller/
+    │           │   ├── Model/
+    │           │   │   └── notification_model.dart
+    │           │   ├── Repository/
+    │           │   │   └── notification_repository.dart
+    │           │   ├── View/
+    │           │   └── Widget/
+    │           ├── Password/
+    │           │   ├── Controller/
+    │           │   │   └── forgot_password_controller.dart
+    │           │   ├── Model/
+    │           │   ├── Repository/
+    │           │   │   └── forgot_password_repository.dart
+    │           │   ├── View/
+    │           │   │   ├── forgot_password_view.dart
+    │           │   │   ├── otp_verification_view.dart
+    │           │   │   └── reset_password_view.dart
+    │           │   └── Widget/
+    │           ├── Profile/
+    │           │   ├── Controller/
+    │           │   │   ├── profile_controller.dart
+    │           │   │   └── user_controller.dart
+    │           │   ├── Model/
+    │           │   │   └── user_model.dart
+    │           │   ├── Repository/
+    │           │   │   └── user_repository.dart
+    │           │   ├── View/
+    │           │   │   └── profile_view.dart
+    │           │   └── Widget/
+    │           ├── Signature/
+    │           │   ├── Controller/
+    │           │   │   ├── in_app_signing_controller.dart
+    │           │   │   ├── signature_placement_controller.dart
+    │           │   │   └── signature_request_controller.dart
+    │           │   ├── Model/
+    │           │   │   ├── selected_document.dart
+    │           │   │   ├── signature_field_model.dart
+    │           │   │   └── signature_request_model.dart
+    │           │   ├── Repository/
+    │           │   │   ├── in_app_signing_repository.dart
+    │           │   │   └── signature_request_repository.dart
+    │           │   ├── View/
+    │           │   │   ├── add_recipient_view.dart
+    │           │   │   ├── in_app_signing_view.dart
+    │           │   │   ├── recipients_list_view.dart
+    │           │   │   ├── request_review_view.dart
+    │           │   │   ├── select_document_view.dart
+    │           │   │   └── signature_placement_view.dart
+    │           │   └── Widget/
+    │           │       ├── document_source_sheet.dart
+    │           │       ├── field_input_sheet.dart
+    │           │       ├── field_toolbar.dart
+    │           │       ├── signature_field_overlay.dart
+    │           │       ├── signature_style_picker.dart
+    │           │       └── signer_switcher.dart
+    │           ├── SignIn/
+    │           │   ├── Controller/
+    │           │   │   ├── sign_in_controller.dart
+    │           │   │   └── sign_up_controller.dart
+    │           │   ├── Repository/
+    │           │   │   └── auth_repository.dart
+    │           │   ├── View/
+    │           │   │   ├── sign_in_view.dart
+    │           │   │   └── sign_up_view.dart
+    │           │   └── Widget/
+    │           └── Tasks/
+    │               ├── Controller/
+    │               │   └── tasks_controller.dart
+    │               ├── Model/
+    │               ├── Repository/
+    │               ├── View/
+    │               │   └── tasks_view.dart
+    │               └── Widget/
+    │                   └── task_tile.dart
+    ├── Utils/
+    │   ├── Api/
+    │   │   └── api_service.dart
+    │   ├── Constant/
+    │   │   ├── colors.dart
+    │   │   ├── enum.dart
+    │   │   ├── images.dart
+    │   │   ├── lists.dart
+    │   │   └── texts.dart
+    │   ├── Exceptions/
+    │   │   └── exceptions.dart
+    │   ├── Firebase/
+    │   │   ├── base_repository.dart
+    │   │   ├── firebase_method.dart
+    │   │   ├── firebase_utils.dart
+    │   │   └── firestore_collections.dart
+    │   ├── Formatters/
+    │   │   └── formatter.dart
+    │   ├── Helpers/
+    │   │   └── helpers.dart
+    │   ├── Popups/
+    │   │   ├── dialog.dart
+    │   │   └── full_screen_loader.dart
+    │   ├── Routes/
+    │   │   ├── main_routes.dart
+    │   │   └── routes.dart
+    │   ├── Services/
+    │   │   ├── network_manager.dart
+    │   │   └── supabase_service.dart
+    │   ├── Themes/
+    │   │   ├── color_scheme.dart
+    │   │   ├── component_themes.dart
+    │   │   ├── text_theme.dart
+    │   │   ├── theme.dart
+    │   │   └── theme_radius.dart
+    │   └── Validators/
+    │       └── validators.dart

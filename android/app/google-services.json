@@ -12,7 +12,20 @@
           "package_name": "com.example.document_management_system"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "107459462787-t0bk81kpv4sqp51e1fqct8s02r6cgomn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.document_management_system",
+            "certificate_hash": "cd4eeecb60e67593de482cbdcc9bdc438ad7af4f"
+          }
+        },
+        {
+          "client_id": "107459462787-c8fap94k0q8bhviioti0cubskgn0g0m8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAzcIISlKab65xTI-Hntvab2YE0ZrIKJpo"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "107459462787-c8fap94k0q8bhviioti0cubskgn0g0m8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "107459462787-vq1ehlhvmnaq9m4k6buik8eidnu9jbt5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.documentManagementSystem"
+              }
+            }
+          ]
         }
       }
     }

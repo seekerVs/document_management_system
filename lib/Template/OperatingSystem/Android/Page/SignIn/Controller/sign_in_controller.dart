@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../../Template/Utils/Exceptions/exceptions.dart';
+import '../../../../../Utils/Exceptions/exceptions.dart';
 import '../../../../../../Template/Utils/Routes/main_routes.dart';
-import '../../../../../../Template/Utils/Services/user_controller.dart';
+import '../../../../../../Template/Utils/Popups/full_screen_loader.dart';
+import '../../../../../../Template/Utils/Popups/dialog.dart';
+import '../../Profile/Controller/user_controller.dart';
 import '../Repository/auth_repository.dart';
 
 class SignInController extends GetxController {
@@ -12,22 +14,19 @@ class SignInController extends GetxController {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  final RxBool isLoading = false.obs;
   final RxBool obscurePassword = true.obs;
-  final RxBool rememberMe = false.obs;
   final RxString errorMessage = ''.obs;
 
   Future<void> signIn() async {
     if (!formKey.currentState!.validate()) return;
     errorMessage.value = '';
-    isLoading.value = true;
+    AppLoader.show(message: 'Signing in...');
 
     try {
       final user = await _repo.signInWithEmail(
-        email: emailController.text,
+        email: emailController.text.trim(),
         password: passwordController.text,
       );
-
       if (user != null) {
         await Get.find<UserController>().refreshUser();
         Get.offAllNamed(MainRoutes.home);
@@ -35,40 +34,28 @@ class SignInController extends GetxController {
     } on AppException catch (e) {
       errorMessage.value = e.message;
     } finally {
-      isLoading.value = false;
+      AppLoader.hide();
     }
   }
 
-  Future<void> sendPasswordReset() async {
-    final email = emailController.text.trim();
-    if (email.isEmpty) {
-      errorMessage.value = 'Enter your email address first.';
-      return;
-    }
+  Future<void> signInWithGoogle() async {
+    errorMessage.value = '';
+    AppLoader.show(message: 'Signing in with Google...');
 
-    isLoading.value = true;
     try {
-      await _repo.sendPasswordReset(email: email);
-      Get.snackbar(
-        'Email sent',
-        'Check your inbox for password reset instructions.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      final user = await _repo.signInWithGoogle();
+      if (user != null) {
+        await Get.find<UserController>().refreshUser();
+        Get.offAllNamed(MainRoutes.home);
+      }
     } on AppException catch (e) {
-      errorMessage.value = e.message;
+      AppDialogs.showSnackError(e.message);
     } finally {
-      isLoading.value = false;
+      AppLoader.hide();
     }
   }
 
+  void goToForgotPassword() => Get.toNamed(MainRoutes.forgotPassword);
   void togglePasswordVisibility() => obscurePassword.toggle();
-
   void goToSignUp() => Get.toNamed(MainRoutes.signUp);
-
-  @override
-  void onClose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.onClose();
-  }
 }

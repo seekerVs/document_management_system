@@ -30,7 +30,7 @@ service cloud.firestore {
         && isValidEmail(request.resource.data.email);
       allow update: if isOwner(userId)
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['email', 'createdAt']);
-      allow delete: if false; // soft delete only via status field
+      allow delete: if false;
     }
 
     // ─── Folders ─────────────────────────────────────────────────────────────

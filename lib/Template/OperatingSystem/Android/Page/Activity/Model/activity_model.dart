@@ -1,15 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-enum ActivityAction {
-  uploaded,
-  signed,
-  requestedSignature,
-  deleted,
-  moved,
-  copied,
-  declined,
-  folderCreated,
-}
+import '../../../../../Utils/Constant/enum.dart';
 
 class ActivityModel {
   final String activityId;
@@ -55,27 +45,5 @@ class ActivityModel {
       'action': action.name,
       'timestamp': Timestamp.fromDate(timestamp),
     };
-  }
-
-  // Human-readable description
-  String get description {
-    switch (action) {
-      case ActivityAction.uploaded:
-        return '$actorName uploaded ${documentName ?? 'a document'}';
-      case ActivityAction.signed:
-        return '$actorName signed ${documentName ?? 'a document'}';
-      case ActivityAction.requestedSignature:
-        return '$actorName requested a signature on ${documentName ?? 'a document'}';
-      case ActivityAction.deleted:
-        return '$actorName deleted ${documentName ?? 'a document'}';
-      case ActivityAction.moved:
-        return '$actorName moved ${documentName ?? 'a document'}';
-      case ActivityAction.copied:
-        return '$actorName copied ${documentName ?? 'a document'}';
-      case ActivityAction.declined:
-        return '$actorName declined to sign ${documentName ?? 'a document'}';
-      case ActivityAction.folderCreated:
-        return '$actorName created a new folder';
-    }
   }
 }
