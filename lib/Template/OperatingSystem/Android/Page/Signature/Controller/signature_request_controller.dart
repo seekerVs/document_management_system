@@ -237,7 +237,7 @@ class SignatureRequestController extends GetxController {
       await docRef.set({
         'ownerUid': uid,
         'name': doc.name,
-        'fileUrl': signedUrl,
+        'fileUrl': upload.storagePath, // FIXED: Save path, not 1-hour signed URL
         'storagePath': upload.storagePath,
         'fileType': 'pdf',
         'fileSizeMB': upload.fileSizeMB,
@@ -249,12 +249,12 @@ class SignatureRequestController extends GetxController {
 
       AppLoader.updateMessage('Sending request...');
 
-      // Build model with real documentId and signed URL
+      // Build model with current document reference
       final request = SignatureRequestModel(
         requestId: '',
         documentId: docRef.id,
         documentName: doc.name,
-        documentUrl: signedUrl,
+        documentUrl: upload.storagePath, // FIXED: Save path, not 1-hour signed URL
         storagePath: upload.storagePath,
         requestedByUid: uid,
         signers: signers.toList(),
