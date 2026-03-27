@@ -116,10 +116,24 @@ class SignatureFieldOverlay extends StatelessWidget {
                     )
                   else
                     Center(
-                      child: Icon(
-                        _fieldIcon(field.type),
-                        color: Colors.white,
-                        size: 14,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _fieldIcon(field.type),
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                          const SizedBox(height: 1),
+                          const Text(
+                            'Sign',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 7,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                 ],
@@ -136,7 +150,7 @@ class SignatureFieldOverlay extends StatelessWidget {
       case SignatureFieldType.signature:
         return Icons.draw_outlined;
       case SignatureFieldType.initials:
-        return Icons.abc_outlined;
+        return Icons.draw_outlined;
       case SignatureFieldType.dateSigned:
         return Icons.calendar_today_outlined;
       case SignatureFieldType.textbox:

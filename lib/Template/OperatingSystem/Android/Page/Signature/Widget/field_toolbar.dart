@@ -31,7 +31,7 @@ class _SignatureFieldToolbarState extends State<SignatureFieldToolbar> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.backgroundWhite,
         boxShadow: [
           BoxShadow(
             color: Color(0x14000000),
@@ -42,7 +42,7 @@ class _SignatureFieldToolbarState extends State<SignatureFieldToolbar> {
       ),
       child: Obx(() {
         final selectedId = widget.controller.selectedFieldId.value;
-        
+
         // Auto-reset if field selection changes or is cleared
         if (selectedId != _lastBoundFieldId) {
           _isChangingType = false;
@@ -53,7 +53,9 @@ class _SignatureFieldToolbarState extends State<SignatureFieldToolbar> {
           duration: const Duration(milliseconds: 250),
           child: selectedId == null
               ? _buildAddActions()
-              : (_isChangingType ? _buildChangeTypeActions() : _buildEditActions()),
+              : (_isChangingType
+                    ? _buildChangeTypeActions()
+                    : _buildEditActions()),
         );
       }),
     );
@@ -70,7 +72,7 @@ class _SignatureFieldToolbarState extends State<SignatureFieldToolbar> {
           onTap: () => widget.onAddField(SignatureFieldType.signature),
         ),
         _ToolbarItem(
-          icon: Icons.abc_outlined, // More distinct initials icon
+          icon: Icons.draw_outlined, // Same with signature
           label: 'Initials',
           onTap: () => widget.onAddField(SignatureFieldType.initials),
         ),
@@ -144,17 +146,25 @@ class _SignatureFieldToolbarState extends State<SignatureFieldToolbar> {
           label: 'Signature',
           onTap: () => _updateType(SignatureFieldType.signature),
           themeOverride: (
-            surface: currentType == SignatureFieldType.signature ? AppColors.primary : AppColors.backgroundGrey,
-            icon: currentType == SignatureFieldType.signature ? Colors.white : Colors.black,
+            surface: currentType == SignatureFieldType.signature
+                ? AppColors.primary
+                : AppColors.backgroundGrey,
+            icon: currentType == SignatureFieldType.signature
+                ? Colors.white
+                : Colors.black,
           ),
         ),
         _ToolbarItem(
-          icon: Icons.abc_outlined,
+          icon: Icons.draw_outlined,
           label: 'Initials',
           onTap: () => _updateType(SignatureFieldType.initials),
           themeOverride: (
-            surface: currentType == SignatureFieldType.initials ? AppColors.primary : AppColors.backgroundGrey,
-            icon: currentType == SignatureFieldType.initials ? Colors.white : Colors.black,
+            surface: currentType == SignatureFieldType.initials
+                ? AppColors.primary
+                : AppColors.backgroundGrey,
+            icon: currentType == SignatureFieldType.initials
+                ? Colors.white
+                : Colors.black,
           ),
         ),
         _ToolbarItem(
@@ -162,8 +172,12 @@ class _SignatureFieldToolbarState extends State<SignatureFieldToolbar> {
           label: 'Date Signed',
           onTap: () => _updateType(SignatureFieldType.dateSigned),
           themeOverride: (
-            surface: currentType == SignatureFieldType.dateSigned ? AppColors.primary : AppColors.backgroundGrey,
-            icon: currentType == SignatureFieldType.dateSigned ? Colors.white : Colors.black,
+            surface: currentType == SignatureFieldType.dateSigned
+                ? AppColors.primary
+                : AppColors.backgroundGrey,
+            icon: currentType == SignatureFieldType.dateSigned
+                ? Colors.white
+                : Colors.black,
           ),
         ),
         _ToolbarItem(
@@ -171,8 +185,12 @@ class _SignatureFieldToolbarState extends State<SignatureFieldToolbar> {
           label: 'Textbox',
           onTap: () => _updateType(SignatureFieldType.textbox),
           themeOverride: (
-            surface: currentType == SignatureFieldType.textbox ? AppColors.primary : AppColors.backgroundGrey,
-            icon: currentType == SignatureFieldType.textbox ? Colors.white : Colors.black,
+            surface: currentType == SignatureFieldType.textbox
+                ? AppColors.primary
+                : AppColors.backgroundGrey,
+            icon: currentType == SignatureFieldType.textbox
+                ? Colors.white
+                : Colors.black,
           ),
         ),
       ],
@@ -231,10 +249,10 @@ class _ToolbarItem extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textPrimary,
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: AppColors.textPrimary,
+                fontSize: 10.5,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),

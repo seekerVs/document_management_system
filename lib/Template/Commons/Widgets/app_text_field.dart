@@ -22,6 +22,7 @@ class AppTextField extends StatelessWidget {
   final TextCapitalization textCapitalization;
   final FocusNode? focusNode;
   final bool autofocus;
+  final String? counterText;
 
   const AppTextField({
     super.key,
@@ -44,6 +45,7 @@ class AppTextField extends StatelessWidget {
     this.textCapitalization = TextCapitalization.none,
     this.focusNode,
     this.autofocus = false,
+    this.counterText,
   });
 
   @override
@@ -76,7 +78,7 @@ class AppTextField extends StatelessWidget {
             hintText: hint,
             prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 20) : null,
             suffixIcon: suffixIcon,
-            counterText: '',
+            counterText: counterText ?? '',
           ),
         ),
       ],

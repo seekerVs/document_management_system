@@ -82,8 +82,8 @@ class SignaturePlacementController extends GetxController {
     
     // Default dimensions: Textbox and Date are rectangles, others are small squares
     final isRect = type == SignatureFieldType.textbox || type == SignatureFieldType.dateSigned;
-    final fieldW = isRect ? 50.0 : 24.0;
-    final fieldH = isRect ? 20.0 : 24.0;
+    final fieldW = isRect ? 50.0 : 32.0;
+    final fieldH = isRect ? 22.0 : 32.0;
     
     final field = SignatureFieldModel(
       fieldId: const Uuid().v4(),
@@ -156,8 +156,8 @@ class SignaturePlacementController extends GetxController {
       if (entry.field.fieldId == id) {
         // Adjust dimensions based on new type
         final isRect = newType == SignatureFieldType.textbox || newType == SignatureFieldType.dateSigned;
-        final newW = isRect ? 50.0 : 24.0;
-        final newH = isRect ? 20.0 : 24.0;
+        final newW = isRect ? 50.0 : 32.0;
+        final newH = isRect ? 22.0 : 32.0;
 
         final updated = entry.signer.fields
             .map((f) => f.fieldId == id ? f.copyWith(

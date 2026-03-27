@@ -37,7 +37,6 @@ class SignatureRequestController extends GetxController {
   // Step 4 — submission
   final RxString emailSubject = ''.obs;
   final RxString emailMessage = ''.obs;
-  final RxString envelopeType = 'Select One...'.obs;
 
   final TextEditingController subjectController = TextEditingController();
   final TextEditingController messageController = TextEditingController();

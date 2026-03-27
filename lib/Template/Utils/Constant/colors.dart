@@ -15,6 +15,9 @@ class AppColors {
   static const Color textDisabled = Color(0xFF8BB0CD); // scale-300
   static const Color textOnPrimary = Color(0xFFFFFFFF);
 
+  static const Color navy = Color(0xFF1E0B4B);
+  static const Color avatarBg = Color(0xFFD1F7FF);
+
   static const Color backgroundWhite = Color(0xFFFFFFFF);
   static const Color backgroundLight = Color(0xFFECF1F7); // scale-50 — page bg
   static const Color backgroundGrey = Color(0xFFD9E4EE); // scale-100
