@@ -106,9 +106,6 @@ class _SignaturePlacementViewState extends State<SignaturePlacementView> {
                       minScale:
                           1.0, // Prevent zooming out beyond document width
                       maxScale: 4.0,
-                      panEnabled: true,
-                      boundaryMargin:
-                          EdgeInsets.zero, // No white space around document
                       child: ListView.builder(
                         controller: _scrollController,
                         padding: const EdgeInsets.symmetric(
@@ -353,7 +350,6 @@ class _PdfPageWidgetState extends State<PdfPageWidget> {
                 .toList();
 
             return Stack(
-              clipBehavior: Clip.hardEdge,
               children: [
                 Positioned.fill(
                   child: Image.memory(_image!.bytes, fit: BoxFit.fill),

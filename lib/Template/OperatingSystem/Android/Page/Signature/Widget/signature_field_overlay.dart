@@ -31,8 +31,9 @@ class SignatureFieldOverlay extends StatelessWidget {
       if (pos == null) return const SizedBox.shrink();
 
       final isSelected = controller.selectedFieldId.value == field.fieldId;
-      final isRect = field.type == SignatureFieldType.textbox || 
-                     field.type == SignatureFieldType.dateSigned;
+      final isRect =
+          field.type == SignatureFieldType.textbox ||
+          field.type == SignatureFieldType.dateSigned;
 
       return Positioned(
         left: pos.x,
@@ -92,7 +93,7 @@ class SignatureFieldOverlay extends StatelessWidget {
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: color, width: 1.0),
+                          border: Border.all(color: color),
                         ),
                       ),
                     ),
@@ -102,8 +103,8 @@ class SignatureFieldOverlay extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.only(left: 2, top: 1),
                         child: Text(
-                          field.type == SignatureFieldType.textbox 
-                              ? 'Add Text' 
+                          field.type == SignatureFieldType.textbox
+                              ? 'Add Text'
                               : 'Date Signed',
                           style: const TextStyle(
                             color: Colors.white,

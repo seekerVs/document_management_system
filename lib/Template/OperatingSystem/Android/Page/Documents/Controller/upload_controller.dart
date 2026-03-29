@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
-import '../../../../../../Template/Utils/Constant/enum.dart';
 import '../../../../../../Template/Utils/Exceptions/exceptions.dart';
 import '../../../../../../Template/Utils/Helpers/helpers.dart';
 import '../../../../../../Template/Utils/Popups/dialog.dart';

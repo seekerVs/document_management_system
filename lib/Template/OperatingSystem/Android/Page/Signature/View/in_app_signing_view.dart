@@ -29,7 +29,9 @@ class _InAppSigningViewState extends State<InAppSigningView> {
 
   Future<void> _fetchDocument() async {
     try {
-      final response = await http.get(Uri.parse(_controller.request.documentUrl));
+      final response = await http.get(
+        Uri.parse(_controller.request.documentUrl),
+      );
       if (response.statusCode == 200) {
         final doc = await PdfDocument.openData(response.bodyBytes);
         setState(() => _document = doc);
@@ -71,9 +73,9 @@ class _InAppSigningViewState extends State<InAppSigningView> {
             child: Text(
               'Signing as ${signer.signerName}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
+                color: AppColors.primary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ),
@@ -89,7 +91,9 @@ class _InAppSigningViewState extends State<InAppSigningView> {
                     child: ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.symmetric(
-                          vertical: 24, horizontal: 16),
+                        vertical: 24,
+                        horizontal: 16,
+                      ),
                       itemCount: _document!.pagesCount,
                       itemBuilder: (context, index) {
                         return _PdfSigningPage(
@@ -137,7 +141,6 @@ class _PdfSigningPageState extends State<_PdfSigningPage> {
     final img = await page.render(
       width: page.width * 2,
       height: page.height * 2,
-      format: PdfPageImageFormat.jpeg,
     );
     if (mounted) setState(() => _image = img);
     await page.close();
@@ -184,13 +187,15 @@ class _PdfSigningPageState extends State<_PdfSigningPage> {
                 Positioned.fill(
                   child: Image.memory(_image!.bytes, fit: BoxFit.fill),
                 ),
-                ...fields.map((f) => _SigningFieldOverlay(
-                      key: ValueKey(f.fieldId),
-                      field: f,
-                      controller: widget.controller,
-                      displayW: displayW,
-                      displayH: displayH,
-                    )),
+                ...fields.map(
+                  (f) => _SigningFieldOverlay(
+                    key: ValueKey(f.fieldId),
+                    field: f,
+                    controller: widget.controller,
+                    displayW: displayW,
+                    displayH: displayH,
+                  ),
+                ),
               ],
             );
           }),
@@ -262,10 +267,7 @@ class _EmptyFieldContent extends StatelessWidget {
       children: [
         Icon(_icon, color: color, size: 14),
         const SizedBox(width: 4),
-        const Text(
-          '*',
-          style: TextStyle(color: Colors.red, fontSize: 14),
-        ),
+        const Text('*', style: TextStyle(color: Colors.red, fontSize: 14)),
       ],
     );
   }
@@ -329,7 +331,11 @@ class _BottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.fromLTRB(
-          16, 12, 16, MediaQuery.of(context).padding.bottom + 16),
+        16,
+        12,
+        16,
+        MediaQuery.of(context).padding.bottom + 16,
+      ),
       decoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [

@@ -139,7 +139,7 @@ class _DocumentViewerViewState extends State<DocumentViewerView> {
     return PdfViewer(
       localPath: _localPdfPath!,
       onRender: (_) {},
-      onPageChanged: (_, __) {},
+      onPageChanged: (_, _) {},
       onError: (e) {
         if (mounted) setState(() => _error = e);
       },
