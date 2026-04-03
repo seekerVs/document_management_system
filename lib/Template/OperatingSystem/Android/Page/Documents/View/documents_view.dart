@@ -70,18 +70,21 @@ class DocumentsView extends GetView<DocumentsController> {
 class _SearchBar extends GetView<DocumentsController> {
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       child: TextField(
         controller: controller.searchController,
         onChanged: controller.onSearchChanged,
+        style: Theme.of(context).textTheme.bodyLarge,
         decoration: InputDecoration(
           hintText: 'Search document',
-          prefixIcon: const Icon(Icons.search, size: 20),
+          hintStyle: TextStyle(color: cs.onSurfaceVariant.withOpacity(0.7)),
+          prefixIcon: Icon(Icons.search, size: 20, color: cs.onSurfaceVariant),
           suffixIcon: Obx(
             () => controller.isSearching.value
                 ? IconButton(
-                    icon: const Icon(Icons.close, size: 18),
+                    icon: Icon(Icons.close, size: 18, color: cs.onSurfaceVariant),
                     onPressed: controller.clearSearch,
                   )
                 : const SizedBox.shrink(),

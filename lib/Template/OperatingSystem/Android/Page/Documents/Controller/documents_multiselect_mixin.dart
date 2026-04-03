@@ -243,7 +243,7 @@ mixin DocumentsMultiselectMixin on GetxController {
 
     final newId = const Uuid().v4();
     final newPath = 'documents/${doc.ownerUid}/$newId.pdf';
-    final newUrl = await SupabaseService.uploadBytes(
+    final uploadResult = await SupabaseService.uploadBytes(
       bytes: response.bodyBytes,
       storagePath: newPath,
       fileName: resolvedName,
@@ -255,7 +255,7 @@ mixin DocumentsMultiselectMixin on GetxController {
       ownerUid: doc.ownerUid,
       folderId: destFolderId,
       name: resolvedName,
-      fileUrl: newUrl,
+      fileUrl: uploadResult.storagePath,
       storagePath: newPath,
       fileType: doc.fileType,
       fileSizeMB: doc.fileSizeMB,

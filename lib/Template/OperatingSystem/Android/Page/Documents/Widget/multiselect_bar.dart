@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../Utils/Themes/component_themes.dart';
 import '../Controller/documents_controller.dart';
-import '../../../../../../Template/Utils/Constant/colors.dart';
 
 class MultiSelectBar extends GetView<DocumentsController> {
   const MultiSelectBar({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      decoration: const BoxDecoration(
-        color: AppColors.backgroundWhite,
-        border: Border(top: BorderSide(color: AppColors.borderLight)),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainer,
+        border: Border(top: BorderSide(color: cs.outlineVariant)),
       ),
       child: SafeArea(
         top: false,
@@ -35,7 +35,7 @@ class MultiSelectBar extends GetView<DocumentsController> {
               _BarAction(
                 icon: Icons.delete_outline,
                 label: 'Delete',
-                color: AppColors.error,
+                color: cs.error,
                 onTap: controller.deleteSelected,
               ),
               // Rename — disabled when more than 1 item selected
@@ -100,9 +100,10 @@ class _BarAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final c = onTap == null
-        ? AppColors.textHint
-        : (color ?? AppColors.textSecondary);
+        ? cs.onSurfaceVariant.withOpacity(0.38)
+        : (color ?? cs.onSurfaceVariant);
 
     return GestureDetector(
       onTap: onTap,

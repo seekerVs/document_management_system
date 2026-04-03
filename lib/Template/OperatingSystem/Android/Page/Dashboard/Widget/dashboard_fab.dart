@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../Controller/dashboard_controller.dart';
+import '../../Documents/Controller/upload_controller.dart';
 import '../../Signature/Controller/signature_request_controller.dart';
-import '../../../../../../Template/Utils/Constant/colors.dart';
 
 // Only the FAB circle — lives in the floatingActionButton slot.
 class DashboardFab extends StatelessWidget {
@@ -29,13 +29,7 @@ class DashboardFab extends StatelessWidget {
             turns: isExpanded ? 0.125 : 0,
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeInOut,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                isExpanded ? Icons.close : Icons.add,
-                key: ValueKey(isExpanded),
-              ),
-            ),
+            child: const Icon(Icons.add),
           ),
         ),
       );
@@ -61,6 +55,7 @@ class _DashboardFabActionsState extends State<DashboardFabActions>
   DashboardController get _dashController => Get.find<DashboardController>();
   SignatureRequestController get _sigController =>
       Get.find<SignatureRequestController>();
+  UploadController get _uploadController => Get.find<UploadController>();
 
   static const _actions = [
     _ActionDef(icon: Icons.add_circle_outline, label: 'Add Document'),
@@ -72,7 +67,7 @@ class _DashboardFabActionsState extends State<DashboardFabActions>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 250),
+      duration: const Duration(milliseconds: 300),
     );
     ever(_dashController.isFabExpanded, (expanded) {
       if (!mounted) return;
@@ -93,8 +88,13 @@ class _DashboardFabActionsState extends State<DashboardFabActions>
   void _onActionTap(int index) {
     _dashController.toggleFab();
     Future.microtask(() {
-      if (index == 0) _dashController.goToDocuments();
-      if (index == 1) _sigController.showDocumentSourceSheet();
+      if (index == 0) {
+        // Direct document upload flow
+        _uploadController.showUploadSourceSheet();
+      } else {
+        // Request signature flow
+        _sigController.showDocumentSourceSheet();
+      }
     });
   }
 
@@ -113,14 +113,26 @@ class _DashboardFabActionsState extends State<DashboardFabActions>
           1.0,
           curve: Curves.easeOut,
         );
-        final fadeAnim = Tween<double>(
-          begin: 0,
-          end: 1,
-        ).animate(CurvedAnimation(parent: _animController, curve: interval));
-        final slideAnim = Tween<Offset>(
-          begin: const Offset(0, 0.3),
-          end: Offset.zero,
-        ).animate(CurvedAnimation(parent: _animController, curve: interval));
+        final fadeAnim = Tween<double>(begin: 0, end: 1).animate(
+          CurvedAnimation(
+            parent: _animController,
+            curve: interval, // Linear fade within the staggered interval
+          ),
+        );
+        final slideAnim =
+            Tween<Offset>(
+              begin: const Offset(0.4, 0), // Slide in from the right
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: _animController,
+                curve: Interval(
+                  interval.begin,
+                  interval.end,
+                  curve: Curves.easeOutBack, // Adds the elastic bounce
+                ),
+              ),
+            );
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
@@ -155,10 +167,10 @@ class _FabAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.primary,
+      color: Theme.of(context).colorScheme.primary,
       borderRadius: BorderRadius.circular(12),
       elevation: 4,
-      shadowColor: AppColors.primary.withOpacity(0.4),
+      shadowColor: Theme.of(context).colorScheme.primary.withOpacity(0.4),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -169,12 +181,16 @@ class _FabAction extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: AppColors.textOnPrimary, size: 20),
+              Icon(
+                icon,
+                color: Theme.of(context).colorScheme.onPrimary,
+                size: 20,
+              ),
               const SizedBox(width: 10),
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppColors.textOnPrimary,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'Inter',

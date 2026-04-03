@@ -12,7 +12,6 @@ import '../Widget/document_grid_card.dart';
 import '../Widget/document_list_tile.dart';
 import '../Widget/multiselect_bar.dart';
 import '../Widget/sort_menu.dart';
-import '../../../../../../Template/Utils/Constant/colors.dart';
 import '../../../../../../Template/Utils/Exceptions/exceptions.dart';
 import '../../../../../../Template/Utils/Firebase/firebase_method.dart';
 import '../../../../../../Template/Utils/Firebase/firebase_utils.dart';
@@ -201,6 +200,7 @@ class _FolderContentsViewState extends State<FolderContentsView> {
   }
 
   Widget _buildToolbar(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       children: [
         // Search field — full width, same as documents_view
@@ -210,19 +210,21 @@ class _FolderContentsViewState extends State<FolderContentsView> {
             () => TextField(
               controller: searchController,
               onChanged: _onSearchChanged,
+              style: Theme.of(context).textTheme.bodyLarge,
               decoration: InputDecoration(
                 hintText: 'Search in folder',
-                prefixIcon: const Icon(
+                hintStyle: TextStyle(color: cs.onSurfaceVariant.withOpacity(0.7)),
+                prefixIcon: Icon(
                   Icons.search,
-                  color: AppColors.textHint,
+                  color: cs.onSurfaceVariant,
                   size: 20,
                 ),
                 suffixIcon: isSearching.value
                     ? IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.close,
                           size: 18,
-                          color: AppColors.textHint,
+                          color: cs.onSurfaceVariant,
                         ),
                         onPressed: _clearSearch,
                       )
@@ -269,7 +271,7 @@ class _FolderContentsViewState extends State<FolderContentsView> {
                     isGridView.value
                         ? Icons.format_list_bulleted
                         : Icons.grid_view_rounded,
-                    color: AppColors.textSecondary,
+                    color: cs.onSurfaceVariant,
                   ),
                   onPressed: () => isGridView.toggle(),
                 ),

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../Commons/Styles/style.dart';
 import '../Controller/documents_controller.dart';
-import '../../../../../../Template/Utils/Constant/colors.dart';
+import '../../../../../Commons/Styles/style.dart';
 
 class FolderPickerSheet extends GetView<DocumentsController> {
   final void Function(String? folderId) onPick;
@@ -36,10 +35,7 @@ class FolderPickerSheet extends GetView<DocumentsController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      decoration: AppStyle.bottomSheetDecoration(context),
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
       child: SafeArea(
         top: false,
@@ -51,7 +47,7 @@ class FolderPickerSheet extends GetView<DocumentsController> {
               child: Container(
                 width: 40,
                 height: 4,
-                decoration: AppStyle.bottomSheetHandle,
+                decoration: AppStyle.bottomSheetHandleOf(context),
               ),
             ),
             const SizedBox(height: 16),
@@ -104,6 +100,8 @@ class FolderPickerSheet extends GetView<DocumentsController> {
       ),
     );
   }
+
+
 }
 
 class _PickerTile extends StatelessWidget {
@@ -123,6 +121,7 @@ class _PickerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       enabled: !disabled,
@@ -130,32 +129,32 @@ class _PickerTile extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: disabled ? AppColors.backgroundGrey : AppColors.primarySurface,
+          color: disabled ? cs.surfaceContainer : cs.primaryContainer,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
           icon,
-          color: disabled ? AppColors.textHint : AppColors.primary,
+          color: disabled ? cs.onSurfaceVariant.withOpacity(0.5) : cs.primary,
           size: 20,
         ),
       ),
       title: Text(
         name,
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: disabled ? AppColors.textHint : null,
-        ),
+              color: disabled ? cs.onSurfaceVariant : null,
+            ),
       ),
       subtitle: Text(
         disabled ? 'Current location' : subtitle,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: disabled ? AppColors.textHint : null,
-        ),
+              color: disabled ? cs.onSurfaceVariant.withOpacity(0.7) : null,
+            ),
       ),
       trailing: disabled
           ? null
-          : const Icon(
+          : Icon(
               Icons.chevron_right,
-              color: AppColors.textHint,
+              color: cs.onSurfaceVariant,
               size: 20,
             ),
       onTap: onTap,

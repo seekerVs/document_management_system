@@ -3,11 +3,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import '../../../../../Utils/Firebase/firebase_method.dart';
 import '../../../../../Utils/Firebase/firebase_utils.dart';
+import '../../../../../Utils/Firebase/notification_service.dart';
+import '../../../../../Utils/Services/supabase_service.dart';
 import '../Model/user_model.dart';
 
 class UserController extends GetxService {
   final Rx<UserModel?> user = Rx<UserModel?>(null);
   final RxBool isLoading = false.obs;
+
+  final RxString resolvedPhotoUrl = ''.obs;
 
   StreamSubscription<User?>? _authSubscription;
 
@@ -15,6 +19,30 @@ class UserController extends GetxService {
   void onInit() {
     super.onInit();
     _listenToAuthChanges();
+
+    // Re-resolve photo URL whenever user changes
+    ever(user, (u) => _resolvePhotoUrl(u?.photoUrl));
+  }
+
+  Future<void> _resolvePhotoUrl(String? path) async {
+    if (path == null || path.isEmpty) {
+      resolvedPhotoUrl.value = '';
+      return;
+    }
+
+    // If it's already a full URL (http/https), just use it
+    if (path.startsWith('http')) {
+      resolvedPhotoUrl.value = path;
+      return;
+    }
+
+    try {
+      // Resolve Supabase path to signed URL
+      final url = await SupabaseService.getSignedUrl(path);
+      resolvedPhotoUrl.value = url;
+    } catch (_) {
+      resolvedPhotoUrl.value = '';
+    }
   }
 
   void _listenToAuthChanges() {
@@ -23,8 +51,11 @@ class UserController extends GetxService {
     ) async {
       if (firebaseUser != null) {
         await _loadUserProfile(firebaseUser.uid);
+        // Trigger FCM token setup/update
+        NotificationService.instance.setupToken();
       } else {
         user.value = null;
+        resolvedPhotoUrl.value = '';
       }
     });
   }

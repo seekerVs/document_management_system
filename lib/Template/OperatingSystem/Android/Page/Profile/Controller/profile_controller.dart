@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../../Utils/Exceptions/exceptions.dart';
 import '../../../../../../Template/Utils/Firebase/firebase_utils.dart';
 import '../../../../../../Template/Utils/Popups/dialog.dart';
 import '../../../../../../Template/Utils/Popups/full_screen_loader.dart';
 import '../../../../../../Template/Utils/Routes/main_routes.dart';
+import '../../../../../../Template/Utils/Services/supabase_service.dart';
 import '../Model/user_model.dart';
 import '../Repository/user_repository.dart';
 import 'user_controller.dart';
@@ -26,11 +28,12 @@ class ProfileController extends GetxController {
   final RxBool isDarkMode = false.obs;
   final RxBool isSavingName = false.obs;
   final RxBool isChangingPassword = false.obs;
+  final RxBool isUploadingPhoto = false.obs;
 
   UserModel? get user => _userController.user.value;
   String get displayName => _userController.displayName;
   String get displayEmail => _userController.displayEmail;
-  String? get photoUrl => user?.photoUrl;
+  String? get photoUrl => _userController.resolvedPhotoUrl.value;
 
   @override
   void onReady() {
@@ -45,25 +48,137 @@ class ProfileController extends GetxController {
     Get.changeThemeMode(value ? ThemeMode.dark : ThemeMode.light);
   }
 
-  // Show edit name bottom sheet
+  // Show edit name dialog
   void showEditName(BuildContext context) {
     nameController.text = displayName;
-    Get.bottomSheet(
-      _EditNameSheet(controller: this),
-      isScrollControlled: true,
-      ignoreSafeArea: false,
+    Get.dialog(
+      _EditNameDialog(controller: this),
+      barrierDismissible: true,
     );
   }
 
-  // Show change password bottom sheet
+  // Show change password dialog
   void showChangePassword(BuildContext context) {
     currentPasswordController.clear();
     newPasswordController.clear();
     confirmPasswordController.clear();
-    Get.bottomSheet(
-      _ChangePasswordSheet(controller: this),
-      isScrollControlled: true,
-      ignoreSafeArea: false,
+    Get.dialog(
+      _ChangePasswordDialog(controller: this),
+      barrierDismissible: true,
+    );
+  }
+
+  // Profile Photo logic
+  void showChangePhoto(BuildContext context) {
+    AppDialogs.showOptions(
+      title: 'Profile Photo',
+      options: [
+        const AppDialogOption(
+          label: 'Camera',
+          icon: Icons.camera_alt_outlined,
+          value: 'camera',
+        ),
+        const AppDialogOption(
+          label: 'Gallery',
+          icon: Icons.photo_library_outlined,
+          value: 'gallery',
+        ),
+        if (photoUrl != null && photoUrl!.isNotEmpty)
+          const AppDialogOption(
+            label: 'Remove Photo',
+            icon: Icons.delete_outline,
+            value: 'remove',
+            isDangerous: true,
+          ),
+      ],
+    ).then((value) {
+      if (value == 'camera') {
+        _pickAndUpload(ImageSource.camera);
+      } else if (value == 'gallery') {
+        _pickAndUpload(ImageSource.gallery);
+      } else if (value == 'remove') {
+        removePhoto();
+      }
+    });
+  }
+
+  Future<void> _pickAndUpload(ImageSource source) async {
+    try {
+      final picker = ImagePicker();
+      final image = await picker.pickImage(
+        source: source,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 75,
+      );
+
+      if (image == null) return;
+
+      AppLoader.show(message: 'Updating profile photo...');
+      isUploadingPhoto.value = true;
+
+      final uid = FirebaseUtils.currentUid;
+      if (uid == null) throw const SessionExpiredException();
+
+      // Upload to Supabase
+      final bytes = await image.readAsBytes();
+      final uploadResult = await SupabaseService.uploadBytes(
+        bytes: bytes,
+        storagePath: 'users/$uid/avatar',
+        fileName: 'profile_photo.jpg',
+      );
+
+      // Save storage path to Firestore
+      await _repo.updateProfile(uid, photoUrl: uploadResult.storagePath);
+
+      // Increment storage
+      await _userController.incrementStorage(uploadResult.fileSizeMB);
+
+      // Refresh user to trigger UI update
+      await _userController.refreshUser();
+
+      AppDialogs.showSnackSuccess('Profile photo updated successfully.');
+    } on AppException catch (e) {
+      AppDialogs.showSnackError(e.message);
+    } catch (e) {
+      AppDialogs.showSnackError(e.toString());
+    } finally {
+      isUploadingPhoto.value = false;
+      AppLoader.hide();
+    }
+  }
+
+  Future<void> removePhoto() async {
+    AppDialogs.showConfirm(
+      title: 'Remove Photo',
+      message: 'Are you sure you want to remove your profile photo?',
+      confirmLabel: 'Remove',
+      isDangerous: true,
+      onConfirm: () async {
+        AppLoader.show(message: 'Removing photo...');
+        try {
+          final uid = FirebaseUtils.currentUid;
+          if (uid == null) throw const SessionExpiredException();
+
+          // Clear photoUrl in Firestore
+          final currentPhotoPath = user?.photoUrl;
+          await _repo.updateProfile(uid, photoUrl: '');
+
+          // Optionally delete from storage too
+          if (currentPhotoPath != null && currentPhotoPath.isNotEmpty) {
+            try {
+              await SupabaseService.deleteFile(currentPhotoPath);
+            } catch (_) {}
+          }
+
+          await _userController.refreshUser();
+          AppDialogs.showSnackSuccess('Profile photo removed.');
+        } on AppException catch (e) {
+          AppDialogs.showSnackError(e.message);
+        } finally {
+          AppLoader.hide();
+        }
+      },
     );
   }
 
@@ -147,125 +262,77 @@ class ProfileController extends GetxController {
   }
 }
 
-// Edit name bottom sheet
+// Edit name dialog
 
-class _EditNameSheet extends StatelessWidget {
+class _EditNameDialog extends StatelessWidget {
   final ProfileController controller;
-  const _EditNameSheet({required this.controller});
+  const _EditNameDialog({required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    return AlertDialog(
+      title: const Text('Edit Name'),
+      contentPadding: const EdgeInsets.only(top: 20, left: 24, right: 24, bottom: 0),
+      actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      content: Form(
+        key: controller.nameFormKey,
+        child: TextFormField(
+          controller: controller.nameController,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+          decoration: const InputDecoration(
+            labelText: 'Full name',
+            prefixIcon: Icon(Icons.person_outline),
+            border: OutlineInputBorder(),
+          ),
+          validator: (v) =>
+              v == null || v.trim().isEmpty ? 'Name is required.' : null,
         ),
-        child: Form(
-          key: controller.nameFormKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Handle
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text('Edit Name', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: controller.nameController,
-                autofocus: true,
-                textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  labelText: 'Full name',
-                  prefixIcon: Icon(Icons.person_outline),
-                ),
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Name is required.' : null,
-              ),
-              const SizedBox(height: 24),
-              Obx(
-                () => SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: controller.isSavingName.value
-                        ? null
-                        : controller.saveName,
-                    child: controller.isSavingName.value
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text('Save'),
-                  ),
-                ),
-              ),
-            ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Get.back(),
+          child: const Text('Cancel'),
+        ),
+        Obx(
+          () => FilledButton(
+            onPressed: controller.isSavingName.value
+                ? null
+                : controller.saveName,
+            child: controller.isSavingName.value
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text('Save'),
           ),
         ),
-      ),
+      ],
     );
   }
 }
 
-// Change password bottom sheet
-class _ChangePasswordSheet extends StatelessWidget {
+// Change password dialog
+class _ChangePasswordDialog extends StatelessWidget {
   final ProfileController controller;
-  const _ChangePasswordSheet({required this.controller});
+  const _ChangePasswordDialog({required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
+    return AlertDialog(
+      title: const Text('Change Password'),
+      contentPadding: const EdgeInsets.only(top: 20, left: 24, right: 24, bottom: 0),
+      actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      content: SingleChildScrollView(
         child: Form(
           key: controller.passwordFormKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Handle
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Change Password',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 20),
               // Current password
               Obx(
                 () => TextFormField(
@@ -274,6 +341,7 @@ class _ChangePasswordSheet extends StatelessWidget {
                   decoration: InputDecoration(
                     labelText: 'Current password',
                     prefixIcon: const Icon(Icons.lock_outline),
+                    border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
                         controller.obscureCurrent.value
@@ -288,7 +356,7 @@ class _ChangePasswordSheet extends StatelessWidget {
                       : null,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               // New password
               Obx(
                 () => TextFormField(
@@ -297,6 +365,7 @@ class _ChangePasswordSheet extends StatelessWidget {
                   decoration: InputDecoration(
                     labelText: 'New password',
                     prefixIcon: const Icon(Icons.lock_outline),
+                    border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
                         controller.obscureNew.value
@@ -311,7 +380,7 @@ class _ChangePasswordSheet extends StatelessWidget {
                       : null,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               // Confirm password
               Obx(
                 () => TextFormField(
@@ -321,6 +390,7 @@ class _ChangePasswordSheet extends StatelessWidget {
                   decoration: InputDecoration(
                     labelText: 'Confirm new password',
                     prefixIcon: const Icon(Icons.lock_outline),
+                    border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
                         controller.obscureConfirm.value
@@ -335,32 +405,33 @@ class _ChangePasswordSheet extends StatelessWidget {
                       : null,
                 ),
               ),
-              const SizedBox(height: 24),
-              Obx(
-                () => SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: controller.isChangingPassword.value
-                        ? null
-                        : controller.changePassword,
-                    child: controller.isChangingPassword.value
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text('Change Password'),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Get.back(),
+          child: const Text('Cancel'),
+        ),
+        Obx(
+          () => FilledButton(
+            onPressed: controller.isChangingPassword.value
+                ? null
+                : controller.changePassword,
+            child: controller.isChangingPassword.value
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text('Change Password'),
+          ),
+        ),
+      ],
     );
   }
 }

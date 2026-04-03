@@ -147,6 +147,20 @@
       ]
     },
     {
+      "collectionGroup": "signature_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "signerEmails",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "activities",
       "queryScope": "COLLECTION",
       "fields": [

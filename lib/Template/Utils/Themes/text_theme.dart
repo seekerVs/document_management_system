@@ -71,4 +71,72 @@ class AppTextTheme {
       color: AppColors.textHint,
     ),
   );
+
+  static const TextTheme dark = TextTheme(
+    displayLarge: TextStyle(
+      fontSize: 28,
+      fontWeight: FontWeight.bold,
+      color: AppColors.backgroundWhite,
+    ),
+    headlineLarge: TextStyle(
+      fontSize: 24,
+      fontWeight: FontWeight.w600,
+      color: AppColors.backgroundWhite,
+    ),
+    headlineMedium: TextStyle(
+      fontSize: 22,
+      fontWeight: FontWeight.w600,
+      color: AppColors.backgroundWhite,
+    ),
+    headlineSmall: TextStyle(
+      fontSize: 20,
+      fontWeight: FontWeight.w600,
+      color: AppColors.backgroundWhite,
+    ),
+    titleLarge: TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      color: AppColors.backgroundWhite,
+    ),
+    titleMedium: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w500,
+      color: AppColors.backgroundWhite,
+    ),
+    titleSmall: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      color: AppColors.backgroundWhite,
+    ),
+    bodyLarge: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w400,
+      color: AppColors.backgroundWhite,
+    ),
+    bodyMedium: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
+      color: AppColors.textDisabled,
+    ),
+    bodySmall: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      color: AppColors.textDisabled,
+    ),
+    labelLarge: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      color: AppColors.backgroundWhite,
+    ),
+    labelMedium: TextStyle(
+      fontSize: 13,
+      fontWeight: FontWeight.w400,
+      color: AppColors.textDisabled,
+    ),
+    labelSmall: TextStyle(
+      fontSize: 11,
+      fontWeight: FontWeight.w400,
+      color: AppColors.darkBorder,
+    ),
+  );
 }

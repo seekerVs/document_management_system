@@ -15,14 +15,17 @@ class AddRecipientView extends GetView<SignatureRequestController> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          title: const Text('Add Recipients'),
+          title: const Text('Recipient Role'),
           leading: IconButton(
-            icon: const Icon(Icons.chevron_left),
+            icon: const Icon(Icons.close),
             onPressed: Get.back,
           ),
           actions: [
             TextButton(
               onPressed: controller.saveRecipient,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.only(right: 16),
+              ),
               child: const Text('Save'),
             ),
           ],

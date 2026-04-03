@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../Constant/colors.dart';
 import 'theme_radius.dart';
 
@@ -8,6 +9,13 @@ class AppComponentThemes {
   // ─── AppBar ───────────────────────────────────────────────────────────────
 
   static const AppBarTheme lightAppBar = AppBarTheme(
+    systemOverlayStyle: SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
+      systemNavigationBarDividerColor: Colors.transparent,
+    ),
     centerTitle: true,
     elevation: 0,
     scrolledUnderElevation: 0,
@@ -22,6 +30,13 @@ class AppComponentThemes {
   );
 
   static const AppBarTheme darkAppBar = AppBarTheme(
+    systemOverlayStyle: SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.light,
+      systemNavigationBarDividerColor: Colors.transparent,
+    ),
     centerTitle: true,
     elevation: 0,
     scrolledUnderElevation: 0,
@@ -82,10 +97,20 @@ class AppComponentThemes {
       borderRadius: BorderRadius.circular(ThemeRadius.md),
       borderSide: const BorderSide(color: AppColors.primaryLight, width: 1.5),
     ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(ThemeRadius.md),
+      borderSide: const BorderSide(color: AppColors.error),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(ThemeRadius.md),
+      borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+    ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    hintStyle: const TextStyle(color: AppColors.textHint, fontSize: 14),
-    prefixIconColor: AppColors.textHint,
-    suffixIconColor: AppColors.textHint,
+    hintStyle: const TextStyle(color: AppColors.darkBorder, fontSize: 14),
+    labelStyle: const TextStyle(color: AppColors.textDisabled, fontSize: 14),
+    prefixIconColor: AppColors.darkBorder,
+    suffixIconColor: AppColors.darkBorder,
+    errorStyle: const TextStyle(color: AppColors.error, fontSize: 12),
   );
 
   // ─── Elevated button ──────────────────────────────────────────────────────
@@ -137,10 +162,27 @@ class AppComponentThemes {
     ),
   );
 
+  static OutlinedButtonThemeData darkOutlinedButton = OutlinedButtonThemeData(
+    style: OutlinedButton.styleFrom(
+      foregroundColor: AppColors.backgroundWhite,
+      backgroundColor: AppColors.darkSurface,
+      side: const BorderSide(color: AppColors.darkBorder),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(ThemeRadius.round),
+      ),
+      minimumSize: const Size(double.infinity, 52),
+      textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+    ),
+  );
+
   // ─── Icon button ──────────────────────────────────────────────────────────
 
   static IconButtonThemeData iconButton = IconButtonThemeData(
     style: IconButton.styleFrom(foregroundColor: AppColors.textHint),
+  );
+
+  static IconButtonThemeData darkIconButton = IconButtonThemeData(
+    style: IconButton.styleFrom(foregroundColor: AppColors.darkBorder),
   );
 
   // ─── FAB ──────────────────────────────────────────────────────────────────
@@ -188,6 +230,17 @@ class AppComponentThemes {
     subtitleTextStyle: TextStyle(fontSize: 12, color: AppColors.textSecondary),
   );
 
+  static const ListTileThemeData darkListTile = ListTileThemeData(
+    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    iconColor: AppColors.darkBorder,
+    titleTextStyle: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      color: AppColors.backgroundWhite,
+    ),
+    subtitleTextStyle: TextStyle(fontSize: 12, color: AppColors.textDisabled),
+  );
+
   // ─── Checkbox ────────────────────────────────────────────────────────────
 
   static CheckboxThemeData checkbox = CheckboxThemeData(
@@ -217,6 +270,16 @@ class AppComponentThemes {
 
   static const BottomSheetThemeData lightBottomSheet = BottomSheetThemeData(
     backgroundColor: AppColors.backgroundWhite,
+    elevation: 0,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(ThemeRadius.bottomSheet),
+      ),
+    ),
+  );
+
+  static const BottomSheetThemeData darkBottomSheet = BottomSheetThemeData(
+    backgroundColor: AppColors.darkSurface,
     elevation: 0,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
@@ -261,6 +324,15 @@ class AppComponentThemes {
     unselectedLabelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
   );
 
+  static const TabBarThemeData darkTabBar = TabBarThemeData(
+    labelColor: AppColors.primaryLight,
+    unselectedLabelColor: AppColors.darkBorder,
+    indicatorColor: AppColors.primaryLight,
+    indicatorSize: TabBarIndicatorSize.tab,
+    labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+    unselectedLabelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+  );
+
   // ─── Chip ─────────────────────────────────────────────────────────────────
 
   static ChipThemeData chip = ChipThemeData(
@@ -271,6 +343,18 @@ class AppComponentThemes {
       borderRadius: BorderRadius.circular(ThemeRadius.round),
     ),
     side: BorderSide.none,
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+  );
+
+  static ChipThemeData darkChip = ChipThemeData(
+    backgroundColor: AppColors.darkSurface,
+    selectedColor: AppColors.primaryDark,
+    labelStyle: const TextStyle(fontSize: 13, color: AppColors.backgroundWhite),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(ThemeRadius.round),
+      side: const BorderSide(color: AppColors.darkBorder),
+    ),
+    side: const BorderSide(color: AppColors.darkBorder),
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
   );
 
@@ -290,6 +374,23 @@ class AppComponentThemes {
     contentTextStyle: const TextStyle(
       fontSize: 14,
       color: AppColors.textSecondary,
+    ),
+  );
+
+  static DialogThemeData darkDialog = DialogThemeData(
+    backgroundColor: AppColors.darkSurface,
+    elevation: 0,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(ThemeRadius.xl),
+    ),
+    titleTextStyle: const TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      color: AppColors.backgroundWhite,
+    ),
+    contentTextStyle: const TextStyle(
+      fontSize: 14,
+      color: AppColors.textDisabled,
     ),
   );
 
@@ -337,6 +438,16 @@ class AppComponentThemes {
       borderRadius: BorderRadius.circular(ThemeRadius.lg),
     ),
     textStyle: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+  );
+
+  static PopupMenuThemeData darkPopupMenu = PopupMenuThemeData(
+    color: AppColors.darkSurface,
+    elevation: 8,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(ThemeRadius.lg),
+      side: const BorderSide(color: AppColors.darkBorder),
+    ),
+    textStyle: const TextStyle(fontSize: 13, color: AppColors.backgroundWhite),
   );
 
   // ─── Menu (MenuAnchor) ────────────────────────────────────────────────────

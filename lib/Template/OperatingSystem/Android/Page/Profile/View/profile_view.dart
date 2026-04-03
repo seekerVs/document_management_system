@@ -27,12 +27,39 @@ class ProfileView extends GetView<ProfileController> {
             Center(
               child: Column(
                 children: [
-                  Obx(
-                    () => AppAvatar(
-                      name: controller.displayName,
-                      photoUrl: controller.photoUrl,
-                      radius: 40,
-                    ),
+                  Stack(
+                    children: [
+                      Obx(
+                        () => AppAvatar(
+                          name: controller.displayName,
+                          photoUrl: controller.photoUrl,
+                          radius: 40,
+                        ),
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: GestureDetector(
+                          onTap: () => controller.showChangePhoto(context),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Theme.of(context).scaffoldBackgroundColor,
+                                width: 2,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              size: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   Obx(
@@ -64,7 +91,7 @@ class ProfileView extends GetView<ProfileController> {
             const _SectionLabel(label: 'Account'),
             const SizedBox(height: 8),
             Container(
-              decoration: AppStyle.card(),
+              decoration: AppStyle.cardOf(context),
               child: Column(
                 children: [
                   _ProfileTile(
@@ -78,18 +105,6 @@ class ProfileView extends GetView<ProfileController> {
                     title: 'Change Password',
                     onTap: () => controller.showChangePassword(context),
                   ),
-                  const Divider(height: 1, indent: 56),
-                  // Photo — disabled until Cloudinary is ready
-                  const _ProfileTile(
-                    icon: Icons.photo_camera_outlined,
-                    title: 'Change Profile Photo',
-                    subtitle: 'Coming soon',
-                    trailing: Icon(
-                      Icons.lock_outline,
-                      size: 16,
-                      color: AppColors.textHint,
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -99,23 +114,25 @@ class ProfileView extends GetView<ProfileController> {
             const _SectionLabel(label: 'Preferences'),
             const SizedBox(height: 8),
             Container(
-              decoration: AppStyle.card(),
+              decoration: AppStyle.cardOf(context),
               child: Obx(
                 () => SwitchListTile(
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 4,
                   ),
-                  secondary: const Icon(
+                  secondary: Icon(
                     Icons.dark_mode_outlined,
-                    color: AppColors.textSecondary,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.6),
                   ),
                   title: Text(
                     'Dark Mode',
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   value: controller.isDarkMode.value,
-                  activeThumbColor: AppColors.primary,
+                  activeThumbColor: Theme.of(context).colorScheme.primary,
                   onChanged: controller.toggleDarkMode,
                 ),
               ),
@@ -126,14 +143,12 @@ class ProfileView extends GetView<ProfileController> {
             const _SectionLabel(label: 'Account Actions'),
             const SizedBox(height: 8),
             Container(
-              decoration: AppStyle.card(),
+              decoration: AppStyle.cardOf(context),
               child: Column(
                 children: [
                   _ProfileTile(
                     icon: Icons.logout,
                     title: 'Sign Out',
-                    titleColor: AppColors.textPrimary,
-                    iconColor: AppColors.textSecondary,
                     onTap: controller.signOut,
                   ),
                   const Divider(height: 1, indent: 56),
@@ -167,7 +182,7 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         label.toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: AppColors.textHint,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.45),
           letterSpacing: 1,
           fontWeight: FontWeight.w600,
         ),
@@ -197,18 +212,19 @@ class _ProfileTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return ListTile(
       onTap: onTap,
       leading: Icon(
         icon,
-        color: iconColor ?? AppColors.textSecondary,
+        color: iconColor ?? cs.onSurface.withOpacity(0.55),
         size: 22,
       ),
       title: Text(
         title,
         style: Theme.of(
           context,
-        ).textTheme.titleSmall?.copyWith(color: titleColor),
+        ).textTheme.titleSmall?.copyWith(color: titleColor ?? cs.onSurface),
       ),
       subtitle: subtitle != null
           ? Text(subtitle!, style: Theme.of(context).textTheme.bodySmall)
@@ -216,9 +232,9 @@ class _ProfileTile extends StatelessWidget {
       trailing:
           trailing ??
           (onTap != null
-              ? const Icon(
+              ? Icon(
                   Icons.chevron_right,
-                  color: AppColors.textHint,
+                  color: cs.onSurface.withOpacity(0.35),
                   size: 20,
                 )
               : null),

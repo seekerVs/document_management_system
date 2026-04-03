@@ -3,9 +3,9 @@ import 'package:get/get.dart';
 import '../../../../../Commons/Styles/style.dart';
 import '../../../../../Commons/Widgets/app_button.dart';
 import '../../../../../Utils/Constant/colors.dart';
-import '../../../../../Utils/Constant/images.dart';
+import '../../../../../Utils/Popups/dialog.dart';
+import '../../Documents/Widget/pdf_viewer.dart';
 import '../Controller/signature_request_controller.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class SelectDocumentView extends GetView<SignatureRequestController> {
   const SelectDocumentView({super.key});
@@ -82,7 +82,53 @@ class _DocumentTile extends StatelessWidget {
       decoration: AppStyle.card(),
       child: ListTile(
         contentPadding: const EdgeInsets.only(left: 16),
-        leading: SvgPicture.asset(AppImages.iconPdf, width: 40, height: 40),
+        onTap: () {
+          Get.to(
+            () => Scaffold(
+              backgroundColor: AppColors.backgroundLight,
+              appBar: AppBar(
+                backgroundColor: AppColors.backgroundLight,
+                scrolledUnderElevation: 0,
+                elevation: 1,
+                title: Text(
+                  doc.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                leading: IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  onPressed: Get.back,
+                ),
+              ),
+              body: PdfViewer(
+                localPath: doc.file.path,
+                onError: (e) => AppDialogs.showSnackError('Failed to load PDF'),
+              ),
+            ),
+          );
+        },
+        leading: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: AppColors.pdfColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Center(
+            child: Text(
+              'PDF',
+              style: TextStyle(
+                color: AppColors.folderSurface,
+                fontWeight: FontWeight.w800,
+                fontSize: 11,
+              ),
+            ),
+          ),
+        ),
         title: Text(
           doc.name,
           style: Theme.of(context).textTheme.titleSmall,

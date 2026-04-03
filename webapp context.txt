@@ -1,0 +1,80 @@
+Project: document_management_web_signing
+Description: A Flutter Web application designed for document management and digital signing.
+
+Folder Structure and Important Files:
+
+assets/
+  ├── animations/
+  ├── fonts/
+  │   ├── DancingScript-Regular.ttf
+  │   ├── GreatVibes-Regular.ttf
+  │   ├── Inter-Bold.ttf
+  │   ├── Inter-Medium.ttf
+  │   ├── Inter-Regular.ttf
+  │   ├── Inter-SemiBold.ttf
+  │   ├── Kameron-Bold.ttf
+  │   ├── Kameron-Regular.ttf
+  │   ├── Pacifico-Regular.ttf
+  │   └── Satisfy-Regular.ttf
+  ├── icons/
+  └── images/
+
+lib/
+  ├── main.dart
+  └── Template/
+      ├── Commons/
+      │   └── Styles/
+      │       └── style.dart
+      ├── OperatingSystem/
+      │   └── Web/
+      │       └── Page/
+      │           └── Signature/
+      │               ├── Controller/
+      │               │   └── signing_controller.dart
+      │               ├── Model/
+      │               │   ├── signature_field_model.dart
+      │               │   └── signing_session_model.dart
+      │               ├── Provider/
+      │               │   └── document_provider.dart
+      │               ├── Service/
+      │               │   └── pdf_service.dart
+      │               ├── View/
+      │               │   └── signing_view.dart
+      │               └── Widget/
+      │                   ├── adopt_and_sign_modal.dart
+      │                   ├── field_action_popover.dart
+      │                   ├── guidance_button.dart
+      │                   ├── pdf_document_viewer.dart
+      │                   ├── sidebar_popovers.dart
+      │                   ├── signature_field_guest_overlay.dart
+      │                   ├── signing_action_menu.dart
+      │                   ├── signing_footer.dart
+      │                   ├── signing_header.dart
+      │                   ├── signing_sidebar.dart
+      │                   ├── success_modal.dart
+      │                   └── AdoptAndSign/
+      │                       ├── dashed_rect_painter.dart
+      │                       ├── draw_signature_tab.dart
+      │                       ├── signature_preview_frame.dart
+      │                       └── upload_signature_tab.dart
+      └── Utils/
+          ├── Constant/
+          │   ├── app_config.dart
+          │   ├── colors.dart
+          │   ├── enum.dart
+          │   └── style.dart
+          └── Themes/
+              ├── text_theme.dart
+              └── theme.dart
+
+Important Parts Summary:
+1. Web Signing Workflow (`lib/Template/OperatingSystem/Web/Page/Signature`):
+   - Handles the entire Web specific signing page logic (View, Controller, Model, Service, and robust Widgets). 
+   - Uses GetX for the `signing_controller.dart` logic and provides specific UI parts inside the `Widget/` folder.
+   
+2. Root and Theme Configuration:
+   - `lib/main.dart`: Initiates the App via GetMaterialApp.
+   - `lib/Template/Utils/Themes/theme.dart`: The core Material design configurations bridging with fonts & colors.
+   
+3. Assets Management:
+   - Uses premium defined fonts (DancingScript, GreatVibes, Inter, etc.) configured via `pubspec.yaml` to stylize signatures and app UI.

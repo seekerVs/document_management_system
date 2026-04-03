@@ -31,9 +31,14 @@ class AuthRepository extends BaseRepository {
     try {
       googleUser = await GoogleSignIn.instance.authenticate();
     } on GoogleSignInException catch (e) {
-      // User cancelled — return null silently
       if (e.code == GoogleSignInExceptionCode.canceled) return null;
-      throw AppException('Google sign-in failed: ${e.description}');
+      
+      String message = 'Google sign-in failed: ${e.description ?? "Unknown error"}';
+      final desc = e.description?.toLowerCase() ?? '';
+      if (desc.contains('developer_error') || desc.contains('10')) {
+        message = 'Configuration error (DEVELOPER_ERROR). Please ensure your SHA-1 fingerprint is added to the Firebase Console.';
+      }
+      throw AppException(message);
     }
 
     // v7: authentication is synchronous

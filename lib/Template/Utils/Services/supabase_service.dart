@@ -47,13 +47,14 @@ class SupabaseService {
   }
 
   // Upload raw bytes to Supabase via Express (used for copy operations)
-  // Returns storagePath
-  static Future<String> uploadBytes({
+  // Returns SupabaseUploadResult
+  static Future<SupabaseUploadResult> uploadBytes({
     required List<int> bytes,
     required String storagePath,
     required String fileName,
   }) async {
     final uid = storagePath.split('/')[1]; // extract uid from path
+    final fileSize = bytes.length;
 
     final request =
         http.MultipartRequest('POST', Uri.parse('$_baseUrl/storage/upload'))
@@ -73,7 +74,11 @@ class SupabaseService {
 
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     final result = data['data'] as Map<String, dynamic>;
-    return result['storagePath'] as String;
+
+    return SupabaseUploadResult(
+      storagePath: result['storagePath'] as String,
+      fileSizeBytes: result['fileSizeBytes'] as int? ?? fileSize,
+    );
   }
 
   static Future<String> getSignedUrl(String storagePath) async {

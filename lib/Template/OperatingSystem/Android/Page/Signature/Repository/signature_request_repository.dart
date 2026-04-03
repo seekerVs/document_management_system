@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../../../../Utils/Api/api_service.dart';
 import '../../../../../Utils/Exceptions/exceptions.dart';
 import '../../../../../Utils/Firebase/firebase_utils.dart';
@@ -30,8 +31,11 @@ class SignatureRequestRepository {
     final email = FirebaseUtils.currentEmail;
     if (email == null) throw const SessionExpiredException();
 
+    final queryEmail = email.trim().toLowerCase();
+    debugPrint('Fetching tasks for: $queryEmail');
+
     final snap = await FirebaseUtils.signatureRequestsRef
-        .where('signerEmails', arrayContains: email.trim().toLowerCase())
+        .where('signerEmails', arrayContains: queryEmail)
         .orderBy('createdAt', descending: true)
         .get();
 

@@ -37,8 +37,8 @@ class UserRepository extends BaseRepository {
         await FirebaseMethod.updateDocument(
           ref: FirebaseUtils.userDoc(uid),
           data: {
-            'name': ?name,
-            'photoUrl': ?photoUrl,
+            if (name != null) 'name': name,
+            if (photoUrl != null) 'photoUrl': photoUrl,
             'updatedAt': Timestamp.now(),
           },
         );
@@ -51,5 +51,13 @@ class UserRepository extends BaseRepository {
         .get();
     if (snapshot.docs.isEmpty) return null;
     return UserModel.fromFirestore(snapshot.docs.first);
+  });
+
+  // Fetch just the display name for a given UID
+  Future<String?> getNameById(String uid) => handleRequest(() async {
+    final doc = await FirebaseUtils.usersRef.doc(uid).get();
+    if (!doc.exists) return null;
+    final data = doc.data() as Map<String, dynamic>?;
+    return data?['name'] as String?;
   });
 }

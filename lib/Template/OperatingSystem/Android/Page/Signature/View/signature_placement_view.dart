@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pdfx/pdfx.dart';
+import '../../../../../Commons/Styles/style.dart';
 import '../../../../../Commons/Widgets/app_button.dart';
-import '../../../../../Utils/Constant/colors.dart';
 import '../../../../../Utils/Routes/main_routes.dart';
 import '../Controller/signature_placement_controller.dart';
 import '../Controller/signature_request_controller.dart';
@@ -81,8 +81,10 @@ class _SignaturePlacementViewState extends State<SignaturePlacementView> {
   Widget build(BuildContext context) {
     final docObj = _requestController.selectedDocument.value;
 
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.primarySurface,
+      backgroundColor: cs.surface,
       appBar: _buildAppBar(docObj?.name ?? 'Place Fields'),
       body: GestureDetector(
         onTap: _controller.deselectField,
@@ -136,21 +138,23 @@ class _SignaturePlacementViewState extends State<SignaturePlacementView> {
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: Obx(() {
+        final cs = Theme.of(context).colorScheme;
         final isFieldSelected = _controller.selectedFieldId.value != null;
 
         return AppBar(
           key: const ValueKey('normal_appbar'),
           elevation: 0,
+          backgroundColor: cs.surface,
           title: Text(
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+            style: TextStyle(color: cs.onSurface, fontSize: 16),
           ),
           leading: IconButton(
             icon: Icon(
               isFieldSelected ? Icons.close : Icons.chevron_left,
-              color: AppColors.textPrimary,
+              color: cs.onSurface,
             ),
             onPressed: isFieldSelected ? _controller.deselectField : Get.back,
           ),
@@ -160,14 +164,15 @@ class _SignaturePlacementViewState extends State<SignaturePlacementView> {
   }
 
   Widget _buildBottomArea() {
+    final cs = Theme.of(context).colorScheme;
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: cs.surface,
         boxShadow: [
           BoxShadow(
-            color: Color(0x14000000),
+            color: cs.shadow.withOpacity(0.08),
             blurRadius: 12,
-            offset: Offset(0, -4),
+            offset: const Offset(0, -4),
           ),
         ],
       ),
@@ -214,30 +219,40 @@ class _SignaturePlacementViewState extends State<SignaturePlacementView> {
   void _showReassignMenu() {
     Get.bottomSheet(
       Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+        decoration: AppStyle.bottomSheetDecoration(context),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              child: Text(
-                'Reassign Field To',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: AppStyle.bottomSheetHandleOf(context),
               ),
             ),
+            const SizedBox(height: 20),
+            Text(
+              'Reassign Field To',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 12),
             ..._controller.activeSigners.asMap().entries.map((entry) {
               return ListTile(
+                contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
                   backgroundColor: _controller.signerColor(entry.key),
                   radius: 12,
                 ),
-                title: Text(entry.value.signerName),
-                subtitle: Text(entry.value.signerEmail),
+                title: Text(
+                  entry.value.signerName,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                subtitle: Text(
+                  entry.value.signerEmail,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 onTap: () {
                   _controller.reassignField(
                     _controller.selectedFieldId.value!,
@@ -247,7 +262,6 @@ class _SignaturePlacementViewState extends State<SignaturePlacementView> {
                 },
               );
             }),
-            const SizedBox(height: 20),
           ],
         ),
       ),

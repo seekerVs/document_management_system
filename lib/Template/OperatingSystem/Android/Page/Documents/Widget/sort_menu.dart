@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../Utils/Themes/component_themes.dart';
 import '../Controller/documents_controller.dart';
-import '../../../../../../Template/Utils/Constant/colors.dart';
 import '../../../../../../Template/Utils/Constant/enum.dart';
 
 class SortMenu extends GetView<DocumentsController> {
@@ -10,6 +9,7 @@ class SortMenu extends GetView<DocumentsController> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Obx(() {
       final current = controller.sortOrder.value;
       return MenuAnchor(
@@ -52,7 +52,7 @@ class SortMenu extends GetView<DocumentsController> {
           ),
         ],
         builder: (_, menuController, _) => IconButton(
-          icon: const Icon(Icons.sort, color: AppColors.textSecondary),
+          icon: Icon(Icons.sort, color: cs.onSurfaceVariant),
           onPressed: () => menuController.isOpen
               ? menuController.close()
               : menuController.open(),
@@ -75,15 +75,16 @@ class _SortItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return MenuItemButton(
       onPressed: onPressed,
       trailingIcon: isSelected
-          ? const Icon(Icons.check, size: 16, color: AppColors.primary)
+          ? Icon(Icons.check, size: 16, color: cs.primary)
           : const SizedBox(width: 16),
       style: isSelected
-          ? const ButtonStyle(
-              foregroundColor: WidgetStatePropertyAll(AppColors.primary),
-              textStyle: WidgetStatePropertyAll(
+          ? ButtonStyle(
+              foregroundColor: WidgetStatePropertyAll(cs.primary),
+              textStyle: const WidgetStatePropertyAll(
                 TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,

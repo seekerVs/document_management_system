@@ -56,7 +56,10 @@ class RequestReviewView extends GetView<SignatureRequestController> {
               Obx(
                 () => Column(
                   children: controller.signers
-                      .map((s) => _ReviewRecipientTile(signer: s))
+                      .map((s) => _ReviewRecipientTile(
+                            signer: s,
+                            isMe: s.signerEmail == controller.currentUserEmail,
+                          ))
                       .toList(),
                 ),
               ),
@@ -119,7 +122,8 @@ class _SectionHeader extends StatelessWidget {
 
 class _ReviewRecipientTile extends StatelessWidget {
   final SignerModel signer;
-  const _ReviewRecipientTile({required this.signer});
+  final bool isMe;
+  const _ReviewRecipientTile({required this.signer, required this.isMe});
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +141,7 @@ class _ReviewRecipientTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    signer.signerName,
+                    isMe ? '${signer.signerName} (ME)' : signer.signerName,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   Text(

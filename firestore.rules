@@ -24,7 +24,7 @@ service cloud.firestore {
     // Each user can only read/write their own profile
 
     match /users/{userId} {
-      allow read: if isOwner(userId);
+      allow read: if isSignedIn();
       allow create: if isOwner(userId)
         && request.resource.data.keys().hasAll(['name', 'email', 'role', 'createdAt', 'updatedAt'])
         && isValidEmail(request.resource.data.email);
@@ -54,7 +54,7 @@ service cloud.firestore {
     match /documents/{documentId} {
       allow read: if isSignedIn() && (
         resource.data.ownerUid == request.auth.uid
-        || isSignerOf(documentId)
+        || (request.auth.token.email != null && request.auth.token.email.lower() in resource.data.authorizedEmails)
       );
       allow create: if isSignedIn()
         && request.resource.data.ownerUid == request.auth.uid
@@ -72,14 +72,14 @@ service cloud.firestore {
     match /signature_requests/{requestId} {
       allow read: if isSignedIn() && (
         resource.data.requestedByUid == request.auth.uid
-        || isNamedSigner(resource.data.signers)
+        || isNamedSigner(resource.data)
       );
       allow create: if isSignedIn()
         && request.resource.data.requestedByUid == request.auth.uid
         && request.resource.data.keys().hasAll(['documentId', 'requestedByUid', 'signers', 'status', 'createdAt']);
       allow update: if isSignedIn() && (
         resource.data.requestedByUid == request.auth.uid
-        || isNamedSigner(resource.data.signers)
+        || isNamedSigner(resource.data)
       );
       allow delete: if isSignedIn() && resource.data.requestedByUid == request.auth.uid;
     }
@@ -115,17 +115,13 @@ service cloud.firestore {
 
     // ─── Helper functions ────────────────────────────────────────────────────
 
-    function isSignerOf(documentId) {
-      // Check if the current user is a signer on any request for this document
-      return exists(/databases/$(database)/documents/signature_requests/$(documentId))
-        && isNamedSigner(
-          get(/databases/$(database)/documents/signature_requests/$(documentId)).data.signers
-        );
-    }
-
-    function isNamedSigner(signers) {
-      // Returns true if any signer entry has the current user's UID
-      return signers.hasAny([{'signerUid': request.auth.uid}]);
+    function isNamedSigner(data) {
+      // Returns true if current user's email is in signerEmails
+      // We rely on signerEmails list for collection-wide query safety
+      return isSignedIn() && (
+        (request.auth.token.email != null && request.auth.token.email.lower() in data.signerEmails)
+        || data.signers.any(s, s.signerUid == request.auth.uid)
+      );
     }
   }
 }

@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-
 import '../../../../../Commons/Styles/style.dart';
-import '../../../../../Utils/Constant/colors.dart';
-import '../../../../../Utils/Constant/images.dart';
 import '../../../../../Utils/Formatters/formatter.dart';
 import '../../Documents/Model/document_model.dart';
 
@@ -27,12 +23,29 @@ class DocumentDisplayTile extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: margin,
-        decoration: AppStyle.card(),
+        decoration: AppStyle.cardOf(context),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 4, 12),
           child: Row(
             children: [
-              SvgPicture.asset(AppImages.iconPdf, width: 40, height: 40),
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.error,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    'PDF',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onError,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -62,10 +75,10 @@ class DocumentDisplayTile extends StatelessWidget {
                 ),
               ),
               IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.more_vert,
                   size: 18,
-                  color: AppColors.textHint,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 onPressed: onMoreTap,
               ),

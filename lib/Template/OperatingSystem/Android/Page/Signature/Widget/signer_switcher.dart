@@ -73,7 +73,9 @@ class SignerSwitcher extends StatelessWidget {
                         const SizedBox(height: 6),
                         // Name (Compact)
                         Text(
-                          signer.signerName,
+                          signer.signerEmail == controller.currentUserEmail
+                              ? '${signer.signerName} (ME)'
+                              : signer.signerName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,

@@ -83,12 +83,12 @@ class InAppSigningController extends GetxController {
       final uploadedImages = <String, String>{};
       for (final entry in signatureImages.entries) {
         final path = 'signatures/$uid/${request.requestId}/${entry.key}.png';
-        final imageUrl = await SupabaseService.uploadBytes(
+        final uploadResult = await SupabaseService.uploadBytes(
           bytes: entry.value,
           storagePath: path,
           fileName: '${entry.key}.png',
         );
-        uploadedImages[entry.key] = imageUrl;
+        uploadedImages[entry.key] = uploadResult.storagePath;
       }
 
       // Build updated fields with committed values

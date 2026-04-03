@@ -11,6 +11,7 @@ class DocumentModel {
   final DocumentFileType fileType;
   final double fileSizeMB;
   final DocumentStatus status;
+  final List<String> authorizedEmails;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -24,6 +25,7 @@ class DocumentModel {
     this.fileType = DocumentFileType.pdf,
     required this.fileSizeMB,
     this.status = DocumentStatus.draft,
+    this.authorizedEmails = const [],
     required this.createdAt,
     required this.updatedAt,
   });
@@ -47,6 +49,7 @@ class DocumentModel {
         (s) => s.name == (data['status'] ?? 'draft'),
         orElse: () => DocumentStatus.draft,
       ),
+      authorizedEmails: List<String>.from(data['authorizedEmails'] ?? []),
       createdAt: _parseDate(data['createdAt']) ?? now,
       updatedAt: _parseDate(data['updatedAt']) ?? now,
     );
@@ -70,6 +73,7 @@ class DocumentModel {
       'fileType': fileType.name,
       'fileSizeMB': fileSizeMB,
       'status': status.name,
+      'authorizedEmails': authorizedEmails,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };
@@ -83,6 +87,7 @@ class DocumentModel {
     DocumentFileType? fileType,
     double? fileSizeMB,
     DocumentStatus? status,
+    List<String>? authorizedEmails,
     DateTime? updatedAt,
   }) {
     return DocumentModel(
@@ -95,6 +100,7 @@ class DocumentModel {
       fileType: fileType ?? this.fileType,
       fileSizeMB: fileSizeMB ?? this.fileSizeMB,
       status: status ?? this.status,
+      authorizedEmails: authorizedEmails ?? this.authorizedEmails,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

@@ -12,17 +12,20 @@ import '../../../../../Utils/Popups/dialog.dart';
 import '../../../../../Utils/Popups/full_screen_loader.dart';
 import '../../../../../Utils/Routes/main_routes.dart';
 import '../../../../../Utils/Services/supabase_service.dart';
+import '../../../../../Utils/Services/network_manager.dart';
+import '../../../../../Commons/Styles/style.dart';
 import '../../Profile/Controller/user_controller.dart';
 import '../Model/selected_document.dart';
 import '../Model/signature_request_model.dart';
 import '../Repository/signature_request_repository.dart';
-import '../Widget/document_source_sheet.dart';
+import '../../../../../Commons/Widgets/document_source_sheet.dart';
 
 class SignatureRequestController extends GetxController {
   final UserController _userController = Get.find<UserController>();
   final SignatureRequestRepository _repo = SignatureRequestRepository();
 
   String get currentUserName => _userController.displayName;
+  String get currentUserEmail => _userController.displayEmail;
 
   // Step 1 — document
   final Rx<SelectedDocument?> selectedDocument = Rx(null);
@@ -42,6 +45,7 @@ class SignatureRequestController extends GetxController {
   final TextEditingController messageController = TextEditingController();
 
   final RxBool isSending = false.obs;
+  final RxBool isScanning = false.obs;
 
   // ─── Step 1 — Document selection ─────────────────────────────────────────
 
@@ -64,27 +68,92 @@ class SignatureRequestController extends GetxController {
 
   // Launch camera scanner
   Future<void> scanDocument() async {
+    if (isScanning.value) return;
+
     try {
+      NetworkManager.to.checkBeforeRequest();
+      isScanning.value = true;
+      debugPrint('SignatureRequestController: Starting document scan...');
+
+      // We don't show loader yet as the scanner has its own UI
       final result = await FlutterDocScanner().getScannedDocumentAsPdf();
-      if (result == null) return;
-      final file = File(result.pdfUri);
+      debugPrint('SignatureRequestController: Scan result received: $result');
+
+      if (result == null) {
+        debugPrint(
+          'SignatureRequestController: Scan cancelled or null result.',
+        );
+        isScanning.value = false;
+        return;
+      }
+
+      // Show loader while we process the file and prepare the next screen
+      AppLoader.show(message: 'Processing your scan...');
+
+      // ─── URI Cleanup ────────────────────────────────────────────────────────
+      // Handle both Object with pdfUri and Map with pdfUri (plugin version variance)
+      String? cleanPath;
+      try {
+        final dynamic res = result;
+        if (res is Map) {
+          cleanPath = res['pdfUri']?.toString();
+        } else {
+          cleanPath = res.pdfUri?.toString();
+        }
+      } catch (e) {
+        debugPrint('SignatureRequestController: Error extracting path: $e');
+      }
+
+      if (cleanPath == null || cleanPath.isEmpty) {
+        throw Exception('Could not extract file path from scan result.');
+      }
+
+      if (cleanPath.startsWith('file://')) {
+        cleanPath = cleanPath.replaceFirst('file://', '');
+      }
+
+      final file = File(cleanPath);
+
+      // Verify file exists and is readable
+      if (!await file.exists()) {
+        throw Exception('Scanned file not found at: $cleanPath');
+      }
+
       final name =
-          'Scan ${DateTime.now().toString().substring(0, 16).replaceAll(':', '')}.pdf';
+          'Scan ${DateTime.now().toString().substring(0, 16).replaceAll(':', '').replaceAll(' ', '_')}.pdf';
       final sizeBytes = await file.length();
+
       selectedDocument.value = SelectedDocument(
         name: name,
         file: file,
         sizeMB: sizeBytes / (1024 * 1024),
       );
+
+      // Pre-fill email subject
+      emailSubject.value = 'Complete with DocuSign: $name';
+      subjectController.text = emailSubject.value;
+
+      AppLoader.hide();
       _goToSelectDocument();
-    } catch (_) {
-      AppDialogs.showSnackError('Could not complete scan.');
+    } on NetworkException catch (e) {
+      AppLoader.hide();
+      AppDialogs.showSnackError(e.message);
+    } catch (e) {
+      AppLoader.hide();
+      debugPrint('SignatureRequestController: Scan Error: $e');
+      AppDialogs.showSnackError(
+        'Could not complete scan: ${e.toString().replaceAll('Exception:', '')}',
+      );
+    } finally {
+      AppLoader.hide();
+      isScanning.value = false;
     }
   }
 
   // Pick PDF from file system
   Future<void> pickFromFiles() async {
     try {
+      NetworkManager.to.checkBeforeRequest();
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
@@ -98,12 +167,15 @@ class SignatureRequestController extends GetxController {
         file: file,
         sizeMB: sizeBytes / (1024 * 1024),
       );
-      
+
       // Initialize email subject with default
-      emailSubject.value = 'Complete with DocuSign: ${selectedDocument.value?.name}';
+      emailSubject.value =
+          'Complete with DocuSign: ${selectedDocument.value?.name}';
       subjectController.text = emailSubject.value;
-      
+
       _goToSelectDocument();
+    } on NetworkException catch (e) {
+      AppDialogs.showSnackError(e.message);
     } catch (_) {
       AppDialogs.showSnackError('Could not pick file.');
     }
@@ -119,6 +191,81 @@ class SignatureRequestController extends GetxController {
 
   // Confirm remove selected document
   void showSelectedDocumentOptions(SelectedDocument doc) {
+    final cs = Get.theme.colorScheme;
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+        decoration: AppStyle.bottomSheetDecoration(Get.context!),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: AppStyle.bottomSheetHandleOf(Get.context!),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(Icons.edit_outlined, color: cs.onSurface),
+              title: Text('Rename', style: TextStyle(color: cs.onSurface)),
+              onTap: () {
+                Get.back();
+                _showRenameDialog(doc);
+              },
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(Icons.delete_outline, color: cs.error),
+              title: Text(
+                'Remove',
+                style: TextStyle(color: cs.error),
+              ),
+              onTap: () {
+                Get.back();
+                _showRemoveConfirmDialog();
+              },
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  void _showRenameDialog(SelectedDocument doc) {
+    final controller = TextEditingController(text: doc.name);
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Rename Document'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            labelText: 'Document Name',
+            border: const OutlineInputBorder(),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(onPressed: Get.back, child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () {
+              final newName = controller.text.trim();
+              if (newName.isNotEmpty) {
+                selectedDocument.value = doc.copyWith(name: newName);
+              }
+              Get.back();
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRemoveConfirmDialog() {
     AppDialogs.showConfirm(
       title: 'Remove document?',
       message: 'This will clear the selected document.',
@@ -127,8 +274,14 @@ class SignatureRequestController extends GetxController {
     );
   }
 
-  // Proceed to recipients list
-  void goToAddRecipients() => Get.toNamed(MainRoutes.recipientsList);
+  // Proceed to recipients list (or add recipient if none)
+  void goToAddRecipients() {
+    if (signers.isEmpty) {
+      goToAddRecipient();
+    } else {
+      Get.toNamed(MainRoutes.recipientsList);
+    }
+  }
 
   // ─── Step 2 — Recipients ──────────────────────────────────────────────────
 
@@ -217,6 +370,25 @@ class SignatureRequestController extends GetxController {
     AppLoader.show(message: 'Uploading document...');
 
     try {
+      NetworkManager.to.checkBeforeRequest();
+
+      final warning =
+          NetworkManager.to.mobileDataWarning(fileSizeMB: doc.sizeMB);
+      if (warning != null) {
+        bool proceed = false;
+        await AppDialogs.showConfirm(
+          title: 'Mobile Data Warning',
+          message: warning,
+          confirmLabel: 'Upload Anyway',
+          onConfirm: () => proceed = true,
+        );
+        if (!proceed) {
+          isSending.value = false;
+          AppLoader.hide();
+          return;
+        }
+      }
+
       final uid = FirebaseUtils.currentUid!;
 
       // Upload file to Supabase via Express
@@ -234,15 +406,20 @@ class SignatureRequestController extends GetxController {
       // Create Firestore document record
       final docRef = FirebaseUtils.documentsRef.doc();
       final now = Timestamp.fromDate(DateTime.now());
+      final signerEmails =
+          signers.map((s) => s.signerEmail.toLowerCase()).toList();
+
       await docRef.set({
         'ownerUid': uid,
         'name': doc.name,
-        'fileUrl': upload.storagePath, // FIXED: Save path, not 1-hour signed URL
+        'fileUrl':
+            upload.storagePath, // FIXED: Save path, not 1-hour signed URL
         'storagePath': upload.storagePath,
         'fileType': 'pdf',
         'fileSizeMB': upload.fileSizeMB,
         'status': 'pending',
         'folderId': null,
+        'authorizedEmails': signerEmails,
         'createdAt': now,
         'updatedAt': now,
       });
@@ -254,10 +431,12 @@ class SignatureRequestController extends GetxController {
         requestId: '',
         documentId: docRef.id,
         documentName: doc.name,
-        documentUrl: upload.storagePath, // FIXED: Save path, not 1-hour signed URL
+        documentUrl: upload.storagePath,
         storagePath: upload.storagePath,
         requestedByUid: uid,
+        requesterName: _userController.displayName,
         signers: signers.toList(),
+        signerEmails: signers.map((s) => s.signerEmail.toLowerCase()).toList(),
         signingOrderEnabled: signingOrderEnabled.value,
         createdAt: DateTime.now(),
       );

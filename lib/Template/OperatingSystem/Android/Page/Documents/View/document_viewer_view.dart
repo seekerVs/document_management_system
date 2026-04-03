@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import '../../../../../Utils/Constant/colors.dart';
 import '../../../../../Utils/Constant/enum.dart';
 import '../Model/document_model.dart';
 import '../Widget/image_viewer.dart';
@@ -84,11 +83,15 @@ class _DocumentViewerViewState extends State<DocumentViewerView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final bgColor = _isPdf ? cs.surface : Colors.black;
+    final fgColor = _isPdf ? cs.onSurface : Colors.white;
+
     return Scaffold(
-      backgroundColor: _isPdf ? AppColors.backgroundLight : Colors.black,
+      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: _isPdf ? AppColors.backgroundLight : Colors.black,
-        foregroundColor: _isPdf ? AppColors.textPrimary : Colors.white,
+        backgroundColor: bgColor,
+        foregroundColor: fgColor,
         scrolledUnderElevation: 0,
         elevation: _isPdf ? 1 : 0,
         title: Text(
@@ -98,13 +101,13 @@ class _DocumentViewerViewState extends State<DocumentViewerView> {
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: _isPdf ? AppColors.textPrimary : Colors.white,
+            color: fgColor,
           ),
         ),
         leading: IconButton(
           icon: Icon(
             Icons.chevron_left,
-            color: _isPdf ? AppColors.textPrimary : Colors.white,
+            color: fgColor,
           ),
           onPressed: () => Get.back(),
         ),

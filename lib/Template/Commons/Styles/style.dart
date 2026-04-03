@@ -4,7 +4,17 @@ import '../../Utils/Constant/colors.dart';
 class AppStyle {
   AppStyle._();
 
-  // White card
+  // Theme-aware card — adapts to light/dark automatically
+  static BoxDecoration cardOf(BuildContext context, {double radius = 12}) {
+    final cs = Theme.of(context).colorScheme;
+    return BoxDecoration(
+      color: cs.surfaceContainer,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(color: cs.outline),
+    );
+  }
+
+  // Static fallback (light-only, for const contexts)
   static BoxDecoration card({double radius = 12}) => BoxDecoration(
     color: AppColors.backgroundWhite,
     borderRadius: BorderRadius.circular(radius),
@@ -33,7 +43,23 @@ class AppStyle {
     fillColor: AppColors.backgroundInput,
   );
 
-  // Bottom sheet handle
+  // Theme-aware bottom sheet handle
+  static BoxDecoration bottomSheetHandleOf(BuildContext context) {
+    return BoxDecoration(
+      color: Theme.of(context).colorScheme.outlineVariant,
+      borderRadius: const BorderRadius.all(Radius.circular(4)),
+    );
+  }
+
+  // Theme-aware bottom sheet decoration
+  static BoxDecoration bottomSheetDecoration(BuildContext context) {
+    return BoxDecoration(
+      color: Theme.of(context).colorScheme.surface,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+    );
+  }
+
+  // Static fallback (light-only, for const contexts)
   static const BoxDecoration bottomSheetHandle = BoxDecoration(
     color: AppColors.borderLight,
     borderRadius: BorderRadius.all(Radius.circular(4)),

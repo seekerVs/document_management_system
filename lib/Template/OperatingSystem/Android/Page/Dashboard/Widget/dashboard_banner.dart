@@ -1,6 +1,5 @@
-import 'package:document_management_system/Template/Utils/Constant/images.dart';
 import 'package:flutter/material.dart';
-import '../../../../../Utils/Constant/colors.dart';
+import '../../../../../Utils/Constant/images.dart';
 
 class DashboardBanner extends StatelessWidget {
   const DashboardBanner({super.key});
@@ -11,7 +10,7 @@ class DashboardBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: Theme.of(context).colorScheme.primary,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
@@ -23,7 +22,7 @@ class DashboardBanner extends StatelessWidget {
                 Text(
                   'New to Scrivener?',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.textOnPrimary,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -31,17 +30,17 @@ class DashboardBanner extends StatelessWidget {
                 Text(
                   'Create, sign, and notarize\ndocuments all in one simple app.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textOnPrimary.withOpacity(0.9),
+                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.9),
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   'Learn more →',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textOnPrimary,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.w700,
                     decoration: TextDecoration.underline,
-                    decorationColor: AppColors.textOnPrimary,
+                    decorationColor: Theme.of(context).colorScheme.onPrimary,
                   ),
                 ),
               ],

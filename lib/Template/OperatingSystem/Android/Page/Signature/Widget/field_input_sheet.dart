@@ -72,10 +72,7 @@ class _FieldInputSheetState extends State<FieldInputSheet> {
       ),
       child: Container(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
+        decoration: AppStyle.bottomSheetDecoration(context),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +81,7 @@ class _FieldInputSheetState extends State<FieldInputSheet> {
               child: Container(
                 width: 40,
                 height: 4,
-                decoration: AppStyle.bottomSheetHandle,
+                decoration: AppStyle.bottomSheetHandleOf(context),
               ),
             ),
             const SizedBox(height: 20),

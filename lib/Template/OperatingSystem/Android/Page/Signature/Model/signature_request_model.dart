@@ -131,9 +131,11 @@ class SignatureRequestModel {
   final String documentUrl;
   final String storagePath;
   final String requestedByUid;
+  final String? requesterName;
   final List<SignerModel> signers;
   final SignatureRequestStatus status;
   final bool signingOrderEnabled;
+  final List<String> signerEmails;
   final DateTime createdAt;
   final DateTime? completedAt;
 
@@ -144,7 +146,9 @@ class SignatureRequestModel {
     required this.documentUrl,
     required this.storagePath,
     required this.requestedByUid,
+    this.requesterName,
     required this.signers,
+    required this.signerEmails,
     this.status = SignatureRequestStatus.pending,
     this.signingOrderEnabled = false,
     required this.createdAt,
@@ -160,9 +164,11 @@ class SignatureRequestModel {
       documentUrl: data['documentUrl'] ?? '',
       storagePath: data['storagePath'] ?? '',
       requestedByUid: data['requestedByUid'] ?? '',
+      requesterName: data['requesterName'],
       signers: (data['signers'] as List<dynamic>? ?? [])
           .map((s) => SignerModel.fromMap(s as Map<String, dynamic>))
           .toList(),
+      signerEmails: List<String>.from(data['signerEmails'] ?? []),
       status: SignatureRequestStatus.values.firstWhere(
         (s) => s.name == (data['status'] ?? 'pending'),
         orElse: () => SignatureRequestStatus.pending,
@@ -188,7 +194,9 @@ class SignatureRequestModel {
       'documentUrl': documentUrl,
       'storagePath': storagePath,
       'requestedByUid': requestedByUid,
+      'requesterName': requesterName,
       'signers': signers.map((s) => s.toMap()).toList(),
+      'signerEmails': signerEmails,
       'status': status.name,
       'signingOrderEnabled': signingOrderEnabled,
       'createdAt': Timestamp.fromDate(createdAt),
@@ -222,7 +230,9 @@ class SignatureRequestModel {
     String? documentName,
     String? documentUrl,
     String? storagePath,
+    String? requesterName,
     List<SignerModel>? signers,
+    List<String>? signerEmails,
     SignatureRequestStatus? status,
     bool? signingOrderEnabled,
     DateTime? completedAt,
@@ -234,7 +244,9 @@ class SignatureRequestModel {
       documentUrl: documentUrl ?? this.documentUrl,
       storagePath: storagePath ?? this.storagePath,
       requestedByUid: requestedByUid,
+      requesterName: requesterName ?? this.requesterName,
       signers: signers ?? this.signers,
+      signerEmails: signerEmails ?? this.signerEmails,
       status: status ?? this.status,
       signingOrderEnabled: signingOrderEnabled ?? this.signingOrderEnabled,
       createdAt: createdAt,

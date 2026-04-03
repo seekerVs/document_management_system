@@ -26,7 +26,15 @@ class SignInView extends GetView<SignInController> {
                 const SizedBox(height: 40),
 
                 // Logo
-                SvgPicture.asset(AppImages.logo, width: 80, height: 80),
+                SvgPicture.asset(
+                  AppImages.logo,
+                  width: 80,
+                  height: 80,
+                  colorFilter: ColorFilter.mode(
+                    Theme.of(context).colorScheme.primary,
+                    BlendMode.srcIn,
+                  ),
+                ),
 
                 const SizedBox(height: 20),
 

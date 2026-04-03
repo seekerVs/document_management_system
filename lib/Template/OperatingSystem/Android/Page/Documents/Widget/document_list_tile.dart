@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../../../../Commons/Styles/style.dart';
-import '../../../../../Utils/Constant/colors.dart';
-import '../../../../../Utils/Constant/images.dart';
 import '../Controller/documents_controller.dart';
 import '../Model/document_model.dart';
 import '../../../../../../Template/Utils/Formatters/formatter.dart';
@@ -23,6 +20,7 @@ class DocumentListTile extends GetView<DocumentsController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      final cs = Theme.of(context).colorScheme;
       final isMultiSelect = controller.isMultiSelect.value;
       final isSelected = controller.isSelected(doc.documentId);
 
@@ -33,18 +31,33 @@ class DocumentListTile extends GetView<DocumentsController> {
         onLongPress: () => controller.selectItem(doc.documentId),
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: AppStyle.card().copyWith(
+          decoration: AppStyle.cardOf(context).copyWith(
             border: Border.all(
-              color: isSelected ? AppColors.primary : AppColors.borderLight,
+              color: isSelected ? cs.primary : cs.outline,
               width: isSelected ? 2 : 1,
             ),
-            color: isSelected
-                ? AppColors.primarySurface
-                : AppColors.backgroundWhite,
+            color: isSelected ? cs.primaryContainer : cs.surfaceContainer,
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.only(left: 16),
-            leading: SvgPicture.asset(AppImages.iconPdf, width: 40, height: 40),
+            leading: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: cs.error,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Text(
+                  'PDF',
+                  style: TextStyle(
+                    color: cs.surfaceContainer,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ),
             title: Text(
               doc.name,
               style: Theme.of(context).textTheme.titleSmall,
@@ -71,17 +84,15 @@ class DocumentListTile extends GetView<DocumentsController> {
                       isSelected
                           ? Icons.check_circle
                           : Icons.radio_button_unchecked,
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.textHint,
+                      color: isSelected ? cs.primary : cs.onSurfaceVariant,
                       size: 22,
                     ),
                   )
                 : IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.more_vert,
                       size: 18,
-                      color: AppColors.textHint,
+                      color: cs.onSurfaceVariant,
                     ),
                     onPressed: () => controller.selectItem(doc.documentId),
                   ),

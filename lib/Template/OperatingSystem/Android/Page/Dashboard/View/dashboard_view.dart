@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../../../../Commons/Widgets/app_avatar.dart';
-import '../../../../../Utils/Constant/colors.dart';
 import '../../../../../Utils/Constant/images.dart';
 import '../Controller/dashboard_controller.dart';
 import '../Widget/activity_section.dart';
@@ -16,7 +15,7 @@ class DashboardView extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     // FAB height (56) + margin (16) + gap (12)
     const fabHeight = 56.0;
@@ -33,46 +32,49 @@ class DashboardView extends GetView<DashboardController> {
       body: Stack(
         children: [
           /// MAIN CONTENT
-          Obx(() {
-            if (controller.isLoading.value) {
-              return const Center(child: CircularProgressIndicator());
-            }
+          Positioned.fill(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-            return RefreshIndicator(
-              onRefresh: controller.loadDashboard,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.fromLTRB(
-                  20,
-                  16,
-                  20,
-                  fabAreaBottom + 80, // dynamic bottom padding
+              return RefreshIndicator(
+                onRefresh: controller.loadDashboard,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    16,
+                    20,
+                    fabAreaBottom + 80, // dynamic bottom padding
+                  ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 800),
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DashboardBanner(),
+                          SizedBox(height: 24),
+                          AssignedTasksSection(),
+                          SizedBox(height: 24),
+                          RecentDocumentsSection(),
+                          SizedBox(height: 24),
+                          ActivitySection(),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    DashboardBanner(),
-                    SizedBox(height: 24),
-                    AssignedTasksSection(),
-                    SizedBox(height: 24),
-                    RecentDocumentsSection(),
-                    SizedBox(height: 24),
-                    ActivitySection(),
-                  ],
-                ),
-              ),
-            );
-          }),
+              );
+            }),
+          ),
 
           /// SCRIM (overlay background)
           Obx(() {
             final isExpanded = controller.isFabExpanded.value;
 
-            return Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: -bottomPadding,
+            return Positioned.fill(
               child: IgnorePointer(
                 ignoring: !isExpanded,
                 child: AnimatedOpacity(
@@ -82,7 +84,9 @@ class DashboardView extends GetView<DashboardController> {
                     onTap: controller.toggleFab,
                     behavior: HitTestBehavior.opaque,
                     child: ColoredBox(
-                      color: AppColors.primaryDark.withAlpha(54),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.scrim.withOpacity(0.2),
                     ),
                   ),
                 ),
@@ -101,7 +105,7 @@ class DashboardView extends GetView<DashboardController> {
                 ignoring: !isExpanded,
                 child: AnimatedOpacity(
                   opacity: isExpanded ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 200),
+                  duration: const Duration(milliseconds: 300),
                   child: const DashboardFabActions(),
                 ),
               ),
@@ -122,8 +126,8 @@ class DashboardView extends GetView<DashboardController> {
           AppImages.logo,
           width: 36,
           height: 36,
-          colorFilter: const ColorFilter.mode(
-            AppColors.primary,
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).colorScheme.primary,
             BlendMode.srcIn,
           ),
         ),
@@ -136,16 +140,19 @@ class DashboardView extends GetView<DashboardController> {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.help_outline, color: AppColors.textSecondary),
+          icon: Icon(
+            Icons.help_outline,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           onPressed: () {},
         ),
         Obx(
           () => Stack(
             children: [
               IconButton(
-                icon: const Icon(
-                  Icons.task_alt_outlined,
-                  color: AppColors.textSecondary,
+                icon: Icon(
+                  Icons.format_list_bulleted_rounded,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 onPressed: controller.goToTasks,
               ),
@@ -176,8 +183,8 @@ class _NotificationDot extends StatelessWidget {
     return Container(
       width: 8,
       height: 8,
-      decoration: const BoxDecoration(
-        color: AppColors.error,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.error,
         shape: BoxShape.circle,
       ),
     );

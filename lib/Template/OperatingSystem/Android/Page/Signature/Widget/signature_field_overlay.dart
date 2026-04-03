@@ -28,16 +28,18 @@ class SignatureFieldOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final pos = controller.fieldPositions[field.fieldId];
-      if (pos == null) return const SizedBox.shrink();
-
       final isSelected = controller.selectedFieldId.value == field.fieldId;
-      final isRect =
-          field.type == SignatureFieldType.textbox ||
-          field.type == SignatureFieldType.dateSigned;
+      final isRect = field.type == SignatureFieldType.textbox || field.type == SignatureFieldType.dateSigned;
+
+      // Use normalized coordinates from model, or live pixels from controller if dragging
+      final double left = pos != null ? pos.x : field.x * canvasWidth;
+      final double top = pos != null ? pos.y : field.y * canvasHeight;
+      final double renderWidth = field.width * canvasWidth;
+      final double renderHeight = field.height * canvasHeight;
 
       return Positioned(
-        left: pos.x,
-        top: pos.y,
+        left: left,
+        top: top,
         child: Listener(
           onPointerDown: (_) {
             // Claim victory over the scroll view immediately
@@ -55,10 +57,10 @@ class SignatureFieldOverlay extends StatelessWidget {
               );
             },
             onPanEnd: (_) =>
-                controller.commitFieldPosition(field.fieldId, signer),
+                controller.commitFieldPosition(field.fieldId, signer, canvasWidth, canvasHeight),
             child: Container(
-              width: field.width,
-              height: field.height,
+              width: renderWidth,
+              height: renderHeight,
               decoration: BoxDecoration(
                 color: field.isRequired ? color : color.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(4),

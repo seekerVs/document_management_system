@@ -25,24 +25,24 @@ class DashboardRepository extends BaseRepository {
 
   Future<List<SignatureRequestModel>> getAssignedTasks() =>
       handleRequest(() async {
-        final uid = currentUidOrNull;
-        if (uid == null) return <SignatureRequestModel>[];
+        final email = FirebaseUtils.currentEmail;
+        if (email == null) return <SignatureRequestModel>[];
+        final queryEmail = email.trim().toLowerCase();
 
-        final snap = await FirebaseUtils.signatureRequestsRef
-            .where('signers', arrayContains: {'signerUid': uid})
-            .where('status', isEqualTo: 'pending')
-            .orderBy('createdAt', descending: true)
-            .limit(10)
-            .get();
+        final docs = await FirebaseMethod.getDocuments(
+          query: FirebaseUtils.signatureRequestsRef
+              .where('signerEmails', arrayContains: queryEmail)
+              .orderBy('createdAt', descending: true)
+              .limit(10),
+        );
 
-        final all = snap.docs
-            .map((d) => SignatureRequestModel.fromFirestore(d))
-            .toList();
+        final all =
+            docs.map((d) => SignatureRequestModel.fromFirestore(d)).toList();
 
         return all
             .where(
-              (req) => req.signers.any(
-                (s) => s.signerUid == uid && s.status == SignerStatus.pending,
+              (req) => req.status != SignatureRequestStatus.completed && req.signers.any(
+                (s) => s.signerEmail.toLowerCase() == queryEmail && s.status == SignerStatus.pending,
               ),
             )
             .toList();

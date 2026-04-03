@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../Commons/Styles/style.dart';
 import '../../../../../Commons/Widgets/app_button.dart';
-import '../../../../../Utils/Constant/colors.dart';
 
 // Font families for styled signature generation — must be in pubspec.yaml
 const List<String> _signatureFonts = [
@@ -43,7 +42,7 @@ class _SignatureStylePickerState extends State<SignatureStylePicker> {
   int _selectedIndex = 0;
 
   // Render name in given font to PNG bytes
-  Future<Uint8List> _renderSignature(String fontFamily) async {
+  Future<Uint8List> _renderSignature(String fontFamily, Color color) async {
     const width = 320.0;
     const height = 80.0;
 
@@ -56,7 +55,7 @@ class _SignatureStylePickerState extends State<SignatureStylePicker> {
         style: TextStyle(
           fontFamily: fontFamily,
           fontSize: 40,
-          color: AppColors.textPrimary,
+          color: color,
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -73,19 +72,21 @@ class _SignatureStylePickerState extends State<SignatureStylePicker> {
   }
 
   void _confirm() async {
-    final bytes = await _renderSignature(_signatureFonts[_selectedIndex]);
+    final cs = Theme.of(context).colorScheme;
+    final bytes = await _renderSignature(
+      _signatureFonts[_selectedIndex],
+      cs.onSurface,
+    );
     Get.back();
     widget.onConfirm(bytes);
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      decoration: AppStyle.bottomSheetDecoration(context),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,7 +95,7 @@ class _SignatureStylePickerState extends State<SignatureStylePicker> {
             child: Container(
               width: 40,
               height: 4,
-              decoration: AppStyle.bottomSheetHandle,
+              decoration: AppStyle.bottomSheetHandleOf(context),
             ),
           ),
           const SizedBox(height: 20),
@@ -119,14 +120,10 @@ class _SignatureStylePickerState extends State<SignatureStylePicker> {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.primarySurface
-                      : AppColors.backgroundWhite,
+                  color: isSelected ? cs.primaryContainer : cs.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isSelected
-                        ? AppColors.primary
-                        : AppColors.borderLight,
+                    color: isSelected ? cs.primary : cs.outlineVariant,
                     width: isSelected ? 2 : 1,
                   ),
                 ),
@@ -138,16 +135,16 @@ class _SignatureStylePickerState extends State<SignatureStylePicker> {
                         style: TextStyle(
                           fontFamily: _signatureFonts[i],
                           fontSize: 28,
-                          color: AppColors.textPrimary,
+                          color: cs.onSurface,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (isSelected)
-                      const Icon(
+                      Icon(
                         Icons.check_circle,
-                        color: AppColors.primary,
+                        color: cs.primary,
                         size: 20,
                       ),
                   ],

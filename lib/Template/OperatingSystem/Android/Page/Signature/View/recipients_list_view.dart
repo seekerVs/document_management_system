@@ -185,7 +185,9 @@ class _SignerTile extends StatelessWidget {
         contentPadding: const EdgeInsets.only(left: 16),
         leading: AppAvatar(name: signer.signerName),
         title: Text(
-          signer.signerName,
+          signer.signerEmail == controller.currentUserEmail
+              ? '${signer.signerName} (ME)'
+              : signer.signerName,
           style: Theme.of(context).textTheme.titleSmall,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

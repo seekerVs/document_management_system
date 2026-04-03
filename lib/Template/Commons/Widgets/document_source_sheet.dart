@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import '../../../../../Commons/Styles/style.dart';
-import '../../../../../Utils/Constant/colors.dart';
-import '../../../../../Utils/Constant/images.dart';
+import '../Styles/style.dart';
+import '../../Utils/Constant/images.dart';
 
 class DocumentSourceSheet extends StatelessWidget {
   final VoidCallback onScan;
@@ -41,10 +40,7 @@ class DocumentSourceSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      decoration: AppStyle.bottomSheetDecoration(context),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,7 +49,7 @@ class DocumentSourceSheet extends StatelessWidget {
             child: Container(
               width: 40,
               height: 4,
-              decoration: AppStyle.bottomSheetHandle,
+              decoration: AppStyle.bottomSheetHandleOf(context),
             ),
           ),
           const SizedBox(height: 20),
@@ -123,7 +119,9 @@ class _SourceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = disabled ? AppColors.textDisabled : AppColors.textPrimary;
+    final cs = Theme.of(context).colorScheme;
+    final color = disabled ? cs.onSurfaceVariant.withOpacity(0.5) : cs.onSurface;
+
     return ListTile(
       contentPadding: EdgeInsets.zero,
       enabled: !disabled,
@@ -133,7 +131,12 @@ class _SourceTile extends StatelessWidget {
         child: Opacity(
           opacity: disabled ? 0.4 : 1.0,
           child: svgAsset != null
-              ? SvgPicture.asset(svgAsset!, width: 28, height: 28)
+              ? SvgPicture.asset(
+                  svgAsset!,
+                  width: 28,
+                  height: 28,
+                  colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+                )
               : Icon(icon, color: color, size: 28),
         ),
       ),
@@ -144,9 +147,9 @@ class _SourceTile extends StatelessWidget {
       subtitle: subtitle != null
           ? Text(
               subtitle!,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.textHint),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: cs.onSurfaceVariant.withOpacity(0.7),
+                  ),
             )
           : null,
       onTap: disabled ? null : onTap,

@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../Commons/Styles/style.dart';
 import '../../../../../Commons/Widgets/document_details_sheet.dart';
-import '../../../../../Utils/Constant/colors.dart';
-import '../../../../../Utils/Exceptions/exceptions.dart';
 import '../../../../../Utils/Firebase/firebase_utils.dart';
 import '../../../../../Utils/Popups/dialog.dart';
 import '../../../../../Utils/Routes/main_routes.dart';
@@ -12,10 +10,12 @@ import '../../Activity/Model/activity_model.dart';
 import '../../Documents/Model/document_model.dart';
 import '../../Profile/Controller/user_controller.dart';
 import '../../Signature/Model/signature_request_model.dart';
+import '../../Profile/Repository/user_repository.dart';
 import '../Repository/dashboard_repository.dart';
 
 class DashboardController extends GetxController {
   final DashboardRepository _repo = DashboardRepository();
+  final UserRepository _userRepo = UserRepository();
   final UserController _userController = Get.find<UserController>();
 
   final RxBool isLoading = false.obs;
@@ -67,20 +67,67 @@ class DashboardController extends GetxController {
     if (FirebaseUtils.currentUid == null) return;
     isLoading.value = true;
     try {
-      final results = await Future.wait([
-        _repo.getRecentDocuments(),
-        _repo.getAssignedTasks(),
-        _repo.getRecentActivity(),
-      ]);
+      // Fetch each section safely so one failing index doesn't crash the whole dashboard
+      final docsFuture = _repo.getRecentDocuments().catchError((e) {
+        debugPrint('Docs Error: $e');
+        return <DocumentModel>[];
+      });
+      final tasksFuture = _repo.getAssignedTasks().catchError((e) {
+        debugPrint('Tasks Error: $e');
+        return <SignatureRequestModel>[];
+      });
+      final actFuture = _repo.getRecentActivity().catchError((e) {
+        debugPrint('Activity Error: $e');
+        return <ActivityModel>[];
+      });
+
+      final results = await Future.wait([docsFuture, tasksFuture, actFuture]);
+      
       recentDocuments.value = results[0] as List<DocumentModel>;
       assignedTasks.value = results[1] as List<SignatureRequestModel>;
       recentActivity.value = results[2] as List<ActivityModel>;
-    } on AppException catch (e) {
-      AppDialogs.showSnackError(e.message);
-    } catch (_) {
+
+      _resolveNames(); // Background fetching for real names
+    } catch (e) {
+      debugPrint('Dashboard Load Error: $e');
       AppDialogs.showSnackError('Failed to load dashboard.');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  // Resolve Names in background
+  Future<void> _resolveNames() async {
+    // 1. Resolve Task Requester names
+    for (var task in assignedTasks) {
+      if (task.requesterName == null || task.requesterName == 'Unknown') {
+        final name = await _userRepo.getNameById(task.requestedByUid);
+        if (name != null) {
+          final index = assignedTasks.indexWhere((t) => t.requestId == task.requestId);
+          if (index != -1) assignedTasks[index] = assignedTasks[index].copyWith(requesterName: name);
+        }
+      }
+    }
+
+    // 2. Resolve Activity Actor names
+    for (var activity in recentActivity) {
+      if (activity.actorName == '' || activity.actorName == 'Unknown') {
+        final name = await _userRepo.getNameById(activity.actorUid);
+        if (name != null) {
+          final index = recentActivity.indexWhere((a) => a.activityId == activity.activityId);
+          if (index != -1) {
+             recentActivity[index] = ActivityModel(
+               activityId: activity.activityId,
+               documentId: activity.documentId,
+               documentName: activity.documentName,
+               actorUid: activity.actorUid,
+               actorName: name,
+               action: activity.action,
+               timestamp: activity.timestamp,
+             );
+          }
+        }
+      }
     }
   }
 
@@ -90,6 +137,7 @@ class DashboardController extends GetxController {
     if (email == null) return;
     _taskCountSub?.cancel();
     _taskCountSub = FirebaseUtils.signatureRequestsRef
+        .where('signerEmails', arrayContains: email.toLowerCase())
         .where('status', whereIn: ['pending', 'inProgress'])
         .snapshots()
         .listen((snap) {
@@ -156,12 +204,10 @@ class _DocumentOptionsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      decoration: AppStyle.bottomSheetDecoration(context),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -169,14 +215,15 @@ class _DocumentOptionsSheet extends StatelessWidget {
             child: Container(
               width: 40,
               height: 4,
-              decoration: AppStyle.bottomSheetHandle,
+              decoration: AppStyle.bottomSheetHandleOf(context),
             ),
           ),
           const SizedBox(height: 8),
           ListTile(
-            leading: const Icon(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(
               Icons.open_in_new_outlined,
-              color: AppColors.textPrimary,
+              color: cs.onSurface,
             ),
             title: Text(
               'Open in Documents',
@@ -185,9 +232,10 @@ class _DocumentOptionsSheet extends StatelessWidget {
             onTap: onOpen,
           ),
           ListTile(
-            leading: const Icon(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(
               Icons.info_outline,
-              color: AppColors.textPrimary,
+              color: cs.onSurface,
             ),
             title: Text(
               'Details',

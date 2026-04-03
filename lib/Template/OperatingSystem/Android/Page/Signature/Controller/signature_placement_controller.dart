@@ -19,27 +19,13 @@ const List<Color> _signerColors = [
 class SignaturePlacementController extends GetxController {
   final SignatureRequestController _requestController =
       Get.find<SignatureRequestController>();
+  String get currentUserEmail => _requestController.currentUserEmail;
 
   final RxInt activeSignerIndex = 0.obs;
   // Live drag positions tracked separately from model for performance
   final RxMap<String, ({double x, double y})> fieldPositions =
       <String, ({double x, double y})>{}.obs;
   final RxnString selectedFieldId = RxnString();
-
-  @override
-  void onInit() {
-    super.onInit();
-    _syncFieldPositions();
-    
-    // Listen for changes in signers to keep fieldPositions in sync
-    ever(_requestController.signers, (_) => _syncFieldPositions());
-  }
-
-  void _syncFieldPositions() {
-    for (final field in allFields.map((e) => e.field)) {
-      fieldPositions[field.fieldId] = (x: field.x, y: field.y);
-    }
-  }
 
   List<SignerModel> get activeSigners => _requestController.signers;
 
@@ -79,22 +65,25 @@ class SignaturePlacementController extends GetxController {
   ) {
     final signer = activeSigner;
     if (signer == null) return;
-    
+
     // Default dimensions: Textbox and Date are rectangles, others are small squares
-    final isRect = type == SignatureFieldType.textbox || type == SignatureFieldType.dateSigned;
+    final isRect =
+        type == SignatureFieldType.textbox ||
+        type == SignatureFieldType.dateSigned;
     final fieldW = isRect ? 50.0 : 32.0;
     final fieldH = isRect ? 22.0 : 32.0;
-    
+
     final field = SignatureFieldModel(
       fieldId: const Uuid().v4(),
       type: type,
       page: pageIndex,
-      x: (pageWidth / 2) - (fieldW / 2),
-      y: (pageHeight / 2) - (fieldH / 2),
-      width: fieldW,
-      height: fieldH,
+      x: ((pageWidth / 2) - (fieldW / 2)) / pageWidth,
+      y: ((pageHeight / 2) - (fieldH / 2)) / pageHeight,
+      width: fieldW / pageWidth,
+      height: fieldH / pageHeight,
     );
-    fieldPositions[field.fieldId] = (x: field.x, y: field.y);
+    // Note: No need to set fieldPositions here; the UI automatically calculates
+    // the initial position from the model's normalized coordinates.
     _updateSignerFields(signer, [...signer.fields, field]);
   }
 
@@ -106,27 +95,51 @@ class SignaturePlacementController extends GetxController {
     double pageWidth,
     double pageHeight,
   ) {
-    final current = fieldPositions[fieldId];
-    if (current == null) return;
-    
-    // Find field to get its specific dimensions
-    final field = allFields.firstWhereOrNull((e) => e.field.fieldId == fieldId)?.field;
+    final field = allFields
+        .firstWhereOrNull((e) => e.field.fieldId == fieldId)
+        ?.field;
     if (field == null) return;
 
-    final newX = (current.x + dx).clamp(0.0, pageWidth - field.width);
-    final newY = (current.y + dy).clamp(0.0, pageHeight - field.height);
+    final current = fieldPositions[fieldId];
+    // Fallback: If no live position exists, start from model position
+    final startX = current?.x ?? field.x * pageWidth;
+    final startY = current?.y ?? field.y * pageHeight;
+
+    final newX = (startX + dx).clamp(
+      0.0,
+      pageWidth - (field.width * pageWidth),
+    );
+    final newY = (startY + dy).clamp(
+      0.0,
+      pageHeight - (field.height * pageHeight),
+    );
     fieldPositions[fieldId] = (x: newX, y: newY);
   }
 
   // Commit position to model after drag ends
-  void commitFieldPosition(String fieldId, SignerModel signer) {
+  void commitFieldPosition(
+    String fieldId,
+    SignerModel signer,
+    double pageWidth,
+    double pageHeight,
+  ) {
     final pos = fieldPositions[fieldId];
     if (pos == null) return;
+
+    // Find correctly typed dimensions
+    final field = signer.fields.firstWhereOrNull((f) => f.fieldId == fieldId);
+    if (field == null) return;
+
     final updated = signer.fields.map((f) {
       if (f.fieldId != fieldId) return f;
-      return f.copyWith(x: pos.x, y: pos.y);
+      return f.copyWith(x: pos.x / pageWidth, y: pos.y / pageHeight);
     }).toList();
+
     _updateSignerFields(signer, updated);
+
+    // CRITICAL: Remove the temporary pixel position after committing to the model.
+    // This allows the UI to return to using the model's normalized (and now updated) coordinates.
+    fieldPositions.remove(fieldId);
   }
 
   // Selection methods
@@ -140,7 +153,10 @@ class SignaturePlacementController extends GetxController {
     for (final entry in allFields) {
       if (entry.field.fieldId == id) {
         final updated = entry.signer.fields
-            .map((f) => f.fieldId == id ? f.copyWith(isRequired: !f.isRequired) : f)
+            .map(
+              (f) =>
+                  f.fieldId == id ? f.copyWith(isRequired: !f.isRequired) : f,
+            )
             .toList();
         _updateSignerFields(entry.signer, updated);
         return;
@@ -154,17 +170,10 @@ class SignaturePlacementController extends GetxController {
     if (id == null) return;
     for (final entry in allFields) {
       if (entry.field.fieldId == id) {
-        // Adjust dimensions based on new type
-        final isRect = newType == SignatureFieldType.textbox || newType == SignatureFieldType.dateSigned;
-        final newW = isRect ? 50.0 : 32.0;
-        final newH = isRect ? 22.0 : 32.0;
+        // Adjust dimensions based on new type — note: normalized width handles this later
 
         final updated = entry.signer.fields
-            .map((f) => f.fieldId == id ? f.copyWith(
-              type: newType,
-              width: newW,
-              height: newH,
-            ) : f)
+            .map((f) => f.fieldId == id ? f.copyWith(type: newType) : f)
             .toList();
         _updateSignerFields(entry.signer, updated);
         return;
@@ -175,7 +184,7 @@ class SignaturePlacementController extends GetxController {
   // Reassign selected field to another signer
   void reassignField(String fieldId, int newSignerIndex) {
     if (newSignerIndex < 0 || newSignerIndex >= activeSigners.length) return;
-    
+
     final targetSigner = activeSigners[newSignerIndex];
     SignatureFieldModel? targetField;
     SignerModel? originalSigner;
@@ -193,13 +202,15 @@ class SignaturePlacementController extends GetxController {
     if (originalSigner.signerEmail == targetSigner.signerEmail) return;
 
     // 2. Remove from original signer
-    final removedList = originalSigner.fields.where((f) => f.fieldId != fieldId).toList();
+    final removedList = originalSigner.fields
+        .where((f) => f.fieldId != fieldId)
+        .toList();
     _updateSignerFields(originalSigner, removedList);
 
     // 3. Add to new signer
     final addedList = [...targetSigner.fields, targetField];
     _updateSignerFields(targetSigner, addedList);
-    
+
     // Refresh UI
     update();
   }
@@ -211,7 +222,9 @@ class SignaturePlacementController extends GetxController {
     for (final entry in allFields) {
       if (entry.field.fieldId == id) {
         fieldPositions.remove(id);
-        final updated = entry.signer.fields.where((f) => f.fieldId != id).toList();
+        final updated = entry.signer.fields
+            .where((f) => f.fieldId != id)
+            .toList();
         _updateSignerFields(entry.signer, updated);
         deselectField();
         return;

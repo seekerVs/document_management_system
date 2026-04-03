@@ -9,10 +9,12 @@ import '../../Signature/Controller/in_app_signing_controller.dart';
 import '../../Signature/Model/signature_request_model.dart';
 import '../../Signature/Repository/in_app_signing_repository.dart';
 import '../../Signature/Repository/signature_request_repository.dart';
+import '../../Profile/Repository/user_repository.dart';
 
 class TasksController extends GetxController {
   final SignatureRequestRepository _repo = SignatureRequestRepository();
   final InAppSigningRepository _signingRepo = InAppSigningRepository();
+  final UserRepository _userRepo = UserRepository();
 
   final RxList<SignatureRequestModel> tasks = <SignatureRequestModel>[].obs;
   final RxBool isLoading = false.obs;
@@ -30,10 +32,12 @@ class TasksController extends GetxController {
     try {
       final result = await _repo.getAssignedRequests();
       tasks.value = result;
+      _resolveRequesterNames(); // Kick off background resolution for Unknowns
     } on AppException catch (e) {
       AppDialogs.showSnackError(e.message);
-    } catch (_) {
-      AppDialogs.showSnackError('Failed to load tasks.');
+    } catch (e) {
+      debugPrint('Load Tasks Error: $e');
+      AppDialogs.showSnackError('Failed to load tasks. Please check your connection.');
     } finally {
       isLoading.value = false;
     }
@@ -53,6 +57,24 @@ class TasksController extends GetxController {
     final controller = Get.find<InAppSigningController>();
     controller.init(request, signer);
     Get.toNamed(MainRoutes.inAppSigning);
+  }
+ 
+  // Resolve requester names in background for older docs missing the field
+  Future<void> _resolveRequesterNames() async {
+    final unknownTasks = tasks
+        .where((t) => t.requesterName == null || t.requesterName == 'Unknown')
+        .toList();
+    if (unknownTasks.isEmpty) return;
+
+    for (var task in unknownTasks) {
+      final name = await _userRepo.getNameById(task.requestedByUid);
+      if (name != null) {
+        final index = tasks.indexWhere((t) => t.requestId == task.requestId);
+        if (index != -1) {
+          tasks[index] = tasks[index].copyWith(requesterName: name);
+        }
+      }
+    }
   }
 
   // Show task ⋮ options

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import '../../../../../Utils/Constant/colors.dart';
 import '../../../../../Utils/Constant/images.dart';
 import '../Controller/documents_controller.dart';
 
@@ -10,18 +9,25 @@ class StorageBanner extends GetView<DocumentsController> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Obx(
       () => Container(
         margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.storageBannerBg,
+          color: cs.secondaryContainer,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           children: [
             // Cloud image asset
-            SvgPicture.asset(AppImages.cloudStorage),
+            SvgPicture.asset(
+              AppImages.cloudStorage,
+              colorFilter: ColorFilter.mode(
+                cs.onSecondaryContainer,
+                BlendMode.srcIn,
+              ),
+            ),
             const SizedBox(width: 14),
             // Info column
             Expanded(
@@ -33,6 +39,7 @@ class StorageBanner extends GetView<DocumentsController> {
                     'Cloud Storage',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
+                      color: cs.onSecondaryContainer,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -41,9 +48,9 @@ class StorageBanner extends GetView<DocumentsController> {
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: controller.storagePercent.clamp(0.0, 1.0),
-                      backgroundColor: Colors.white.withOpacity(0.6),
-                      color: AppColors.primary,
-                      minHeight: 6,
+                      backgroundColor: cs.onSecondaryContainer.withOpacity(0.12),
+                      color: cs.primary,
+                      minHeight: 8,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -53,11 +60,15 @@ class StorageBanner extends GetView<DocumentsController> {
                     children: [
                       Text(
                         _freeLabel,
-                        style: Theme.of(context).textTheme.labelSmall,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: cs.onSecondaryContainer.withOpacity(0.8),
+                        ),
                       ),
                       Text(
                         '${controller.totalItems} items',
-                        style: Theme.of(context).textTheme.labelSmall,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: cs.onSecondaryContainer.withOpacity(0.8),
+                        ),
                       ),
                     ],
                   ),

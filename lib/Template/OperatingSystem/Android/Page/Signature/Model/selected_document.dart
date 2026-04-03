@@ -13,4 +13,16 @@ class SelectedDocument {
   });
 
   String get sizeLabel => AppFormatter.fileSizeFromMB(sizeMB);
+
+  SelectedDocument copyWith({
+    String? name,
+    File? file,
+    double? sizeMB,
+  }) {
+    return SelectedDocument(
+      name: name ?? this.name,
+      file: file ?? this.file,
+      sizeMB: sizeMB ?? this.sizeMB,
+    );
+  }
 }

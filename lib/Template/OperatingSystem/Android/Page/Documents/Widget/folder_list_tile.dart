@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../../../../../Commons/Styles/style.dart';
-import '../../../../../Utils/Constant/colors.dart';
-import '../../../../../Utils/Constant/images.dart';
 import '../Controller/documents_controller.dart';
 import '../Model/folder_model.dart';
 
@@ -14,6 +11,7 @@ class FolderListTile extends GetView<DocumentsController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      final cs = Theme.of(context).colorScheme;
       final isMultiSelect = controller.isMultiSelect.value;
       final isSelected = controller.isSelected(folder.folderId);
 
@@ -24,21 +22,19 @@ class FolderListTile extends GetView<DocumentsController> {
         onLongPress: () => controller.selectItem(folder.folderId),
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: AppStyle.card().copyWith(
+          decoration: AppStyle.cardOf(context).copyWith(
             border: Border.all(
-              color: isSelected ? AppColors.primary : AppColors.borderLight,
+              color: isSelected ? cs.primary : cs.outline,
               width: isSelected ? 2 : 1,
             ),
-            color: isSelected
-                ? AppColors.primarySurface
-                : AppColors.backgroundWhite,
+            color: isSelected ? cs.primaryContainer : cs.surfaceContainer,
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.only(left: 16),
-            leading: SvgPicture.asset(
-              AppImages.iconFolder,
-              width: 36,
-              height: 36,
+            leading: Icon(
+              Icons.folder_rounded,
+              size: 40,
+              color: cs.primary,
             ),
             title: Text(
               folder.name,
@@ -55,17 +51,15 @@ class FolderListTile extends GetView<DocumentsController> {
                       isSelected
                           ? Icons.check_circle
                           : Icons.radio_button_unchecked,
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.textHint,
+                      color: isSelected ? cs.primary : cs.onSurfaceVariant,
                       size: 22,
                     ),
                   )
                 : IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.more_vert,
                       size: 18,
-                      color: AppColors.textHint,
+                      color: cs.onSurfaceVariant,
                     ),
                     onPressed: () => controller.selectItem(folder.folderId),
                   ),

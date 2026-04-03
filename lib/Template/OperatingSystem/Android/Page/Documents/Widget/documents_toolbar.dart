@@ -4,15 +4,15 @@ import '../../../../../Utils/Themes/component_themes.dart';
 import '../Controller/documents_controller.dart';
 import '../Controller/upload_controller.dart';
 import 'sort_menu.dart';
-import '../../../../../../Template/Utils/Constant/colors.dart';
 
 class DocumentsToolbar extends GetView<DocumentsController> {
   const DocumentsToolbar({super.key});
 
-  UploadController get _upload => Get.find<UploadController>();
+  UploadController get _uploadController => Get.find<UploadController>();
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: Row(
@@ -22,7 +22,7 @@ class DocumentsToolbar extends GetView<DocumentsController> {
             menuChildren: [
               MenuItemButton(
                 leadingIcon: const Icon(Icons.upload_file_outlined),
-                onPressed: _upload.pickAndUpload,
+                onPressed: _uploadController.showUploadSourceSheet,
                 child: const Text('Upload file'),
               ),
               MenuItemButton(
@@ -53,7 +53,7 @@ class DocumentsToolbar extends GetView<DocumentsController> {
                 controller.isGridView.value
                     ? Icons.grid_view_rounded
                     : Icons.format_list_bulleted,
-                color: AppColors.textSecondary,
+                color: cs.onSurfaceVariant,
               ),
               onPressed: controller.toggleViewMode,
             ),
