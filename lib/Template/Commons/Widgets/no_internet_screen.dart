@@ -20,7 +20,7 @@ class NoInternetScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: cs.errorContainer.withOpacity(0.3),
+                  color: cs.errorContainer.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.wifi_off_rounded, size: 80, color: cs.error),

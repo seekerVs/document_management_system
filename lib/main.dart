@@ -17,7 +17,7 @@ import 'Template/Utils/Services/network_manager.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print('Handling a background message: ${message.messageId}');
+  debugPrint('Handling a background message: ${message.messageId}');
 }
 
 void main() async {
@@ -61,7 +61,7 @@ class App extends StatelessWidget {
       builder: (context, child) {
         return Stack(
           children: [
-            if (child != null) child,
+            ?child,
             Obx(() {
               final hasInternet = NetworkManager.to.hasInternetAccess.value;
               if (!hasInternet) {

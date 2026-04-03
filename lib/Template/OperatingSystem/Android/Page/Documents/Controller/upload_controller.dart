@@ -4,7 +4,7 @@ import 'package:flutter_doc_scanner/flutter_doc_scanner.dart';
 import 'package:get/get.dart';
 import '../../../../../Commons/Widgets/document_source_sheet.dart';
 import 'package:uuid/uuid.dart';
-import '../../../../../../Template/Utils/Constant/enum.dart';
+
 import '../../../../../../Template/Utils/Exceptions/exceptions.dart';
 import '../../../../../../Template/Utils/Helpers/helpers.dart';
 import '../../../../../../Template/Utils/Popups/dialog.dart';
@@ -15,13 +15,13 @@ import '../../Profile/Controller/user_controller.dart';
 import '../Model/document_model.dart';
 import '../Repository/document_repository.dart';
 import '../Repository/folder_repository.dart';
+import '../../Dashboard/Controller/dashboard_controller.dart';
 import 'documents_controller.dart';
 
 class UploadController extends GetxController {
   final DocumentRepository _docRepo = DocumentRepository();
   final FolderRepository _folderRepo = FolderRepository();
   final UserController _userController = Get.find<UserController>();
-  final DocumentsController _docsController = Get.find<DocumentsController>();
 
   Future<void> pickAndUpload() async => _pickAndUploadToFolder(null);
 
@@ -84,8 +84,9 @@ class UploadController extends GetxController {
         return;
       }
 
-      final warning =
-          NetworkManager.to.mobileDataWarning(fileSizeMB: fileSizeMB);
+      final warning = NetworkManager.to.mobileDataWarning(
+        fileSizeMB: fileSizeMB,
+      );
       if (warning != null) {
         bool proceed = false;
         await AppDialogs.showConfirm(
@@ -122,7 +123,6 @@ class UploadController extends GetxController {
         folderId: folderId,
         name: name,
         fileUrl: uploadResult.storagePath,
-        fileType: DocumentFileType.pdf,
         fileSizeMB: uploadResult.fileSizeMB,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
@@ -137,7 +137,12 @@ class UploadController extends GetxController {
       await _userController.incrementStorage(uploadResult.fileSizeMB);
 
       AppUploadLoader.hide();
-      await _docsController.loadAll();
+      if (Get.isRegistered<DocumentsController>()) {
+        await Get.find<DocumentsController>().loadAll();
+      }
+      if (Get.isRegistered<DashboardController>()) {
+        await Get.find<DashboardController>().loadDashboard();
+      }
       AppDialogs.showSnackSuccess('$name uploaded successfully.');
     } catch (e) {
       AppUploadLoader.hide();
@@ -233,10 +238,14 @@ class UploadController extends GetxController {
 
       await _userController.incrementStorage(uploadResult.fileSizeMB);
 
-      // Hide loader BEFORE refreshing list — avoids dialog state conflict during UI rebuild
       AppUploadLoader.hide();
 
-      await _docsController.loadAll();
+      if (Get.isRegistered<DocumentsController>()) {
+        await Get.find<DocumentsController>().loadAll();
+      }
+      if (Get.isRegistered<DashboardController>()) {
+        await Get.find<DashboardController>().loadDashboard();
+      }
       AppDialogs.showSnackSuccess('${picked.name} uploaded successfully.');
     } on NetworkException catch (e) {
       AppDialogs.showSnackError(e.message);

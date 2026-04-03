@@ -102,6 +102,7 @@ flutter:
       fonts:
         - asset: assets/fonts/Satisfy-Regular.ttf
 
+# flutter pub run flutter_native_splash:create
 flutter_native_splash:
   color: "#3D4750"
   image: assets/images/logo_splash.png
@@ -111,6 +112,7 @@ flutter_native_splash:
     image: assets/images/logo_splash.png
     fullscreen: true
 
+# dart run flutter_launcher_icons
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true

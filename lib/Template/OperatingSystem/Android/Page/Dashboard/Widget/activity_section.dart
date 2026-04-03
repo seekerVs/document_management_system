@@ -36,7 +36,6 @@ class ActivitySection extends StatelessWidget {
                 title: activity.documentName ?? 'Untitled Document',
                 subtitle1: 'From: ${activity.actorName}',
                 subtitle2: activity.action.name.capitalizeFirst!,
-                trailing1: null,
                 trailing2: AppFormatter.dateShort(activity.timestamp),
                 icon: Icons.draw_outlined,
               );

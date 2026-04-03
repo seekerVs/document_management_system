@@ -37,8 +37,8 @@ class UserRepository extends BaseRepository {
         await FirebaseMethod.updateDocument(
           ref: FirebaseUtils.userDoc(uid),
           data: {
-            if (name != null) 'name': name,
-            if (photoUrl != null) 'photoUrl': photoUrl,
+            'name': ?name,
+            'photoUrl': ?photoUrl,
             'updatedAt': Timestamp.now(),
           },
         );

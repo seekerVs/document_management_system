@@ -213,7 +213,7 @@ class _FolderContentsViewState extends State<FolderContentsView> {
               style: Theme.of(context).textTheme.bodyLarge,
               decoration: InputDecoration(
                 hintText: 'Search in folder',
-                hintStyle: TextStyle(color: cs.onSurfaceVariant.withOpacity(0.7)),
+                hintStyle: TextStyle(color: cs.onSurfaceVariant.withValues(alpha: 0.7)),
                 prefixIcon: Icon(
                   Icons.search,
                   color: cs.onSurfaceVariant,

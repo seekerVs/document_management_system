@@ -219,10 +219,7 @@ class SignatureRequestController extends GetxController {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(Icons.delete_outline, color: cs.error),
-              title: Text(
-                'Remove',
-                style: TextStyle(color: cs.error),
-              ),
+              title: Text('Remove', style: TextStyle(color: cs.error)),
               onTap: () {
                 Get.back();
                 _showRemoveConfirmDialog();
@@ -244,7 +241,7 @@ class SignatureRequestController extends GetxController {
           controller: controller,
           decoration: const InputDecoration(
             labelText: 'Document Name',
-            border: const OutlineInputBorder(),
+            border: OutlineInputBorder(),
           ),
           autofocus: true,
         ),
@@ -372,8 +369,9 @@ class SignatureRequestController extends GetxController {
     try {
       NetworkManager.to.checkBeforeRequest();
 
-      final warning =
-          NetworkManager.to.mobileDataWarning(fileSizeMB: doc.sizeMB);
+      final warning = NetworkManager.to.mobileDataWarning(
+        fileSizeMB: doc.sizeMB,
+      );
       if (warning != null) {
         bool proceed = false;
         await AppDialogs.showConfirm(
@@ -399,15 +397,16 @@ class SignatureRequestController extends GetxController {
       );
 
       // Fetch signed URL so signers can view the PDF
-      final signedUrl = await SupabaseService.getSignedUrl(upload.storagePath);
+
 
       AppLoader.updateMessage('Creating document...');
 
       // Create Firestore document record
       final docRef = FirebaseUtils.documentsRef.doc();
       final now = Timestamp.fromDate(DateTime.now());
-      final signerEmails =
-          signers.map((s) => s.signerEmail.toLowerCase()).toList();
+      final signerEmails = signers
+          .map((s) => s.signerEmail.toLowerCase())
+          .toList();
 
       await docRef.set({
         'ownerUid': uid,

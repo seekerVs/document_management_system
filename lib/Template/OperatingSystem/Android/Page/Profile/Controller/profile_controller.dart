@@ -51,10 +51,7 @@ class ProfileController extends GetxController {
   // Show edit name dialog
   void showEditName(BuildContext context) {
     nameController.text = displayName;
-    Get.dialog(
-      _EditNameDialog(controller: this),
-      barrierDismissible: true,
-    );
+    Get.dialog(_EditNameDialog(controller: this));
   }
 
   // Show change password dialog
@@ -62,10 +59,7 @@ class ProfileController extends GetxController {
     currentPasswordController.clear();
     newPasswordController.clear();
     confirmPasswordController.clear();
-    Get.dialog(
-      _ChangePasswordDialog(controller: this),
-      barrierDismissible: true,
-    );
+    Get.dialog(_ChangePasswordDialog(controller: this));
   }
 
   // Profile Photo logic
@@ -272,7 +266,7 @@ class _EditNameDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Edit Name'),
-      contentPadding: const EdgeInsets.only(top: 20, left: 24, right: 24, bottom: 0),
+      contentPadding: const EdgeInsets.only(top: 20, left: 24, right: 24),
       actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       content: Form(
         key: controller.nameFormKey,
@@ -290,10 +284,7 @@ class _EditNameDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Get.back(),
-          child: const Text('Cancel'),
-        ),
+        TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
         Obx(
           () => FilledButton(
             onPressed: controller.isSavingName.value
@@ -325,7 +316,7 @@ class _ChangePasswordDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Change Password'),
-      contentPadding: const EdgeInsets.only(top: 20, left: 24, right: 24, bottom: 0),
+      contentPadding: const EdgeInsets.only(top: 20, left: 24, right: 24),
       actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       content: SingleChildScrollView(
         child: Form(
@@ -410,10 +401,7 @@ class _ChangePasswordDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Get.back(),
-          child: const Text('Cancel'),
-        ),
+        TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
         Obx(
           () => FilledButton(
             onPressed: controller.isChangingPassword.value

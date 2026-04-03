@@ -76,42 +76,42 @@ class AppTextTheme {
     displayLarge: TextStyle(
       fontSize: 28,
       fontWeight: FontWeight.bold,
-      color: AppColors.backgroundWhite,
+      color: AppColors.white,
     ),
     headlineLarge: TextStyle(
       fontSize: 24,
       fontWeight: FontWeight.w600,
-      color: AppColors.backgroundWhite,
+      color: AppColors.white,
     ),
     headlineMedium: TextStyle(
       fontSize: 22,
       fontWeight: FontWeight.w600,
-      color: AppColors.backgroundWhite,
+      color: AppColors.white,
     ),
     headlineSmall: TextStyle(
       fontSize: 20,
       fontWeight: FontWeight.w600,
-      color: AppColors.backgroundWhite,
+      color: AppColors.white,
     ),
     titleLarge: TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w600,
-      color: AppColors.backgroundWhite,
+      color: AppColors.white,
     ),
     titleMedium: TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w500,
-      color: AppColors.backgroundWhite,
+      color: AppColors.white,
     ),
     titleSmall: TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w500,
-      color: AppColors.backgroundWhite,
+      color: AppColors.white,
     ),
     bodyLarge: TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w400,
-      color: AppColors.backgroundWhite,
+      color: AppColors.white,
     ),
     bodyMedium: TextStyle(
       fontSize: 14,
@@ -126,7 +126,7 @@ class AppTextTheme {
     labelLarge: TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w500,
-      color: AppColors.backgroundWhite,
+      color: AppColors.white,
     ),
     labelMedium: TextStyle(
       fontSize: 13,

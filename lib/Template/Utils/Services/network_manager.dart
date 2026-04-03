@@ -100,10 +100,6 @@ class NetworkManager extends GetxService {
     }
   }
 
-  /// Robust internet check using Google's connectivity-check endpoint.
-  /// Returns HTTP 204 only when there is real WAN (internet) access.
-  /// Carrier networks without data plans and captive portals cannot
-  /// fake this response, unlike raw Socket or DNS lookups.
   Future<bool> verifyInternetAccess() async {
     try {
       final response = await http

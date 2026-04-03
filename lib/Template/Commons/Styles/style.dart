@@ -16,14 +16,14 @@ class AppStyle {
 
   // Static fallback (light-only, for const contexts)
   static BoxDecoration card({double radius = 12}) => BoxDecoration(
-    color: AppColors.backgroundWhite,
+    color: AppColors.white,
     borderRadius: BorderRadius.circular(radius),
-    border: Border.all(color: AppColors.borderLight),
+    border: Border.all(color: AppColors.grey),
   );
 
   // Document icon container
   static BoxDecoration documentIconContainer(Color color) => BoxDecoration(
-    color: color.withOpacity(0.1),
+    color: color.withValues(alpha: 0.1),
     borderRadius: BorderRadius.circular(8),
   );
 
@@ -33,11 +33,11 @@ class AppStyle {
     contentPadding: EdgeInsets.zero,
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.all(Radius.circular(10)),
-      borderSide: BorderSide(color: AppColors.borderInput),
+      borderSide: BorderSide(color: AppColors.grey),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.all(Radius.circular(10)),
-      borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+      borderSide: BorderSide(color: AppColors.blue, width: 1.5),
     ),
     filled: true,
     fillColor: AppColors.backgroundInput,
@@ -61,7 +61,7 @@ class AppStyle {
 
   // Static fallback (light-only, for const contexts)
   static const BoxDecoration bottomSheetHandle = BoxDecoration(
-    color: AppColors.borderLight,
+    color: AppColors.grey,
     borderRadius: BorderRadius.all(Radius.circular(4)),
   );
 
@@ -76,7 +76,7 @@ class AppStyle {
     fontFamily: 'Kameron',
     fontSize: 22,
     fontWeight: FontWeight.w700,
-    color: AppColors.primary,
+    color: AppColors.blue,
     letterSpacing: 0.5,
   );
 
@@ -85,7 +85,7 @@ class AppStyle {
     fontFamily: 'Kameron',
     fontSize: 22,
     fontWeight: FontWeight.w700,
-    color: AppColors.backgroundWhite,
+    color: AppColors.white,
     letterSpacing: 0.5,
   );
 }

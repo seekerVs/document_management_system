@@ -113,7 +113,7 @@ class _SectionHeader extends StatelessWidget {
       style: Theme.of(context).textTheme.labelLarge?.copyWith(
         fontWeight: FontWeight.w800,
         letterSpacing: 1.2,
-        color: AppColors.navy.withOpacity(0.8),
+        color: AppColors.navy.withValues(alpha: 0.8),
         fontSize: 12,
       ),
     );
@@ -153,7 +153,7 @@ class _ReviewRecipientTile extends StatelessWidget {
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: AppStyle.statusBadge(AppColors.backgroundGrey),
+              decoration: AppStyle.statusBadge(AppColors.grey),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

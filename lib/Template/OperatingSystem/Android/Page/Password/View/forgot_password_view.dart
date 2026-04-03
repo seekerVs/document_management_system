@@ -31,7 +31,7 @@ class ForgotEmailView extends GetView<ForgotPasswordController> {
                 const Icon(
                   Icons.lock_reset,
                   size: 80,
-                  color: AppColors.primary,
+                  color: AppColors.blue,
                 ),
 
                 const SizedBox(height: 24),

@@ -170,7 +170,7 @@ class _FabAction extends StatelessWidget {
       color: Theme.of(context).colorScheme.primary,
       borderRadius: BorderRadius.circular(12),
       elevation: 4,
-      shadowColor: Theme.of(context).colorScheme.primary.withOpacity(0.4),
+      shadowColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),

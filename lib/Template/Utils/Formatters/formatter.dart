@@ -109,22 +109,22 @@ class AppFormatter {
       case DocumentStatus.draft:
         return (
           color: AppColors.textSecondary,
-          surface: AppColors.backgroundGrey,
+          surface: AppColors.grey,
         );
       case DocumentStatus.pending:
         return (
-          color: AppColors.signaturePending,
-          surface: AppColors.signaturePendingSurface,
+          color: AppColors.orange,
+          surface: AppColors.orangeLight,
         );
       case DocumentStatus.completed:
         return (
-          color: AppColors.signatureCompleted,
-          surface: AppColors.signatureCompletedSurface,
+          color: AppColors.green,
+          surface: AppColors.greenLight,
         );
       case DocumentStatus.declined:
         return (
-          color: AppColors.signatureDeclined,
-          surface: AppColors.signatureDeclinedSurface,
+          color: AppColors.red,
+          surface: AppColors.redLight,
         );
     }
   }

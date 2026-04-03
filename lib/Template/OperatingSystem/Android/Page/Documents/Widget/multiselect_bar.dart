@@ -102,7 +102,7 @@ class _BarAction extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final c = onTap == null
-        ? cs.onSurfaceVariant.withOpacity(0.38)
+        ? cs.onSurfaceVariant.withValues(alpha: 0.38)
         : (color ?? cs.onSurfaceVariant);
 
     return GestureDetector(

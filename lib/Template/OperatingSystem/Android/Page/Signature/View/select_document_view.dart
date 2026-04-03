@@ -45,7 +45,7 @@ class SelectDocumentView extends GetView<SignatureRequestController> {
                         children: [
                           const Icon(
                             Icons.add,
-                            color: AppColors.primary,
+                            color: AppColors.blue,
                             size: 20,
                           ),
                           const SizedBox(width: 12),
@@ -54,7 +54,7 @@ class SelectDocumentView extends GetView<SignatureRequestController> {
                                 ? 'Select a document'
                                 : 'Add another document',
                             style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(color: AppColors.primary),
+                                ?.copyWith(color: AppColors.blue),
                           ),
                         ],
                       ),
@@ -85,9 +85,9 @@ class _DocumentTile extends StatelessWidget {
         onTap: () {
           Get.to(
             () => Scaffold(
-              backgroundColor: AppColors.backgroundLight,
+              backgroundColor: AppColors.background,
               appBar: AppBar(
-                backgroundColor: AppColors.backgroundLight,
+                backgroundColor: AppColors.background,
                 scrolledUnderElevation: 0,
                 elevation: 1,
                 title: Text(
@@ -115,14 +115,14 @@ class _DocumentTile extends StatelessWidget {
           width: 42,
           height: 42,
           decoration: BoxDecoration(
-            color: AppColors.pdfColor,
+            color: AppColors.red,
             borderRadius: BorderRadius.circular(8),
           ),
           child: const Center(
             child: Text(
               'PDF',
               style: TextStyle(
-                color: AppColors.folderSurface,
+                color: AppColors.background,
                 fontWeight: FontWeight.w800,
                 fontSize: 11,
               ),

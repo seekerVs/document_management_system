@@ -53,7 +53,7 @@ class _InAppSigningViewState extends State<InAppSigningView> {
     final signer = _controller.signer;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundWhite,
+      backgroundColor: AppColors.white,
       appBar: AppBar(
         title: Text(
           request.documentName,
@@ -68,12 +68,12 @@ class _InAppSigningViewState extends State<InAppSigningView> {
           preferredSize: const Size.fromHeight(32),
           child: Container(
             width: double.infinity,
-            color: AppColors.primarySurface,
+            color: AppColors.background,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             child: Text(
               'Signing as ${signer.signerName}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.primary,
+                color: AppColors.blue,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -365,7 +365,7 @@ class _BottomBar extends StatelessWidget {
                 if (filled == total)
                   const Icon(
                     Icons.check_circle,
-                    color: AppColors.success,
+                    color: AppColors.green,
                     size: 16,
                   ),
               ],

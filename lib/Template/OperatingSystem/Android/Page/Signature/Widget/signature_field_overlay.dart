@@ -62,7 +62,7 @@ class SignatureFieldOverlay extends StatelessWidget {
               width: renderWidth,
               height: renderHeight,
               decoration: BoxDecoration(
-                color: field.isRequired ? color : color.withOpacity(0.5),
+                color: field.isRequired ? color : color.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(
                   color: isSelected ? Colors.white : color,
@@ -74,7 +74,7 @@ class SignatureFieldOverlay extends StatelessWidget {
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: color.withOpacity(0.4),
+                          color: color.withValues(alpha: 0.4),
                           blurRadius: 8,
                           spreadRadius: 2,
                         ),

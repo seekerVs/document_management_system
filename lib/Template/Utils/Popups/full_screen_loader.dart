@@ -55,14 +55,14 @@ class _LoaderWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
           margin: const EdgeInsets.symmetric(horizontal: 48),
           decoration: BoxDecoration(
-            color: AppColors.backgroundWhite,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const CircularProgressIndicator(
-                color: AppColors.primary,
+                color: AppColors.blue,
                 strokeWidth: 3,
               ),
               Obx(() {
@@ -134,7 +134,7 @@ class _UploadLoaderWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
           margin: const EdgeInsets.symmetric(horizontal: 48),
           decoration: BoxDecoration(
-            color: AppColors.backgroundWhite,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -142,7 +142,7 @@ class _UploadLoaderWidget extends StatelessWidget {
             children: [
               const Icon(
                 Icons.upload_file_outlined,
-                color: AppColors.primary,
+                color: AppColors.blue,
                 size: 36,
               ),
               const SizedBox(height: 12),
@@ -179,8 +179,8 @@ class _UploadLoaderWidget extends StatelessWidget {
                         value: AppUploadLoader._progress.value > 0
                             ? AppUploadLoader._progress.value
                             : null,
-                        backgroundColor: AppColors.backgroundGrey,
-                        color: AppColors.primary,
+                        backgroundColor: AppColors.grey,
+                        color: AppColors.blue,
                         minHeight: 6,
                       ),
                     ),

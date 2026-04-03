@@ -79,7 +79,7 @@ class _SearchBar extends GetView<DocumentsController> {
         style: Theme.of(context).textTheme.bodyLarge,
         decoration: InputDecoration(
           hintText: 'Search document',
-          hintStyle: TextStyle(color: cs.onSurfaceVariant.withOpacity(0.7)),
+          hintStyle: TextStyle(color: cs.onSurfaceVariant.withValues(alpha: 0.7)),
           prefixIcon: Icon(Icons.search, size: 20, color: cs.onSurfaceVariant),
           suffixIcon: Obx(
             () => controller.isSearching.value

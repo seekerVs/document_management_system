@@ -47,7 +47,9 @@ class ProfileView extends GetView<ProfileController> {
                               color: Theme.of(context).colorScheme.primary,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: Theme.of(context).scaffoldBackgroundColor,
+                                color: Theme.of(
+                                  context,
+                                ).scaffoldBackgroundColor,
                                 width: 2,
                               ),
                             ),
@@ -125,7 +127,7 @@ class ProfileView extends GetView<ProfileController> {
                     Icons.dark_mode_outlined,
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withOpacity(0.6),
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                   title: Text(
                     'Dark Mode',
@@ -155,8 +157,8 @@ class ProfileView extends GetView<ProfileController> {
                   _ProfileTile(
                     icon: Icons.delete_forever_outlined,
                     title: 'Delete Account',
-                    titleColor: AppColors.error,
-                    iconColor: AppColors.error,
+                    titleColor: AppColors.red,
+                    iconColor: AppColors.red,
                     onTap: controller.deleteAccount,
                   ),
                 ],
@@ -182,7 +184,7 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         label.toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.45),
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45),
           letterSpacing: 1,
           fontWeight: FontWeight.w600,
         ),
@@ -194,20 +196,16 @@ class _SectionLabel extends StatelessWidget {
 class _ProfileTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String? subtitle;
   final VoidCallback? onTap;
   final Color? titleColor;
   final Color? iconColor;
-  final Widget? trailing;
 
   const _ProfileTile({
     required this.icon,
     required this.title,
-    this.subtitle,
     this.onTap,
     this.titleColor,
     this.iconColor,
-    this.trailing,
   });
 
   @override
@@ -217,7 +215,7 @@ class _ProfileTile extends StatelessWidget {
       onTap: onTap,
       leading: Icon(
         icon,
-        color: iconColor ?? cs.onSurface.withOpacity(0.55),
+        color: iconColor ?? cs.onSurface.withValues(alpha: 0.55),
         size: 22,
       ),
       title: Text(
@@ -226,18 +224,13 @@ class _ProfileTile extends StatelessWidget {
           context,
         ).textTheme.titleSmall?.copyWith(color: titleColor ?? cs.onSurface),
       ),
-      subtitle: subtitle != null
-          ? Text(subtitle!, style: Theme.of(context).textTheme.bodySmall)
+      trailing: onTap != null
+          ? Icon(
+              Icons.chevron_right,
+              color: cs.onSurface.withValues(alpha: 0.35),
+              size: 20,
+            )
           : null,
-      trailing:
-          trailing ??
-          (onTap != null
-              ? Icon(
-                  Icons.chevron_right,
-                  color: cs.onSurface.withOpacity(0.35),
-                  size: 20,
-                )
-              : null),
     );
   }
 }

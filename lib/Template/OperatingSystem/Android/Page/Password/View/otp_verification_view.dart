@@ -29,7 +29,7 @@ class OtpVerifyView extends GetView<ForgotPasswordController> {
               const Icon(
                 Icons.mark_email_read_outlined,
                 size: 80,
-                color: AppColors.primary,
+                color: AppColors.blue,
               ),
 
               const SizedBox(height: 24),
@@ -131,7 +131,7 @@ class _OtpBox extends StatelessWidget {
         onChanged: onChanged,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: AppColors.primary,
+          color: AppColors.blue,
           fontWeight: FontWeight.bold,
         ),
         decoration: AppStyle.otpBoxDecoration(),

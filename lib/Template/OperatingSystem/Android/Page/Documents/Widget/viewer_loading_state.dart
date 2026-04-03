@@ -12,7 +12,7 @@ class ViewerLoadingState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CircularProgressIndicator(color: AppColors.primary),
+          const CircularProgressIndicator(color: AppColors.blue),
           const SizedBox(height: 16),
           Text(
             'Loading document...',

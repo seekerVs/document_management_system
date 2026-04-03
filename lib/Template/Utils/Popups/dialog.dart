@@ -30,8 +30,8 @@ class AppDialogs {
             },
             style: TextButton.styleFrom(
               foregroundColor: isDangerous
-                  ? AppColors.error
-                  : AppColors.primary,
+                  ? AppColors.red
+                  : AppColors.blue,
             ),
             child: Text(confirmLabel ?? AppText.confirm),
           ),
@@ -69,7 +69,7 @@ class AppDialogs {
       AlertDialog(
         title: Row(
           children: [
-            const Icon(Icons.error_outline, color: AppColors.error, size: 20),
+            const Icon(Icons.error_outline, color: AppColors.red, size: 20),
             const SizedBox(width: 8),
             Text(title ?? 'Error'),
           ],
@@ -93,7 +93,7 @@ class AppDialogs {
           children: [
             const Icon(
               Icons.check_circle_outline,
-              color: AppColors.success,
+              color: AppColors.green,
               size: 20,
             ),
             const SizedBox(width: 8),
@@ -122,7 +122,7 @@ class AppDialogs {
       AlertDialog(
         title: Row(
           children: [
-            const Icon(Icons.info_outline, color: AppColors.info, size: 20),
+            const Icon(Icons.info_outline, color: AppColors.textSecondary, size: 20),
             const SizedBox(width: 8),
             Text(title),
           ],
@@ -180,7 +180,7 @@ class AppDialogs {
       Container(
         padding: const EdgeInsets.only(top: 12, bottom: 24),
         decoration: const BoxDecoration(
-          color: AppColors.backgroundWhite,
+          color: AppColors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
@@ -190,7 +190,7 @@ class AppDialogs {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.borderLight,
+                color: AppColors.grey,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -215,7 +215,7 @@ class AppDialogs {
                 leading: Icon(
                   option.icon,
                   color: option.isDangerous
-                      ? AppColors.error
+                      ? AppColors.red
                       : AppColors.textSecondary,
                   size: 22,
                 ),
@@ -223,7 +223,7 @@ class AppDialogs {
                   option.label,
                   style: TextStyle(
                     color: option.isDangerous
-                        ? AppColors.error
+                        ? AppColors.red
                         : AppColors.textPrimary,
                     fontSize: 15,
                   ),
@@ -243,14 +243,14 @@ class AppDialogs {
       '',
       message,
       titleText: const SizedBox.shrink(),
-      backgroundColor: AppColors.success,
-      colorText: AppColors.backgroundWhite,
+      backgroundColor: AppColors.green,
+      colorText: AppColors.white,
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
       borderRadius: 8,
       icon: const Icon(
         Icons.check_circle_outline,
-        color: AppColors.backgroundWhite,
+        color: AppColors.white,
         size: 20,
       ),
     );
@@ -261,15 +261,15 @@ class AppDialogs {
       '',
       message,
       titleText: const SizedBox.shrink(),
-      backgroundColor: AppColors.error,
-      colorText: AppColors.backgroundWhite,
+      backgroundColor: AppColors.red,
+      colorText: AppColors.white,
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
       borderRadius: 8,
       duration: const Duration(seconds: 4),
       icon: const Icon(
         Icons.error_outline,
-        color: AppColors.backgroundWhite,
+        color: AppColors.white,
         size: 20,
       ),
     );
@@ -280,14 +280,14 @@ class AppDialogs {
       '',
       message,
       titleText: const SizedBox.shrink(),
-      backgroundColor: AppColors.info,
-      colorText: AppColors.backgroundWhite,
+      backgroundColor: AppColors.textSecondary,
+      colorText: AppColors.white,
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
       borderRadius: 8,
       icon: const Icon(
         Icons.info_outline,
-        color: AppColors.backgroundWhite,
+        color: AppColors.white,
         size: 20,
       ),
     );

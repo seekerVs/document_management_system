@@ -1,0 +1,38 @@
+﻿Analyzing document_management_system...                         
+
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\Commons\Styles\style.dart:26:18 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\Commons\Widgets\document_source_sheet.dart:123:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\Commons\Widgets\document_source_sheet.dart:151:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\Commons\Widgets\no_internet_screen.dart:23:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Dashboard\View\dashboard_view.dart:89:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Dashboard\Widget\dashboard_banner.dart:35:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Dashboard\Widget\dashboard_fab.dart:173:58 - deprecated_member_use
+   info - The parameter name 'sum' matches a visible type name - lib\Template\OperatingSystem\Android\Page\Documents\Controller\documents_multiselect_mixin.dart:48:34 - avoid_types_as_parameter_names
+   info - The parameter name 'sum' matches a visible type name - lib\Template\OperatingSystem\Android\Page\Documents\Controller\documents_multiselect_mixin.dart:161:42 - avoid_types_as_parameter_names
+   info - The parameter name 'sum' matches a visible type name - lib\Template\OperatingSystem\Android\Page\Documents\Controller\documents_multiselect_mixin.dart:164:48 - avoid_types_as_parameter_names
+warning - Unused import: '../../../../../../Template/Utils/Constant/enum.dart' - lib\Template\OperatingSystem\Android\Page\Documents\Controller\upload_controller.dart:7:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Documents\View\documents_view.dart:82:59 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Documents\View\folder_contents_view.dart:216:65 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Documents\Widget\folder_picker_sheet.dart:137:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Documents\Widget\folder_picker_sheet.dart:150:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Documents\Widget\multiselect_bar.dart:105:31 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Documents\Widget\storage_banner.dart:51:64 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Documents\Widget\storage_banner.dart:64:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Documents\Widget\storage_banner.dart:70:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Profile\View\profile_view.dart:130:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Profile\View\profile_view.dart:187:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Profile\View\profile_view.dart:218:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Profile\View\profile_view.dart:230:35 - deprecated_member_use
+warning - The value of the local variable 'signedUrl' isn't used - lib\Template\OperatingSystem\Android\Page\Signature\Controller\signature_request_controller.dart:400:13 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Signature\View\request_review_view.dart:116:31 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Signature\View\signature_placement_view.dart:173:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Signature\View\signature_placement_view.dart:317:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Signature\View\signature_placement_view.dart:343:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Signature\View\signature_placement_view.dart:349:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Signature\View\signature_placement_view.dart:355:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Signature\Widget\field_toolbar.dart:240:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Signature\Widget\signature_field_overlay.dart:65:57 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\Template\OperatingSystem\Android\Page\Signature\Widget\signature_field_overlay.dart:77:40 - deprecated_member_use
+   info - The value of the argument is redundant because it matches the default value - lib\Template\OperatingSystem\Android\Page\Tasks\View\tasks_view.dart:66:32 - avoid_redundant_argument_values
+   info - Don't invoke 'print' in production code - lib\main.dart:20:3 - avoid_print
+

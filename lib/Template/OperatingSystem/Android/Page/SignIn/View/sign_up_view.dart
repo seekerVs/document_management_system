@@ -151,7 +151,7 @@ class SignUpView extends GetView<SignUpController> {
                       child: Text(
                         'Sign in',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.primary,
+                          color: AppColors.blue,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

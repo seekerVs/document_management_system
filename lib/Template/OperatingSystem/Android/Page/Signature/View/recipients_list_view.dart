@@ -57,14 +57,14 @@ class RecipientsListView extends GetView<SignatureRequestController> {
                         children: [
                           const Icon(
                             Icons.add,
-                            color: AppColors.primary,
+                            color: AppColors.blue,
                             size: 20,
                           ),
                           const SizedBox(width: 12),
                           Text(
                             'Add another recipient',
                             style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(color: AppColors.primary),
+                                ?.copyWith(color: AppColors.blue),
                           ),
                         ],
                       ),
@@ -98,7 +98,7 @@ class _SigningOrderToggle extends StatelessWidget {
           () => Switch(
             value: controller.signingOrderEnabled.value,
             onChanged: controller.toggleSigningOrder,
-            activeThumbColor: AppColors.primary,
+            activeThumbColor: AppColors.blue,
           ),
         ),
       ],

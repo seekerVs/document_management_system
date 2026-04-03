@@ -7,8 +7,8 @@ class LoadingShimmer extends StatelessWidget {
   const LoadingShimmer({super.key, required this.child});
 
   static Widget _wrap(Widget child) => Shimmer.fromColors(
-    baseColor: AppColors.shimmerBase,
-    highlightColor: AppColors.shimmerHighlight,
+    baseColor: AppColors.grey,
+    highlightColor: AppColors.background,
     child: child,
   );
 
@@ -22,7 +22,7 @@ class LoadingShimmer extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: AppColors.shimmerBase,
+        color: AppColors.grey,
         borderRadius: BorderRadius.circular(radius),
       ),
     ),
@@ -40,9 +40,9 @@ class LoadingShimmer extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.backgroundWhite,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.borderLight),
+            border: Border.all(color: AppColors.grey),
           ),
           child: Row(
             children: [
@@ -50,7 +50,7 @@ class LoadingShimmer extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppColors.shimmerBase,
+                  color: AppColors.grey,
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
@@ -62,7 +62,7 @@ class LoadingShimmer extends StatelessWidget {
                     Container(
                       height: 13,
                       decoration: BoxDecoration(
-                        color: AppColors.shimmerBase,
+                        color: AppColors.grey,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -71,7 +71,7 @@ class LoadingShimmer extends StatelessWidget {
                       height: 11,
                       width: 100,
                       decoration: BoxDecoration(
-                        color: AppColors.shimmerBase,
+                        color: AppColors.grey,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -101,9 +101,9 @@ class LoadingShimmer extends StatelessWidget {
       itemBuilder: (_, _) => _wrap(
         Container(
           decoration: BoxDecoration(
-            color: AppColors.backgroundWhite,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.borderLight),
+            border: Border.all(color: AppColors.grey),
           ),
           padding: const EdgeInsets.all(12),
           child: Column(
@@ -115,7 +115,7 @@ class LoadingShimmer extends StatelessWidget {
                   width: 18,
                   height: 18,
                   decoration: BoxDecoration(
-                    color: AppColors.shimmerBase,
+                    color: AppColors.grey,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -126,7 +126,7 @@ class LoadingShimmer extends StatelessWidget {
                     width: 52,
                     height: 52,
                     decoration: BoxDecoration(
-                      color: AppColors.shimmerBase,
+                      color: AppColors.grey,
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
@@ -135,7 +135,7 @@ class LoadingShimmer extends StatelessWidget {
               Container(
                 height: 13,
                 decoration: BoxDecoration(
-                  color: AppColors.shimmerBase,
+                  color: AppColors.grey,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -144,7 +144,7 @@ class LoadingShimmer extends StatelessWidget {
                 height: 11,
                 width: 80,
                 decoration: BoxDecoration(
-                  color: AppColors.shimmerBase,
+                  color: AppColors.grey,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -160,9 +160,9 @@ class LoadingShimmer extends StatelessWidget {
     Container(
       height: height,
       decoration: BoxDecoration(
-        color: AppColors.backgroundWhite,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: AppColors.grey),
       ),
     ),
   );
@@ -177,7 +177,7 @@ class LoadingShimmer extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: const BoxDecoration(
-              color: AppColors.shimmerBase,
+              color: AppColors.grey,
               shape: BoxShape.circle,
             ),
           ),
@@ -189,7 +189,7 @@ class LoadingShimmer extends StatelessWidget {
                 Container(
                   height: 14,
                   decoration: BoxDecoration(
-                    color: AppColors.shimmerBase,
+                    color: AppColors.grey,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -198,7 +198,7 @@ class LoadingShimmer extends StatelessWidget {
                   height: 11,
                   width: 150,
                   decoration: BoxDecoration(
-                    color: AppColors.shimmerBase,
+                    color: AppColors.grey,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),

@@ -31,6 +31,7 @@ class DashboardController extends GetxController {
 
   String get displayName => _userController.displayName;
   String get displayEmail => _userController.displayEmail;
+  String? get photoUrl => _userController.resolvedPhotoUrl.value;
 
   void toggleFab() => isFabExpanded.toggle();
 

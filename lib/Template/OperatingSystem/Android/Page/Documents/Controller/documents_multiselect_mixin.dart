@@ -45,7 +45,7 @@ mixin DocumentsMultiselectMixin on GetxController {
       folders.where((f) => selectedIds.contains(f.folderId)).toList();
 
   double get selectedTotalSizeMB =>
-      selectedDocuments.fold(0, (sum, d) => sum + d.fileSizeMB);
+      selectedDocuments.fold(0, (total, d) => total + d.fileSizeMB);
 
   void enterMultiSelect() => isMultiSelect.value = true;
 
@@ -158,10 +158,10 @@ mixin DocumentsMultiselectMixin on GetxController {
     final docs = selectedDocuments;
     final folderList = selectedFolders;
 
-    double totalSizeMB = docs.fold(0.0, (sum, d) => sum + d.fileSizeMB);
+    double totalSizeMB = docs.fold(0.0, (total, d) => total + d.fileSizeMB);
     for (final folder in folderList) {
       final folderDocsList = await docRepo.getFolderDocuments(folder.folderId);
-      totalSizeMB += folderDocsList.fold(0.0, (sum, d) => sum + d.fileSizeMB);
+      totalSizeMB += folderDocsList.fold(0.0, (total, d) => total + d.fileSizeMB);
     }
 
     if (userController.user.value != null) {

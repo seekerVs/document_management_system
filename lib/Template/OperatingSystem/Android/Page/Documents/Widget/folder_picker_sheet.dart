@@ -134,7 +134,7 @@ class _PickerTile extends StatelessWidget {
         ),
         child: Icon(
           icon,
-          color: disabled ? cs.onSurfaceVariant.withOpacity(0.5) : cs.primary,
+          color: disabled ? cs.onSurfaceVariant.withValues(alpha: 0.5) : cs.primary,
           size: 20,
         ),
       ),
@@ -147,7 +147,7 @@ class _PickerTile extends StatelessWidget {
       subtitle: Text(
         disabled ? 'Current location' : subtitle,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: disabled ? cs.onSurfaceVariant.withOpacity(0.7) : null,
+              color: disabled ? cs.onSurfaceVariant.withValues(alpha: 0.7) : null,
             ),
       ),
       trailing: disabled

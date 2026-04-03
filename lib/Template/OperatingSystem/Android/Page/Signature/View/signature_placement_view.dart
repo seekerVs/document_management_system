@@ -170,7 +170,7 @@ class _SignaturePlacementViewState extends State<SignaturePlacementView> {
         color: cs.surface,
         boxShadow: [
           BoxShadow(
-            color: cs.shadow.withOpacity(0.08),
+            color: cs.shadow.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, -4),
           ),
@@ -314,7 +314,7 @@ class _PdfPageWidgetState extends State<PdfPageWidget> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -340,19 +340,19 @@ class _PdfPageWidgetState extends State<PdfPageWidget> {
           decoration: BoxDecoration(
             color: Colors.white,
             border: Border.all(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               width: 0.5,
             ),
             boxShadow: [
               // Broad, soft shadow
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 16,
                 offset: const Offset(0, 8),
               ),
               // Sharp, close shadow for depth
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),

@@ -22,7 +22,7 @@ class SignerSwitcher extends StatelessWidget {
 
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        color: AppColors.backgroundLight,
+        color: AppColors.background,
         width: double.infinity,
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,

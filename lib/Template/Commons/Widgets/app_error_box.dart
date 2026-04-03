@@ -22,16 +22,16 @@ class AppErrorBox extends StatelessWidget {
 
     switch (_type) {
       case _BoxType.error:
-        bg = AppColors.errorSurface;
-        textColor = AppColors.error;
+        bg = AppColors.redLight;
+        textColor = AppColors.red;
         icon = Icons.error_outline;
       case _BoxType.success:
-        bg = AppColors.successSurface;
-        textColor = AppColors.success;
+        bg = AppColors.greenLight;
+        textColor = AppColors.green;
         icon = Icons.check_circle_outline;
       case _BoxType.info:
-        bg = AppColors.infoSurface;
-        textColor = AppColors.info;
+        bg = AppColors.background;
+        textColor = AppColors.textSecondary;
         icon = Icons.info_outline;
     }
 

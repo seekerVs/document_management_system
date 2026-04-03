@@ -15,11 +15,11 @@ class AppHelpers {
       DocumentFileType.pdf;
 
   // Returns the icon color for a document type
-  static Color documentTypeColor(DocumentFileType type) => AppColors.pdfColor;
+  static Color documentTypeColor(DocumentFileType type) => AppColors.red;
 
   // Returns the surface color for a document icon container
   static Color documentTypeSurface(DocumentFileType type) =>
-      AppColors.pdfSurface;
+      AppColors.redLight;
 
   // Build guest signing URL
   static String buildSigningUrl({

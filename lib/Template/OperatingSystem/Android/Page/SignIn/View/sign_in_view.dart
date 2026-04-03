@@ -47,7 +47,7 @@ class SignInView extends GetView<SignInController> {
                       TextSpan(
                         text: 'Scrivener',
                         style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(color: AppColors.primary),
+                            ?.copyWith(color: AppColors.blue),
                       ),
                     ],
                   ),
@@ -161,7 +161,7 @@ class SignInView extends GetView<SignInController> {
                       child: Text(
                         'Sign up',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.primary,
+                          color: AppColors.blue,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

@@ -31,7 +31,7 @@ class NewPasswordView extends GetView<ForgotPasswordController> {
                 const Icon(
                   Icons.lock_open_outlined,
                   size: 80,
-                  color: AppColors.primary,
+                  color: AppColors.blue,
                 ),
 
                 const SizedBox(height: 24),

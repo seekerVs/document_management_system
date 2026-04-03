@@ -120,7 +120,7 @@ class _SourceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final color = disabled ? cs.onSurfaceVariant.withOpacity(0.5) : cs.onSurface;
+    final color = disabled ? cs.onSurfaceVariant.withValues(alpha: 0.5) : cs.onSurface;
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
@@ -148,7 +148,7 @@ class _SourceTile extends StatelessWidget {
           ? Text(
               subtitle!,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: cs.onSurfaceVariant.withOpacity(0.7),
+                    color: cs.onSurfaceVariant.withValues(alpha: 0.7),
                   ),
             )
           : null,

@@ -25,11 +25,11 @@ class AppAvatar extends StatelessWidget {
         imageBuilder: (context, imageProvider) => CircleAvatar(
           radius: radius,
           backgroundImage: imageProvider,
-          backgroundColor: AppColors.backgroundGrey,
+          backgroundColor: AppColors.grey,
         ),
         placeholder: (context, url) => CircleAvatar(
           radius: radius,
-          backgroundColor: AppColors.backgroundGrey,
+          backgroundColor: AppColors.grey,
           child: const SizedBox(
             width: 20,
             height: 20,
@@ -46,7 +46,7 @@ class AppAvatar extends StatelessWidget {
   Widget _buildInitials() {
     return CircleAvatar(
       radius: radius,
-      backgroundColor: backgroundColor ?? AppColors.primary,
+      backgroundColor: backgroundColor ?? AppColors.blue,
       child: Text(
         AppFormatter.initials(name),
         style: TextStyle(

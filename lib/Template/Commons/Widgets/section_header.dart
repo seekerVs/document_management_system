@@ -31,7 +31,7 @@ class SectionHeader extends StatelessWidget {
             child: Text(
               seeAllLabel,
               style: const TextStyle(
-                color: AppColors.primary,
+                color: AppColors.blue,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),

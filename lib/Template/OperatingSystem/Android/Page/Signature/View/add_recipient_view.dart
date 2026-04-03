@@ -129,10 +129,10 @@ class _RoleOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: AppColors.backgroundWhite,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.borderLight,
+            color: isSelected ? AppColors.blue : AppColors.grey,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -142,7 +142,7 @@ class _RoleOption extends StatelessWidget {
               isSelected
                   ? Icons.radio_button_checked
                   : Icons.radio_button_unchecked,
-              color: isSelected ? AppColors.primary : AppColors.textHint,
+              color: isSelected ? AppColors.blue : AppColors.textHint,
               size: 20,
             ),
             const SizedBox(width: 12),

@@ -30,7 +30,7 @@ class DashboardBanner extends StatelessWidget {
                 Text(
                   'Create, sign, and notarize\ndocuments all in one simple app.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.9),
+                    color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.9),
                   ),
                 ),
                 const SizedBox(height: 12),

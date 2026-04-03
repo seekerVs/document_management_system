@@ -11,7 +11,7 @@ class AppTheme {
   static ThemeData get light => ThemeData(
     useMaterial3: true,
     fontFamily: 'Inter',
-    scaffoldBackgroundColor: AppColors.backgroundLight,
+    scaffoldBackgroundColor: AppColors.background,
     colorScheme: AppColorScheme.light,
     textTheme: AppTextTheme.light,
     appBarTheme: AppComponentThemes.lightAppBar,
@@ -38,7 +38,7 @@ class AppTheme {
   static ThemeData get dark => ThemeData(
     useMaterial3: true,
     fontFamily: 'Inter',
-    scaffoldBackgroundColor: AppColors.darkBackground,
+    scaffoldBackgroundColor: AppColors.textPrimary,
     colorScheme: AppColorScheme.dark,
     textTheme: AppTextTheme.dark,
     appBarTheme: AppComponentThemes.darkAppBar,

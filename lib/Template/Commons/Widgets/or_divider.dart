@@ -10,7 +10,7 @@ class OrDivider extends StatelessWidget {
     return Row(
       children: [
         const Expanded(
-          child: Divider(color: AppColors.borderInput, thickness: 1),
+          child: Divider(color: AppColors.grey, thickness: 1),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -22,7 +22,7 @@ class OrDivider extends StatelessWidget {
           ),
         ),
         const Expanded(
-          child: Divider(color: AppColors.borderInput, thickness: 1),
+          child: Divider(color: AppColors.grey, thickness: 1),
         ),
       ],
     );

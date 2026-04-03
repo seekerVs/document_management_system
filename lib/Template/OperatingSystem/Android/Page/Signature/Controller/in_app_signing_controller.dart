@@ -45,7 +45,7 @@ class InAppSigningController extends GetxController {
 
   // Color for filled vs unfilled field overlay
   Color fieldColor(String fieldId) =>
-      isFieldFilled(fieldId) ? AppColors.success : AppColors.primary;
+      isFieldFilled(fieldId) ? AppColors.green : AppColors.blue;
 
   // Route field tap to correct input
   void onFieldTap(SignatureFieldModel field) {

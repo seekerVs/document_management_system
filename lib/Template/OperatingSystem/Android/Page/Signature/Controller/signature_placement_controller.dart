@@ -10,10 +10,10 @@ import 'signature_request_controller.dart';
 
 // Signer color palette — one color per signer index
 const List<Color> _signerColors = [
-  AppColors.primary,
-  AppColors.signatureCompleted,
-  AppColors.signaturePending,
-  AppColors.error,
+  AppColors.blue,
+  AppColors.green,
+  AppColors.orange,
+  AppColors.red,
 ];
 
 class SignaturePlacementController extends GetxController {

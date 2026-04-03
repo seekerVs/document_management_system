@@ -18,7 +18,7 @@ class ImageViewer extends StatelessWidget {
           imageUrl: imageUrl,
           fit: BoxFit.contain,
           placeholder: (_, _) => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+            child: CircularProgressIndicator(color: AppColors.blue),
           ),
           errorWidget: (_, _, _) => const Center(
             child: Column(

@@ -84,9 +84,7 @@ class DashboardView extends GetView<DashboardController> {
                     onTap: controller.toggleFab,
                     behavior: HitTestBehavior.opaque,
                     child: ColoredBox(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.scrim.withOpacity(0.2),
+                      color: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.2),
                     ),
                   ),
                 ),
@@ -166,7 +164,11 @@ class DashboardView extends GetView<DashboardController> {
           child: Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Obx(
-              () => AppAvatar(name: controller.displayName, radius: 16),
+              () => AppAvatar(
+                name: controller.displayName,
+                photoUrl: controller.photoUrl,
+                radius: 16,
+              ),
             ),
           ),
         ),

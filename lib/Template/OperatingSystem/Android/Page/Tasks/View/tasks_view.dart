@@ -63,7 +63,7 @@ class TasksView extends GetView<TasksController> {
                     title: request.documentName,
                     subtitle1: 'From: ${request.requesterName ?? 'Unknown'}',
                     subtitle2: _getStatusLabel(signer),
-                    trailing1: null, // Size not available in model
+
                     trailing2: AppFormatter.dateShort(request.createdAt),
                     onTap: () => controller.openTask(request),
                     onMoreTap: () => controller.showTaskOptions(request),
