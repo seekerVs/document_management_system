@@ -55,14 +55,14 @@ class _LoaderWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
           margin: const EdgeInsets.symmetric(horizontal: 48),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: Theme.of(context).colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircularProgressIndicator(
-                color: AppColors.blue,
+              CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
                 strokeWidth: 3,
               ),
               Obx(() {
@@ -75,10 +75,9 @@ class _LoaderWidget extends StatelessWidget {
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.visible,
                     softWrap: true,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       decoration: TextDecoration.none,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 );
@@ -134,24 +133,23 @@ class _UploadLoaderWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
           margin: const EdgeInsets.symmetric(horizontal: 48),
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: Theme.of(context).colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.upload_file_outlined,
-                color: AppColors.blue,
+                color: Theme.of(context).colorScheme.primary,
                 size: 36,
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Uploading',
-                style: TextStyle(
-                  fontSize: 16,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                   decoration: TextDecoration.none,
                 ),
               ),
@@ -162,9 +160,8 @@ class _UploadLoaderWidget extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     decoration: TextDecoration.none,
                   ),
                 ),
@@ -179,8 +176,10 @@ class _UploadLoaderWidget extends StatelessWidget {
                         value: AppUploadLoader._progress.value > 0
                             ? AppUploadLoader._progress.value
                             : null,
-                        backgroundColor: AppColors.grey,
-                        color: AppColors.blue,
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.outlineVariant,
+                        color: Theme.of(context).colorScheme.primary,
                         minHeight: 6,
                       ),
                     ),
@@ -189,9 +188,8 @@ class _UploadLoaderWidget extends StatelessWidget {
                       AppUploadLoader._progress.value > 0
                           ? '${(AppUploadLoader._progress.value * 100).toStringAsFixed(0)}%'
                           : 'Uploading...',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         decoration: TextDecoration.none,
                       ),
                     ),

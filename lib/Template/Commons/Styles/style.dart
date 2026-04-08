@@ -88,4 +88,21 @@ class AppStyle {
     color: AppColors.white,
     letterSpacing: 0.5,
   );
+
+  // Adaptive signer colors
+  static Color signerColor(BuildContext context, int index) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // For Dark Mode, we use slightly lighter/more vibrant versions of the brand colors
+    final List<Color> colors = isDark
+        ? [
+            AppColors.blueLight,
+            AppColors.greenVibrant,
+            AppColors.orangeVibrant,
+            AppColors.redVibrant,
+          ]
+        : [AppColors.blue, AppColors.green, AppColors.orange, AppColors.red];
+
+    return colors[index % colors.length];
+  }
 }

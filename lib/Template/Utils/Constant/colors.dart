@@ -12,15 +12,18 @@ class AppColors {
   // Functional
   static const Color green = Color(0xFF1D9E75);
   static const Color greenLight = Color(0xFFE1F5EE);
+  static const Color greenVibrant = Color(0xFF34D399); // Emerald 400
   static const Color red = Color(0xFFE24B4A);
   static const Color redLight = Color(0xFFFFEBEE);
+  static const Color redVibrant = Color(0xFFF87171); // Red 400
   static const Color orange = Color(0xFFBA7517);
   static const Color orangeLight = Color(0xFFFAEEDA);
+  static const Color orangeVibrant = Color(0xFFFBBF24); // Amber 400
 
   // Neutral
   static const Color textPrimary = Color(0xFF141C23); // 900
-  static const Color textSecondary = Color(0xFF5E788D); // 500
-  static const Color textHint = Color(0xFF7392AB); // 400
+  static const Color textSecondary = Color(0xFF384956); // 700
+  static const Color textHint = Color(0xFF5e788d); // 500
   static const Color textDisabled = Color(0xFF8BB0CD); // 300
   static const Color textOnPrimary = Color(0xFFFFFFFF); // White
 

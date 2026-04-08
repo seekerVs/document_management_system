@@ -12,8 +12,9 @@ import '../../../../../Utils/Services/supabase_service.dart';
 import '../Model/signature_field_model.dart';
 import '../Model/signature_request_model.dart';
 import '../Repository/in_app_signing_repository.dart';
+import '../Widget/adopt_and_sign_modal.dart';
 import '../Widget/field_input_sheet.dart';
-import '../Widget/signature_style_picker.dart';
+import '../Widget/signing_success_modal.dart';
 
 class InAppSigningController extends GetxController {
   final InAppSigningRepository _repo = InAppSigningRepository();
@@ -32,29 +33,64 @@ class InAppSigningController extends GetxController {
     signer = s;
     fieldValues.clear();
     signatureImages.clear();
+    savedProfileSignature.value = null;
+
+    // Auto-fill all "Date Signed" fields for the current signer
+    for (final field in signer.fields) {
+      if (field.type == SignatureFieldType.dateSigned) {
+        fieldValues[field.fieldId] = AppFormatter.dateShort(DateTime.now());
+      }
+    }
+  }
+
+  // Saved profile signature (drawn via onboarding draw pad)
+  final Rx<Uint8List?> savedProfileSignature = Rx(null);
+
+  void setSavedProfileSignature(Uint8List bytes) {
+    savedProfileSignature.value = bytes;
   }
 
   List<SignatureFieldModel> get fields => signer.fields;
 
   // Check if a field has been filled
-  bool isFieldFilled(String fieldId) =>
-      fieldValues.containsKey(fieldId) || signatureImages.containsKey(fieldId);
+  bool isFieldFilled(String fieldId) {
+    fieldValues.length; // Touch RxMaps for GetX reactivity
+    signatureImages.length;
+    return fieldValues.containsKey(fieldId) ||
+        signatureImages.containsKey(fieldId);
+  }
 
-  // All fields filled
-  bool get allFieldsFilled => fields.every((f) => isFieldFilled(f.fieldId));
+  // All fields filled (that are required)
+  bool get allFieldsFilled {
+    return fields.every((f) => !f.isRequired || isFieldFilled(f.fieldId));
+  }
+
+  // Progress percentage
+  double get progress {
+    if (fields.isEmpty) return 0.0;
+    final filled = fields.where((f) => isFieldFilled(f.fieldId)).length;
+    return filled / fields.length;
+  }
 
   // Color for filled vs unfilled field overlay
   Color fieldColor(String fieldId) =>
-      isFieldFilled(fieldId) ? AppColors.green : AppColors.blue;
+      isFieldFilled(fieldId) ? Colors.transparent : AppColors.blue;
 
   // Route field tap to correct input
   void onFieldTap(SignatureFieldModel field) {
     switch (field.type) {
       case SignatureFieldType.signature:
       case SignatureFieldType.initials:
-        SignatureStylePicker.show(
-          name: signer.signerName,
-          onConfirm: (bytes) => signatureImages[field.fieldId] = bytes,
+        AdoptAndSignModal.show(
+          initialName: signer.signerName,
+          initialInitials: '', // TODO: Derive from name
+          fieldType: field.type,
+          onAdopt: (bytes, name, initials) {
+            if (bytes != null) {
+              signatureImages[field.fieldId] = bytes;
+              savedProfileSignature.value = bytes;
+            }
+          },
         );
       case SignatureFieldType.dateSigned:
         fieldValues[field.fieldId] = AppFormatter.dateShort(DateTime.now());
@@ -113,40 +149,7 @@ class InAppSigningController extends GetxController {
       );
 
       AppLoader.hide();
-      AppDialogs.showSnackSuccess('Document signed successfully.');
-      Get.until((route) => route.isFirst);
-    } on AppException catch (e) {
-      AppLoader.hide();
-      AppDialogs.showSnackError(e.message);
-    } catch (_) {
-      AppLoader.hide();
-      AppDialogs.showSnackError('Failed to submit. Please try again.');
-    }
-  }
-
-  // Confirm decline then update Firestore
-  void declineSigning() {
-    AppDialogs.showConfirm(
-      title: 'Decline to sign?',
-      message: 'The document owner will be notified that you declined to sign.',
-      confirmLabel: 'Decline',
-      isDangerous: true,
-      onConfirm: _submitDecline,
-    );
-  }
-
-  // Submit decline to repository
-  Future<void> _submitDecline() async {
-    AppLoader.show(message: 'Submitting...');
-    try {
-      await _repo.submitDecline(
-        requestId: request.requestId,
-        signerEmail: signer.signerEmail,
-        signerName: signer.signerName,
-      );
-      AppLoader.hide();
-      AppDialogs.showSnackSuccess('You have declined to sign.');
-      Get.until((route) => route.isFirst);
+      SigningSuccessModal.show();
     } on AppException catch (e) {
       AppLoader.hide();
       AppDialogs.showSnackError(e.message);

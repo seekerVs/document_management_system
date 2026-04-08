@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../../../Template/Utils/Firebase/firebase_method.dart';
 import '../../../../../../Template/Utils/Firebase/firebase_utils.dart';
 import '../../../../../Utils/Firebase/base_repository.dart';
+import '../../../../../Utils/Constant/enum.dart';
+import '../../Activity/Repository/activity_repository.dart';
 import '../Model/document_model.dart';
 
 class DocumentRepository extends BaseRepository {
@@ -52,6 +54,11 @@ class DocumentRepository extends BaseRepository {
       ref: FirebaseUtils.documentDoc(doc.documentId),
       data: doc.toFirestore(),
     );
+    await ActivityRepository().logActivity(
+      documentId: doc.documentId,
+      documentName: doc.name,
+      action: ActivityAction.uploaded,
+    );
   });
 
   Future<void> renameDocument(String docId, String name) =>
@@ -59,6 +66,11 @@ class DocumentRepository extends BaseRepository {
         await FirebaseMethod.updateDocument(
           ref: FirebaseUtils.documentDoc(docId),
           data: {'name': name, 'updatedAt': Timestamp.now()},
+        );
+        await ActivityRepository().logActivity(
+          documentId: docId,
+          documentName: name,
+          action: ActivityAction.renamed,
         );
       });
 
@@ -68,10 +80,18 @@ class DocumentRepository extends BaseRepository {
           ref: FirebaseUtils.documentDoc(docId),
           data: {'folderId': folderId, 'updatedAt': Timestamp.now()},
         );
+        await ActivityRepository().logActivity(
+          documentId: docId,
+          action: ActivityAction.moved,
+        );
       });
 
   Future<void> deleteDocument(String docId) => handleRequest(() async {
     await FirebaseMethod.deleteDocument(ref: FirebaseUtils.documentDoc(docId));
+    await ActivityRepository().logActivity(
+      documentId: docId,
+      action: ActivityAction.deleted,
+    );
   });
 
   Future<int> getDocumentCount() async {

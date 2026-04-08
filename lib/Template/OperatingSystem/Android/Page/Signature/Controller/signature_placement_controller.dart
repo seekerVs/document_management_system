@@ -1,20 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
-import '../../../../../Utils/Constant/colors.dart';
 import '../../../../../Utils/Constant/enum.dart';
 import '../../../../../Utils/Routes/main_routes.dart';
 import '../Model/signature_field_model.dart';
 import '../Model/signature_request_model.dart';
 import 'signature_request_controller.dart';
 
-// Signer color palette — one color per signer index
-const List<Color> _signerColors = [
-  AppColors.blue,
-  AppColors.green,
-  AppColors.orange,
-  AppColors.red,
-];
 
 class SignaturePlacementController extends GetxController {
   final SignatureRequestController _requestController =
@@ -50,8 +41,6 @@ class SignaturePlacementController extends GetxController {
     return result;
   }
 
-  // Return color for a given signer index
-  Color signerColor(int index) => _signerColors[index % _signerColors.length];
 
   // Switch active signer context
   void switchSigner(int index) => activeSignerIndex.value = index;

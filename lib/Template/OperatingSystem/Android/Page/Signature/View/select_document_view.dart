@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../Commons/Styles/style.dart';
 import '../../../../../Commons/Widgets/app_button.dart';
-import '../../../../../Utils/Constant/colors.dart';
 import '../../../../../Utils/Popups/dialog.dart';
 import '../../Documents/Widget/pdf_viewer.dart';
 import '../Controller/signature_request_controller.dart';
@@ -40,12 +39,12 @@ class SelectDocumentView extends GetView<SignatureRequestController> {
                         horizontal: 16,
                         vertical: 14,
                       ),
-                      decoration: AppStyle.card(),
+                      decoration: AppStyle.cardOf(context),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.add,
-                            color: AppColors.blue,
+                            color: Theme.of(context).colorScheme.primary,
                             size: 20,
                           ),
                           const SizedBox(width: 12),
@@ -54,7 +53,7 @@ class SelectDocumentView extends GetView<SignatureRequestController> {
                                 ? 'Select a document'
                                 : 'Add another document',
                             style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(color: AppColors.blue),
+                                ?.copyWith(color: Theme.of(context).colorScheme.primary),
                           ),
                         ],
                       ),
@@ -79,24 +78,25 @@ class _DocumentTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final doc = controller.selectedDocument.value!;
     return Container(
-      decoration: AppStyle.card(),
+      decoration: AppStyle.cardOf(context),
       child: ListTile(
         contentPadding: const EdgeInsets.only(left: 16),
         onTap: () {
           Get.to(
             () => Scaffold(
-              backgroundColor: AppColors.background,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               appBar: AppBar(
-                backgroundColor: AppColors.background,
+                backgroundColor: Theme.of(context).colorScheme.surface,
                 scrolledUnderElevation: 0,
                 elevation: 1,
                 title: Text(
                   doc.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 leading: IconButton(
@@ -115,14 +115,14 @@ class _DocumentTile extends StatelessWidget {
           width: 42,
           height: 42,
           decoration: BoxDecoration(
-            color: AppColors.red,
+            color: Theme.of(context).colorScheme.error,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Center(
+          child: Center(
             child: Text(
               'PDF',
               style: TextStyle(
-                color: AppColors.background,
+                color: Theme.of(context).colorScheme.onError,
                 fontWeight: FontWeight.w800,
                 fontSize: 11,
               ),
@@ -140,10 +140,10 @@ class _DocumentTile extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall,
         ),
         trailing: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.more_vert,
             size: 18,
-            color: AppColors.textHint,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           onPressed: () => controller.showSelectedDocumentOptions(doc),
         ),

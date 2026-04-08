@@ -7,6 +7,7 @@ import '../../../../../../Template/Utils/Popups/dialog.dart';
 import '../../../../../../Template/Utils/Popups/full_screen_loader.dart';
 import '../../../../../../Template/Utils/Routes/main_routes.dart';
 import '../../../../../../Template/Utils/Services/supabase_service.dart';
+import '../../../../../Commons/Widgets/app_text_field.dart';
 import '../Model/user_model.dart';
 import '../Repository/user_repository.dart';
 import 'user_controller.dart';
@@ -264,42 +265,32 @@ class _EditNameDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Edit Name'),
-      contentPadding: const EdgeInsets.only(top: 20, left: 24, right: 24),
-      actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    return AppDialogBase(
+      title: 'Edit Name',
       content: Form(
         key: controller.nameFormKey,
-        child: TextFormField(
+        child: AppTextField(
           controller: controller.nameController,
           autofocus: true,
+          hint: 'Enter your full name',
+          label: 'Full name',
+          prefixIcon: Icons.person_outline,
           textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
-            labelText: 'Full name',
-            prefixIcon: Icon(Icons.person_outline),
-            border: OutlineInputBorder(),
-          ),
           validator: (v) =>
               v == null || v.trim().isEmpty ? 'Name is required.' : null,
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+        AppDialogAction(
+          label: 'Cancel',
+          onPressed: () => Get.back(),
+          isPrimary: false,
+        ),
         Obx(
-          () => FilledButton(
-            onPressed: controller.isSavingName.value
-                ? null
-                : controller.saveName,
-            child: controller.isSavingName.value
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Text('Save'),
+          () => AppDialogAction(
+            label: 'Save',
+            isLoading: controller.isSavingName.value,
+            onPressed: controller.saveName,
           ),
         ),
       ],
@@ -314,109 +305,93 @@ class _ChangePasswordDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Change Password'),
-      contentPadding: const EdgeInsets.only(top: 20, left: 24, right: 24),
-      actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      content: SingleChildScrollView(
-        child: Form(
-          key: controller.passwordFormKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Current password
-              Obx(
-                () => TextFormField(
-                  controller: controller.currentPasswordController,
-                  obscureText: controller.obscureCurrent.value,
-                  decoration: InputDecoration(
-                    labelText: 'Current password',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        controller.obscureCurrent.value
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                      ),
-                      onPressed: controller.obscureCurrent.toggle,
-                    ),
+    return AppDialogBase(
+      title: 'Change Password',
+      content: Form(
+        key: controller.passwordFormKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Current password
+            Obx(
+              () => AppTextField(
+                controller: controller.currentPasswordController,
+                obscureText: controller.obscureCurrent.value,
+                hint: 'Enter current password',
+                label: 'Current password',
+                prefixIcon: Icons.lock_outline,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    controller.obscureCurrent.value
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
                   ),
-                  validator: (v) => v == null || v.isEmpty
-                      ? 'Current password is required.'
-                      : null,
+                  onPressed: controller.obscureCurrent.toggle,
                 ),
+                validator: (v) => v == null || v.isEmpty
+                    ? 'Current password is required.'
+                    : null,
               ),
-              const SizedBox(height: 16),
-              // New password
-              Obx(
-                () => TextFormField(
-                  controller: controller.newPasswordController,
-                  obscureText: controller.obscureNew.value,
-                  decoration: InputDecoration(
-                    labelText: 'New password',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        controller.obscureNew.value
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                      ),
-                      onPressed: controller.obscureNew.toggle,
-                    ),
+            ),
+            const SizedBox(height: 16),
+            // New password
+            Obx(
+              () => AppTextField(
+                controller: controller.newPasswordController,
+                obscureText: controller.obscureNew.value,
+                hint: 'Enter new password',
+                label: 'New password',
+                prefixIcon: Icons.lock_outline,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    controller.obscureNew.value
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
                   ),
-                  validator: (v) => v == null || v.length < 6
-                      ? 'Password must be at least 6 characters.'
-                      : null,
+                  onPressed: controller.obscureNew.toggle,
                 ),
+                validator: (v) => v == null || v.length < 6
+                    ? 'Password must be at least 6 characters.'
+                    : null,
               ),
-              const SizedBox(height: 16),
-              // Confirm password
-              Obx(
-                () => TextFormField(
-                  controller: controller.confirmPasswordController,
-                  obscureText: controller.obscureConfirm.value,
-                  textInputAction: TextInputAction.done,
-                  decoration: InputDecoration(
-                    labelText: 'Confirm new password',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        controller.obscureConfirm.value
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                      ),
-                      onPressed: controller.obscureConfirm.toggle,
-                    ),
+            ),
+            const SizedBox(height: 16),
+            // Confirm password
+            Obx(
+              () => AppTextField(
+                controller: controller.confirmPasswordController,
+                obscureText: controller.obscureConfirm.value,
+                textInputAction: TextInputAction.done,
+                hint: 'Confirm new password',
+                label: 'Confirm new password',
+                prefixIcon: Icons.lock_outline,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    controller.obscureConfirm.value
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
                   ),
-                  validator: (v) => v != controller.newPasswordController.text
-                      ? 'Passwords do not match.'
-                      : null,
+                  onPressed: controller.obscureConfirm.toggle,
                 ),
+                validator: (v) => v != controller.newPasswordController.text
+                    ? 'Passwords do not match.'
+                    : null,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+        AppDialogAction(
+          label: 'Cancel',
+          onPressed: () => Get.back(),
+          isPrimary: false,
+        ),
         Obx(
-          () => FilledButton(
-            onPressed: controller.isChangingPassword.value
-                ? null
-                : controller.changePassword,
-            child: controller.isChangingPassword.value
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Text('Change Password'),
+          () => AppDialogAction(
+            label: 'Change Password',
+            isLoading: controller.isChangingPassword.value,
+            onPressed: controller.changePassword,
           ),
         ),
       ],

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import '../../../../../Utils/Constant/colors.dart';
 import '../../../../../Utils/Constant/images.dart';
 import '../Controller/documents_controller.dart';
 
@@ -16,7 +15,7 @@ class StorageBanner extends GetView<DocumentsController> {
         margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.storageBannerBg,
+          color: cs.tertiaryContainer,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -33,7 +32,7 @@ class StorageBanner extends GetView<DocumentsController> {
                   Text(
                     'Cloud Storage',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: cs.onSurface,
+                      color: cs.onTertiaryContainer,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -43,7 +42,7 @@ class StorageBanner extends GetView<DocumentsController> {
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: controller.storagePercent.clamp(0.0, 1.0),
-                      backgroundColor: cs.surface,
+                      backgroundColor: cs.onTertiaryContainer.withValues(alpha: 0.1),
                       color: cs.primary,
                       minHeight: 8,
                     ),
@@ -56,13 +55,13 @@ class StorageBanner extends GetView<DocumentsController> {
                       Text(
                         _freeLabel,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: cs.onSurface.withValues(alpha: 0.5),
+                          color: cs.onTertiaryContainer.withValues(alpha: 0.5),
                         ),
                       ),
                       Text(
                         '${controller.totalItems} items',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: cs.onSurface.withValues(alpha: 0.5),
+                          color: cs.onTertiaryContainer.withValues(alpha: 0.5),
                         ),
                       ),
                     ],

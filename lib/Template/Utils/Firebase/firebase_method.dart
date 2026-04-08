@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class FirebaseMethod {
   FirebaseMethod._();
 
-  /// Add a document with an auto-generated ID.
   static Future<DocumentReference?> addDocument({
     required CollectionReference collection,
     required Map<String, dynamic> data,
@@ -11,11 +10,10 @@ class FirebaseMethod {
     try {
       return await collection.add(data);
     } catch (e) {
-      return null;
+      rethrow;
     }
   }
 
-  /// Set a document with a specific ID (creates or overwrites).
   static Future<bool> setDocument({
     required DocumentReference ref,
     required Map<String, dynamic> data,
@@ -25,11 +23,10 @@ class FirebaseMethod {
       await ref.set(data, SetOptions(merge: merge));
       return true;
     } catch (e) {
-      return false;
+      rethrow;
     }
   }
 
-  /// Fetch a single document by reference.
   static Future<DocumentSnapshot?> getDocument({
     required DocumentReference ref,
   }) async {
@@ -37,11 +34,10 @@ class FirebaseMethod {
       final snap = await ref.get();
       return snap.exists ? snap : null;
     } catch (e) {
-      return null;
+      rethrow;
     }
   }
 
-  /// Fetch multiple documents from a query.
   static Future<List<DocumentSnapshot>> getDocuments({
     required Query query,
   }) async {
@@ -49,7 +45,7 @@ class FirebaseMethod {
       final snap = await query.get();
       return snap.docs;
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 

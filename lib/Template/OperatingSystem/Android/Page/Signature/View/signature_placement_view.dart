@@ -242,7 +242,7 @@ class _SignaturePlacementViewState extends State<SignaturePlacementView> {
               return ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
-                  backgroundColor: _controller.signerColor(entry.key),
+                  backgroundColor: AppStyle.signerColor(context, entry.key),
                   radius: 12,
                 ),
                 title: Text(
@@ -373,7 +373,7 @@ class _PdfPageWidgetState extends State<PdfPageWidget> {
                     key: ValueKey(entry.field.fieldId),
                     field: entry.field,
                     signer: entry.signer,
-                    color: widget.controller.signerColor(entry.signerIndex),
+                    color: AppStyle.signerColor(context, entry.signerIndex),
                     controller: widget.controller,
                     canvasWidth: displayW,
                     canvasHeight: displayH,

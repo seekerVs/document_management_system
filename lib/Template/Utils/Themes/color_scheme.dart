@@ -19,6 +19,9 @@ class AppColorScheme {
     surfaceContainerHighest: AppColors.backgroundInput,
     outline: AppColors.grey,
     outlineVariant: AppColors.grey,
+    onSurfaceVariant: AppColors.textHint,
+    tertiaryContainer: AppColors.storageBannerBg,
+    onTertiaryContainer: AppColors.textPrimary,
   );
 
   static const ColorScheme dark = ColorScheme.dark(
@@ -37,5 +40,8 @@ class AppColorScheme {
     surfaceContainerHighest: AppColors.darkBorder,
     outline: AppColors.darkBorder,
     outlineVariant: AppColors.darkSurface,
+    onSurfaceVariant: AppColors.textDisabled,
+    tertiaryContainer: AppColors.blueDark,
+    onTertiaryContainer: AppColors.textOnPrimary,
   );
 }

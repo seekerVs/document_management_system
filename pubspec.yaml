@@ -102,22 +102,24 @@ flutter:
       fonts:
         - asset: assets/fonts/Satisfy-Regular.ttf
 
-# flutter pub run flutter_native_splash:create
+# dart run flutter_native_splash:create
 flutter_native_splash:
-  color: "#3D4750"
+  color: "#eef4ff"
+  color_dark: "#001428"
   image: assets/images/logo_splash.png
-  fullscreen: true
+  android_gravity: center
   android_12:
-    color: "#3D4750"
+    color: "#eef4ff"
+    icon_background_color_dark: "#001428"
     image: assets/images/logo_splash.png
-    fullscreen: true
+    android_gravity: center
 
 # dart run flutter_launcher_icons
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/images/logo_splash.png"
+  image_path: assets/icons/ic_logo.png
   min_sdk_android: 21
-  adaptive_icon_foreground: "assets/images/logo_splash.png"
+  adaptive_icon_foreground: assets/icons/ic_logo.png
   adaptive_icon_background: "#279eff"
   remove_alpha_ios: true

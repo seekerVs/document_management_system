@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../OperatingSystem/Android/Page/Signature/Controller/in_app_signing_controller.dart';
 import '../OperatingSystem/Android/Page/Signature/Controller/signature_placement_controller.dart';
 import '../OperatingSystem/Android/Page/Signature/Controller/signature_request_controller.dart';
 import '../OperatingSystem/Android/Page/Tasks/Controller/tasks_controller.dart';
@@ -14,6 +15,7 @@ class GeneralBindings extends Bindings {
     // Signature request flow
     Get.lazyPut(() => SignatureRequestController(), fenix: true);
     Get.lazyPut(() => SignaturePlacementController(), fenix: true);
+    Get.lazyPut(() => InAppSigningController(), fenix: true);
     Get.lazyPut(() => UploadController(), fenix: true);
 
     // Tasks

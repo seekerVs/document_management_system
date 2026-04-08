@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../Utils/Constant/colors.dart';
 import '../../../../../Utils/Constant/enum.dart';
 import '../Controller/signature_placement_controller.dart';
 
@@ -30,9 +29,9 @@ class _SignatureFieldToolbarState extends State<SignatureFieldToolbar> {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: const BoxDecoration(
-        color: AppColors.white,
-        boxShadow: [
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        boxShadow: const [
           BoxShadow(
             color: Color(0x14000000),
             blurRadius: 12,
@@ -104,28 +103,41 @@ class _SignatureFieldToolbarState extends State<SignatureFieldToolbar> {
           icon: Icons.swap_horiz,
           label: 'Reassign',
           onTap: widget.onShowReassign,
-          themeOverride: (surface: AppColors.blue, icon: Colors.black),
+          themeOverride: (
+            surface: Theme.of(context).colorScheme.primary,
+            icon: Theme.of(context).colorScheme.onPrimary,
+          ),
         ),
         _ToolbarItem(
           icon: isRequired ? Icons.lock_outline : Icons.lock_open_outlined,
           label: isRequired ? 'Required' : 'Optional',
           onTap: widget.controller.toggleSelectedFieldRequired,
           themeOverride: (
-            surface: isRequired ? AppColors.blue : AppColors.grey,
-            icon: isRequired ? Colors.black : AppColors.textPrimary,
+            surface: isRequired
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.surfaceContainerHigh,
+            icon: isRequired
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurface,
           ),
         ),
         _ToolbarItem(
           icon: Icons.category_outlined,
           label: 'Field Type',
           onTap: () => setState(() => _isChangingType = true),
-          themeOverride: (surface: AppColors.blue, icon: Colors.black),
+          themeOverride: (
+            surface: Theme.of(context).colorScheme.primary,
+            icon: Theme.of(context).colorScheme.onPrimary,
+          ),
         ),
         _ToolbarItem(
           icon: Icons.delete_outline,
           label: 'Delete',
           onTap: widget.controller.deleteSelectedField,
-          themeOverride: (surface: AppColors.red, icon: Colors.white),
+          themeOverride: (
+            surface: Theme.of(context).colorScheme.error,
+            icon: Theme.of(context).colorScheme.onError,
+          ),
         ),
       ],
     );
@@ -147,11 +159,11 @@ class _SignatureFieldToolbarState extends State<SignatureFieldToolbar> {
           onTap: () => _updateType(SignatureFieldType.signature),
           themeOverride: (
             surface: currentType == SignatureFieldType.signature
-                ? AppColors.blue
-                : AppColors.grey,
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.surfaceContainerHigh,
             icon: currentType == SignatureFieldType.signature
-                ? Colors.white
-                : Colors.black,
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurface,
           ),
         ),
         _ToolbarItem(
@@ -160,11 +172,11 @@ class _SignatureFieldToolbarState extends State<SignatureFieldToolbar> {
           onTap: () => _updateType(SignatureFieldType.initials),
           themeOverride: (
             surface: currentType == SignatureFieldType.initials
-                ? AppColors.blue
-                : AppColors.grey,
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.surfaceContainerHigh,
             icon: currentType == SignatureFieldType.initials
-                ? Colors.white
-                : Colors.black,
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurface,
           ),
         ),
         _ToolbarItem(
@@ -173,11 +185,11 @@ class _SignatureFieldToolbarState extends State<SignatureFieldToolbar> {
           onTap: () => _updateType(SignatureFieldType.dateSigned),
           themeOverride: (
             surface: currentType == SignatureFieldType.dateSigned
-                ? AppColors.blue
-                : AppColors.grey,
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.surfaceContainerHigh,
             icon: currentType == SignatureFieldType.dateSigned
-                ? Colors.white
-                : Colors.black,
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurface,
           ),
         ),
         _ToolbarItem(
@@ -186,11 +198,11 @@ class _SignatureFieldToolbarState extends State<SignatureFieldToolbar> {
           onTap: () => _updateType(SignatureFieldType.textbox),
           themeOverride: (
             surface: currentType == SignatureFieldType.textbox
-                ? AppColors.blue
-                : AppColors.grey,
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.surfaceContainerHigh,
             icon: currentType == SignatureFieldType.textbox
-                ? Colors.white
-                : Colors.black,
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ],
@@ -218,8 +230,10 @@ class _ToolbarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeSurfaceColor = themeOverride?.surface ?? AppColors.blue;
-    final themeIconColor = themeOverride?.icon ?? Colors.black;
+    final themeSurfaceColor =
+        themeOverride?.surface ?? Theme.of(context).colorScheme.primary;
+    final themeIconColor =
+        themeOverride?.icon ?? Theme.of(context).colorScheme.onPrimary;
 
     return GestureDetector(
       onTap: onTap,
@@ -249,7 +263,7 @@ class _ToolbarItem extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 10.5,
                 fontWeight: FontWeight.w600,
               ),

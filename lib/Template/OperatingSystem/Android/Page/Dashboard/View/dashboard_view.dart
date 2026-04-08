@@ -46,7 +46,7 @@ class DashboardView extends GetView<DashboardController> {
                     20,
                     16,
                     20,
-                    fabAreaBottom + 80, // dynamic bottom padding
+                    fabAreaBottom + 16, // dynamic bottom padding
                   ),
                   child: Center(
                     child: ConstrainedBox(
@@ -84,7 +84,9 @@ class DashboardView extends GetView<DashboardController> {
                     onTap: controller.toggleFab,
                     behavior: HitTestBehavior.opaque,
                     child: ColoredBox(
-                      color: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.2),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.scrim.withValues(alpha: 0.2),
                     ),
                   ),
                 ),
@@ -133,7 +135,7 @@ class DashboardView extends GetView<DashboardController> {
       title: Obx(
         () => Text(
           'Welcome ${controller.displayName.split(' ').first}!',
-          style: Theme.of(context).textTheme.titleLarge,
+          style: Theme.of(context).textTheme.titleMedium,
         ),
       ),
       actions: [
@@ -141,37 +143,42 @@ class DashboardView extends GetView<DashboardController> {
           icon: Icon(
             Icons.help_outline,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
+            size: 24, // Standard Material icon size
           ),
           onPressed: () {},
         ),
         Obx(
           () => Stack(
+            alignment: Alignment.center,
             children: [
               IconButton(
                 icon: Icon(
                   Icons.format_list_bulleted_rounded,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  size: 24, // Standard Material icon size
                 ),
                 onPressed: controller.goToTasks,
               ),
               if (controller.pendingTaskCount.value > 0)
-                const Positioned(right: 8, top: 8, child: _NotificationDot()),
+                const Positioned(right: 12, top: 12, child: _NotificationDot()),
             ],
           ),
         ),
-        GestureDetector(
-          onTap: controller.goToProfile,
-          child: Padding(
-            padding: const EdgeInsets.only(right: 16),
+        const SizedBox(width: 4), // Spacing before avatar
+        Center(
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: controller.goToProfile,
             child: Obx(
               () => AppAvatar(
                 name: controller.displayName,
                 photoUrl: controller.photoUrl,
-                radius: 16,
+                radius: 16, // 32x32 pixels, standard for AppBar avatars
               ),
             ),
           ),
         ),
+        const SizedBox(width: 16), // Standard right margin
       ],
     );
   }

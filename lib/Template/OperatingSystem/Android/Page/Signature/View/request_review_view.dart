@@ -4,7 +4,6 @@ import '../../../../../Commons/Styles/style.dart';
 import '../../../../../Commons/Widgets/app_avatar.dart';
 import '../../../../../Commons/Widgets/app_button.dart';
 import '../../../../../Commons/Widgets/app_text_field.dart';
-import '../../../../../Utils/Constant/colors.dart';
 import '../Controller/signature_request_controller.dart';
 import '../Model/signature_request_model.dart';
 
@@ -37,7 +36,7 @@ class RequestReviewView extends GetView<SignatureRequestController> {
                 () => Text(
                   '${controller.currentUserName} via DocuSign',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -113,7 +112,7 @@ class _SectionHeader extends StatelessWidget {
       style: Theme.of(context).textTheme.labelLarge?.copyWith(
         fontWeight: FontWeight.w800,
         letterSpacing: 1.2,
-        color: AppColors.navy.withValues(alpha: 0.8),
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
         fontSize: 12,
       ),
     );
@@ -131,7 +130,7 @@ class _ReviewRecipientTile extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
         padding: const EdgeInsets.all(12),
-        decoration: AppStyle.card(),
+        decoration: AppStyle.cardOf(context),
         child: Row(
           children: [
             AppAvatar(name: signer.signerName, radius: 22),
@@ -153,20 +152,20 @@ class _ReviewRecipientTile extends StatelessWidget {
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: AppStyle.statusBadge(AppColors.grey),
+              decoration: AppStyle.statusBadge(Theme.of(context).colorScheme.surfaceContainerHigh),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.edit_note,
                     size: 14,
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     'Needs to sign',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -188,8 +187,8 @@ class _BottomFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(top: BorderSide(color: Theme.of(context).dividerTheme.color ?? Theme.of(context).colorScheme.outlineVariant)),
       ),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       child: Obx(

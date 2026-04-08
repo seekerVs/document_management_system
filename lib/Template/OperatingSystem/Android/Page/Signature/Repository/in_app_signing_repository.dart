@@ -3,6 +3,7 @@ import '../../../../../Utils/Constant/enum.dart';
 import '../../../../../Utils/Exceptions/exceptions.dart';
 import '../../../../../Utils/Firebase/firebase_utils.dart';
 import '../Model/signature_field_model.dart';
+import '../../Activity/Repository/activity_repository.dart';
 import '../../Notifications/Repository/notification_repository.dart';
 
 class InAppSigningRepository {
@@ -71,6 +72,12 @@ class InAppSigningRepository {
           actorName: signerName,
         );
       }
+
+      await ActivityRepository().logActivity(
+        documentId: data['documentId'] ?? requestId,
+        documentName: documentName,
+        action: ActivityAction.signed,
+      );
     } on FirebaseException catch (e) {
       throw firestoreExceptionFromCode(e.code);
     } catch (e) {
@@ -120,6 +127,12 @@ class InAppSigningRepository {
         requestId: requestId,
         documentName: documentName,
         actorName: signerName,
+      );
+
+      await ActivityRepository().logActivity(
+        documentId: data['documentId'] ?? requestId,
+        documentName: documentName,
+        action: ActivityAction.declined,
       );
     } on FirebaseException catch (e) {
       throw firestoreExceptionFromCode(e.code);

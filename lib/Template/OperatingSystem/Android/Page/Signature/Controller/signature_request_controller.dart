@@ -19,6 +19,8 @@ import '../Model/selected_document.dart';
 import '../Model/signature_request_model.dart';
 import '../Repository/signature_request_repository.dart';
 import '../../../../../Commons/Widgets/document_source_sheet.dart';
+import '../../../../../Commons/Widgets/app_text_field.dart';
+
 
 class SignatureRequestController extends GetxController {
   final UserController _userController = Get.find<UserController>();
@@ -235,19 +237,22 @@ class SignatureRequestController extends GetxController {
   void _showRenameDialog(SelectedDocument doc) {
     final controller = TextEditingController(text: doc.name);
     Get.dialog(
-      AlertDialog(
-        title: const Text('Rename Document'),
-        content: TextField(
+      AppDialogBase(
+        title: 'Rename Document',
+        content: AppTextField(
           controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Document Name',
-            border: OutlineInputBorder(),
-          ),
+          hint: 'Enter document name',
+          label: 'Document Name',
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: Get.back, child: const Text('Cancel')),
-          FilledButton(
+          AppDialogAction(
+            label: 'Cancel',
+            onPressed: () => Get.back(),
+            isPrimary: false,
+          ),
+          AppDialogAction(
+            label: 'Save',
             onPressed: () {
               final newName = controller.text.trim();
               if (newName.isNotEmpty) {
@@ -255,7 +260,6 @@ class SignatureRequestController extends GetxController {
               }
               Get.back();
             },
-            child: const Text('Save'),
           ),
         ],
       ),
@@ -398,7 +402,6 @@ class SignatureRequestController extends GetxController {
 
       // Fetch signed URL so signers can view the PDF
 
-
       AppLoader.updateMessage('Creating document...');
 
       // Create Firestore document record
@@ -440,18 +443,26 @@ class SignatureRequestController extends GetxController {
         createdAt: DateTime.now(),
       );
 
-      await _repo.createRequest(request, _userController.displayName);
+      await _repo.createRequest(
+        request,
+        _userController.displayName,
+        requesterEmail: _userController.displayEmail,
+        message: messageController.text.trim().isEmpty
+            ? null
+            : messageController.text.trim(),
+      );
 
       AppLoader.hide();
-      _clearAll();
 
+      _clearAll();
       AppDialogs.showSnackSuccess('Signature request sent.');
       Get.until((route) => route.isFirst);
     } on AppException catch (e) {
       AppLoader.hide();
       AppDialogs.showSnackError(e.message);
-    } catch (_) {
+    } catch (e) {
       AppLoader.hide();
+      debugPrint('SignatureRequestController.submitRequest error: $e');
       AppDialogs.showSnackError('Failed to send request. Please try again.');
     } finally {
       isSending.value = false;

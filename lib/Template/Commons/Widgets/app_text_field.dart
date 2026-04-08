@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../Utils/Constant/colors.dart';
 
 class AppTextField extends StatelessWidget {
   final String? label;
@@ -73,7 +72,10 @@ class AppTextField extends StatelessWidget {
           textCapitalization: textCapitalization,
           focusNode: focusNode,
           autofocus: autofocus,
-          style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+          style: TextStyle(
+            fontSize: 14,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 20) : null,

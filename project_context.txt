@@ -1,0 +1,39 @@
+# Project Context: Document Management System (Scrivener)
+
+## Overview
+This project, named "Scrivener", is a comprehensive Document Management System designed for efficiency, cross-platform accessibility, and modern aesthetics. It provides robust capabilities for users to manage, scan, process, store, and electronically sign documents. The project focuses strongly on UI/UX, fully supporting light and dark themes out-of-the-box.
+
+## Tech Stack
+The application is built using a modern, scalable, and cross-platform stack:
+
+- **Frontend/Mobile/Web Framework:** Flutter (Dart).
+- **State Management, Navigation & Dependency Injection:** GetX.
+- **Backend as a Service (BaaS):** Firebase.
+  - **Firebase Auth & Google Sign-In:** For secure user authentication.
+  - **Cloud Firestore:** For NoSQL cloud database storage (managing document metadata, user profiles, activities, and signature requests).
+  - **Firebase Messaging:** For push notifications.
+- **Local Storage / Caching:** Hive (NoSQL local DB) and Flutter Secure Storage (for sensitive data).
+- **Networking/Utilities:** Connectivity Plus, Cached Network Image, HTTP.
+- **UI & Animations:** Lottie (animations), Shimmer (loading effects), Flutter SVG (vector graphics), Cupertino Icons. Fonts include Inter, Kameron, and various script fonts geared toward digital signatures (DancingScript, GreatVibes, Pacifico, Satisfy).
+
+## Key Capabilities
+
+### Document Handling & Processing
+- **File Selection & Scanning:** Integrates `file_picker`, `image_picker`, and `flutter_doc_scanner` for versatile document ingestion.
+- **PDF Rendering:** Built-in PDF viewing functionality using `pdfx`.
+- **Cloud & Local Synchronization:** Documents and their associated metadata can be uploaded natively, ensuring accessibility across different devices while preserving states through local caching mechanisms (`Hive`).
+
+### Digital Signature Module (Web Signing & Mobile App)
+- **Signature Engine:** The platform encompasses a comprehensive signature module using the `signature` package, allowing users to draw and capture digital signatures smoothly across both mobile touch screens and web interfaces.
+- **Custom Scripts:** Features specialized cursive handwriting fonts to generate professional-looking text-based signatures.
+- **Theme-Aware Integration:** The signature pad seamlessly integrates with the application's global theme (Light and Dark modes).
+- **Workflows:** Users can request signatures, apply existing signatures to newly scanned or uploaded documents, and track document states in a centralized dashboard.
+
+### Dashboard & Activity Tracking
+- **Interactive Dashboard:** Offers a unified view to upload documents (via the Floating Action Button), review storage usage statistics (with a theme-aware Storage Banner), and quickly monitor recent file modifications.
+- **Activity Logging (Firestore):** Features an `ActivityRepository` which logs all pivotal user operations (document uploads, signature requests, etc.) sequentially, offering a complete activity timeline in the dashboard.
+
+## Application Architecture Guidelines
+- **Themes First:** Heavily relies on strongly-typed Flutter theme engines. Hardcoded colors are highly discouraged. Instead, components dynamically consume current modes (Light/Dark).
+- **Clean Structure:** The project logic separates `/models` and `/repository` folders strictly from UI code, enforcing a neat separation of data handling and visual representation. 
+- **Continuous Refactoring:** Constant removal of deprecated Flutter APIs (e.g., swapping `withOpacity` for `withValues`) is mandated to preserve compatibility with standard Flutter 3.27+ requirements.

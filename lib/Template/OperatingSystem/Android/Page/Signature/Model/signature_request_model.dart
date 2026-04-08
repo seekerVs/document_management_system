@@ -72,12 +72,10 @@ class SignerModel {
       'role': role.name,
       'status': status.name,
       'fields': fields.map((f) => f.toMap()).toList(),
-      'signedAt': signedAt != null ? Timestamp.fromDate(signedAt!) : null,
+      'signedAt': signedAt?.toIso8601String(),
       'signatureImageUrl': signatureImageUrl,
       'signingToken': signingToken,
-      'tokenExpiry': tokenExpiry != null
-          ? Timestamp.fromDate(tokenExpiry!)
-          : null,
+      'tokenExpiry': tokenExpiry?.toIso8601String(),
       'tokenUsed': tokenUsed,
       'ipAddress': ipAddress,
     };

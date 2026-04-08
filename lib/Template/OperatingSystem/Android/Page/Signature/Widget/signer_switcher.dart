@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../Utils/Constant/colors.dart';
 import '../../../../../Utils/Constant/enum.dart';
+import '../../../../../Commons/Styles/style.dart';
 import '../Controller/signature_placement_controller.dart';
 
 class SignerSwitcher extends StatelessWidget {
@@ -22,7 +22,7 @@ class SignerSwitcher extends StatelessWidget {
 
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        color: AppColors.background,
+        color: Theme.of(context).colorScheme.surfaceContainer,
         width: double.infinity,
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -36,7 +36,7 @@ class SignerSwitcher extends StatelessWidget {
               children: List.generate(signers.length, (i) {
                 final isActive = i == activeIndex;
                 final signer = signers[i];
-                final signerColor = controller.signerColor(i);
+                final signerColor = AppStyle.signerColor(context, i);
                 final roleLabel = signer.role == SignerRole.needsToSign
                     ? 'Need to Sign'
                     : 'Receive a Copy';
@@ -81,7 +81,7 @@ class SignerSwitcher extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
-                                color: AppColors.textPrimary,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontWeight: isActive
                                     ? FontWeight.bold
                                     : FontWeight.w500,
@@ -94,7 +94,7 @@ class SignerSwitcher extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
-                                color: AppColors.textSecondary,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 fontSize: 9,
                                 height: 1.1,
                               ),

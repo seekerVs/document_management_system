@@ -23,7 +23,6 @@ import '../../OperatingSystem/Android/Page/Signature/View/recipients_list_view.d
 import '../../OperatingSystem/Android/Page/Signature/View/select_document_view.dart';
 import '../../OperatingSystem/Android/Page/Tasks/Controller/tasks_controller.dart';
 import '../../OperatingSystem/Android/Page/Tasks/View/tasks_view.dart';
-import '../../OperatingSystem/Android/Page/Signature/Controller/in_app_signing_controller.dart';
 import '../../OperatingSystem/Android/Page/Signature/View/in_app_signing_view.dart';
 import '../../OperatingSystem/Android/Page/Signature/View/request_review_view.dart';
 import '../../OperatingSystem/Android/Page/Signature/View/signature_placement_view.dart';
@@ -120,9 +119,6 @@ class AppRoutes {
     GetPage(
       name: MainRoutes.inAppSigning,
       page: () => const InAppSigningView(),
-      binding: BindingsBuilder(
-        () => Get.lazyPut(() => InAppSigningController(), fenix: true),
-      ),
     ),
 
     // ─── Placeholders ─────────────────────────────────────────────────────

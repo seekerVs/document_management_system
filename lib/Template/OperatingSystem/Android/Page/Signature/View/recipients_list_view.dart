@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import '../../../../../Commons/Styles/style.dart';
 import '../../../../../Commons/Widgets/app_button.dart';
 import '../../../../../Commons/Widgets/app_avatar.dart';
-import '../../../../../Utils/Constant/colors.dart';
 import '../../../../../Utils/Constant/enum.dart';
 import '../Controller/signature_request_controller.dart';
 import '../Model/signature_request_model.dart';
@@ -52,19 +51,19 @@ class RecipientsListView extends GetView<SignatureRequestController> {
                         horizontal: 16,
                         vertical: 14,
                       ),
-                      decoration: AppStyle.card(),
+                      decoration: AppStyle.cardOf(context),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.add,
-                            color: AppColors.blue,
+                            color: Theme.of(context).colorScheme.primary,
                             size: 20,
                           ),
                           const SizedBox(width: 12),
                           Text(
                             'Add another recipient',
                             style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(color: AppColors.blue),
+                                ?.copyWith(color: Theme.of(context).colorScheme.primary),
                           ),
                         ],
                       ),
@@ -98,7 +97,7 @@ class _SigningOrderToggle extends StatelessWidget {
           () => Switch(
             value: controller.signingOrderEnabled.value,
             onChanged: controller.toggleSigningOrder,
-            activeThumbColor: AppColors.blue,
+            activeThumbColor: Theme.of(context).colorScheme.primary,
           ),
         ),
       ],
@@ -180,7 +179,7 @@ class _SignerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: AppStyle.card(),
+      decoration: AppStyle.cardOf(context),
       child: ListTile(
         contentPadding: const EdgeInsets.only(left: 16),
         leading: AppAvatar(name: signer.signerName),
@@ -207,23 +206,23 @@ class _SignerTile extends StatelessWidget {
                   : 'Receives a copy',
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.textHint),
+              ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ],
         ),
         trailing: showOrder
             ? ReorderableDragStartListener(
                 index: index!,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Icon(Icons.drag_handle, color: AppColors.textHint),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Icon(Icons.drag_handle, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
               )
             : IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.more_vert,
                   size: 18,
-                  color: AppColors.textHint,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 onPressed: () => controller.showSignerOptions(signer),
               ),

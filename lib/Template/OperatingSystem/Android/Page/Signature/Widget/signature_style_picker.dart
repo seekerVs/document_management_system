@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import '../../../../../Commons/Styles/style.dart';
 import '../../../../../Commons/Widgets/app_button.dart';
 
-// Font families for styled signature generation — must be in pubspec.yaml
 const List<String> _signatureFonts = [
   'DancingScript',
   'GreatVibes',
@@ -52,11 +51,7 @@ class _SignatureStylePickerState extends State<SignatureStylePicker> {
     final textPainter = TextPainter(
       text: TextSpan(
         text: widget.name,
-        style: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 40,
-          color: color,
-        ),
+        style: TextStyle(fontFamily: fontFamily, fontSize: 40, color: color),
       ),
       textDirection: TextDirection.ltr,
     )..layout(maxWidth: width);
@@ -142,11 +137,7 @@ class _SignatureStylePickerState extends State<SignatureStylePicker> {
                       ),
                     ),
                     if (isSelected)
-                      Icon(
-                        Icons.check_circle,
-                        color: cs.primary,
-                        size: 20,
-                      ),
+                      Icon(Icons.check_circle, color: cs.primary, size: 20),
                   ],
                 ),
               ),

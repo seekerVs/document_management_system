@@ -4,10 +4,11 @@ import 'package:get/get.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:http/http.dart' as http;
 import '../../../../../Commons/Widgets/app_button.dart';
-import '../../../../../Utils/Constant/colors.dart';
 import '../../../../../Utils/Constant/enum.dart';
 import '../Controller/in_app_signing_controller.dart';
 import '../Model/signature_field_model.dart';
+import '../Widget/signature_field_overlay.dart';
+import '../../../../../Utils/Services/supabase_service.dart';
 
 class InAppSigningView extends StatefulWidget {
   const InAppSigningView({super.key});
@@ -29,12 +30,17 @@ class _InAppSigningViewState extends State<InAppSigningView> {
 
   Future<void> _fetchDocument() async {
     try {
-      final response = await http.get(
-        Uri.parse(_controller.request.documentUrl),
-      );
+      String url = _controller.request.documentUrl;
+
+      // If documentUrl is a storage path (no host specified), get a signed URL
+      if (!url.startsWith('http')) {
+        url = await SupabaseService.getSignedUrl(url);
+      }
+
+      final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final doc = await PdfDocument.openData(response.bodyBytes);
-        setState(() => _document = doc);
+        if (mounted) setState(() => _document = doc);
       }
     } catch (e) {
       debugPrint('Error fetching PDF: $e');
@@ -53,7 +59,7 @@ class _InAppSigningViewState extends State<InAppSigningView> {
     final signer = _controller.signer;
 
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           request.documentName,
@@ -61,22 +67,51 @@ class _InAppSigningViewState extends State<InAppSigningView> {
           overflow: TextOverflow.ellipsis,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.chevron_left),
-          onPressed: Get.back,
+          icon: const Icon(Icons.close),
+          onPressed: () => Get.offAllNamed('/dashboard'),
         ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(32),
-          child: Container(
-            width: double.infinity,
-            color: AppColors.background,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Text(
-              'Signing as ${signer.signerName}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.blue,
-                fontWeight: FontWeight.w500,
+          preferredSize: const Size.fromHeight(40),
+          child: Column(
+            children: [
+              Obx(
+                () => LinearProgressIndicator(
+                  value: _controller.progress,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainer,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).colorScheme.primary,
+                  ),
+                  minHeight: 3,
+                ),
               ),
-            ),
+              Container(
+                width: double.infinity,
+                color: Theme.of(context).colorScheme.surfaceContainer,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.person_outline,
+                      size: 14,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Now Signing: ${signer.signerName}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -163,13 +198,17 @@ class _PdfSigningPageState extends State<_PdfSigningPage> {
         final double displayW = constraints.maxWidth;
         final double displayH = displayW * (pdfH / pdfW);
 
+        final fields = widget.controller.fields
+            .where((f) => f.page == widget.pageIndex - 1)
+            .toList();
+
         return Container(
           margin: const EdgeInsets.only(bottom: 24),
           width: displayW,
           height: displayH,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            boxShadow: const [
               BoxShadow(
                 color: Colors.black12,
                 blurRadius: 8,
@@ -177,112 +216,38 @@ class _PdfSigningPageState extends State<_PdfSigningPage> {
               ),
             ],
           ),
-          child: Obx(() {
-            final fields = widget.controller.fields
-                .where((f) => f.page == widget.pageIndex - 1)
-                .toList();
-
-            return Stack(
-              children: [
-                Positioned.fill(
-                  child: Image.memory(_image!.bytes, fit: BoxFit.fill),
-                ),
-                ...fields.map(
-                  (f) => _SigningFieldOverlay(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Image.memory(_image!.bytes, fit: BoxFit.fill),
+              ),
+              Obx(() => Stack(
+                children: fields.map(
+                  (f) => SignatureFieldOverlay(
                     key: ValueKey(f.fieldId),
                     field: f,
-                    controller: widget.controller,
-                    displayW: displayW,
-                    displayH: displayH,
+                    signer: widget.controller.signer,
+                    color: widget.controller.fieldColor(f.fieldId),
+                    canvasWidth: displayW,
+                    canvasHeight: displayH,
+                    onTap: () => widget.controller.onFieldTap(f),
+                    child: widget.controller.isFieldFilled(f.fieldId)
+                        ? _FilledFieldContent(
+                            field: f,
+                            imageBytes:
+                                widget.controller.signatureImages[f.fieldId],
+                            textValue: widget.controller.fieldValues[f.fieldId],
+                            color: widget.controller.fieldColor(f.fieldId),
+                          )
+                        : null,
                   ),
-                ),
-              ],
-            );
-          }),
+                ).toList(),
+              )),
+            ],
+          ),
         );
       },
     );
-  }
-}
-
-class _SigningFieldOverlay extends StatelessWidget {
-  final SignatureFieldModel field;
-  final InAppSigningController controller;
-  final double displayW;
-  final double displayH;
-
-  const _SigningFieldOverlay({
-    super.key,
-    required this.field,
-    required this.controller,
-    required this.displayW,
-    required this.displayH,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      final isFilled = controller.isFieldFilled(field.fieldId);
-      final color = controller.fieldColor(field.fieldId);
-      final imageBytes = controller.signatureImages[field.fieldId];
-      final textValue = controller.fieldValues[field.fieldId];
-
-      return Positioned(
-        left: field.x,
-        top: field.y,
-        child: GestureDetector(
-          onTap: () => controller.onFieldTap(field),
-          child: Container(
-            width: field.width,
-            height: field.height,
-            decoration: BoxDecoration(
-              color: color.withAlpha(isFilled ? 20 : 30),
-              border: Border.all(color: color, width: 1.5),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: isFilled
-                ? _FilledFieldContent(
-                    field: field,
-                    imageBytes: imageBytes,
-                    textValue: textValue,
-                    color: color,
-                  )
-                : _EmptyFieldContent(field: field, color: color),
-          ),
-        ),
-      );
-    });
-  }
-}
-
-class _EmptyFieldContent extends StatelessWidget {
-  final SignatureFieldModel field;
-  final Color color;
-  const _EmptyFieldContent({required this.field, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(_icon, color: color, size: 14),
-        const SizedBox(width: 4),
-        const Text('*', style: TextStyle(color: Colors.red, fontSize: 14)),
-      ],
-    );
-  }
-
-  IconData get _icon {
-    switch (field.type) {
-      case SignatureFieldType.signature:
-        return Icons.draw_outlined;
-      case SignatureFieldType.initials:
-        return Icons.text_fields_outlined;
-      case SignatureFieldType.dateSigned:
-        return Icons.calendar_today_outlined;
-      case SignatureFieldType.textbox:
-        return Icons.text_snippet_outlined;
-    }
   }
 }
 
@@ -303,8 +268,11 @@ class _FilledFieldContent extends StatelessWidget {
   Widget build(BuildContext context) {
     if (imageBytes != null) {
       return Padding(
-        padding: const EdgeInsets.all(4),
-        child: Image.memory(imageBytes!, fit: BoxFit.contain),
+        padding: const EdgeInsets.all(2.0),
+        child: Image.memory(
+          imageBytes!,
+          fit: BoxFit.contain,
+        ),
       );
     }
     return Center(
@@ -312,8 +280,8 @@ class _FilledFieldContent extends StatelessWidget {
         textValue ?? '',
         style: TextStyle(
           fontSize: field.type == SignatureFieldType.dateSigned ? 10 : 12,
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.w500,
+          color: Colors.black87,
+          fontWeight: FontWeight.w600,
         ),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
@@ -336,9 +304,9 @@ class _BottomBar extends StatelessWidget {
         16,
         MediaQuery.of(context).padding.bottom + 16,
       ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        boxShadow: const [
           BoxShadow(
             color: Color(0x14000000),
             blurRadius: 8,
@@ -347,40 +315,14 @@ class _BottomBar extends StatelessWidget {
         ],
       ),
       child: Obx(() {
-        final filled = controller.fields
-            .where((f) => controller.isFieldFilled(f.fieldId))
-            .length;
-        final total = controller.fields.length;
-
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '$filled of $total fields completed',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                if (filled == total)
-                  const Icon(
-                    Icons.check_circle,
-                    color: AppColors.green,
-                    size: 16,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 10),
             AppButton.primary(
               label: 'Confirm & Sign',
               onPressed: controller.allFieldsFilled
                   ? controller.confirmSigning
                   : null,
-            ),
-            const SizedBox(height: 8),
-            AppButton.outlined(
-              label: 'Decline to Sign',
-              onPressed: controller.declineSigning,
             ),
           ],
         );

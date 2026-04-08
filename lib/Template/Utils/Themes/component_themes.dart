@@ -76,22 +76,25 @@ class AppComponentThemes {
       borderSide: BorderSide(color: AppColorScheme.light.error, width: 1.5),
     ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    hintStyle: TextStyle(color: AppColorScheme.light.outline, fontSize: 14),
-    prefixIconColor: AppColorScheme.light.outline,
-    suffixIconColor: AppColorScheme.light.outline,
+    hintStyle: TextStyle(
+      color: AppColorScheme.light.onSurfaceVariant,
+      fontSize: 14,
+    ),
+    prefixIconColor: AppColorScheme.light.onSurfaceVariant,
+    suffixIconColor: AppColorScheme.light.onSurfaceVariant,
     errorStyle: TextStyle(color: AppColorScheme.light.error, fontSize: 12),
   );
 
   static InputDecorationTheme darkInput = InputDecorationTheme(
     filled: true,
-    fillColor: AppColorScheme.dark.surfaceContainer,
+    fillColor: AppColorScheme.dark.surfaceContainerHighest,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(ThemeRadius.md),
-      borderSide: BorderSide(color: AppColorScheme.dark.outlineVariant),
+      borderSide: BorderSide(color: AppColorScheme.dark.outline),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(ThemeRadius.md),
-      borderSide: BorderSide(color: AppColorScheme.dark.outlineVariant),
+      borderSide: BorderSide(color: AppColorScheme.dark.outline),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(ThemeRadius.md),
@@ -106,12 +109,16 @@ class AppComponentThemes {
       borderSide: BorderSide(color: AppColorScheme.dark.error, width: 1.5),
     ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    hintStyle:
-        TextStyle(color: AppColorScheme.dark.outlineVariant, fontSize: 14),
-    labelStyle:
-        TextStyle(color: AppColorScheme.dark.onSurfaceVariant, fontSize: 14),
-    prefixIconColor: AppColorScheme.dark.outlineVariant,
-    suffixIconColor: AppColorScheme.dark.outlineVariant,
+    hintStyle: TextStyle(
+      color: AppColorScheme.dark.onSurfaceVariant,
+      fontSize: 14,
+    ),
+    labelStyle: TextStyle(
+      color: AppColorScheme.dark.onSurfaceVariant,
+      fontSize: 14,
+    ),
+    prefixIconColor: AppColorScheme.dark.onSurfaceVariant,
+    suffixIconColor: AppColorScheme.dark.onSurfaceVariant,
     errorStyle: TextStyle(color: AppColorScheme.dark.error, fontSize: 12),
   );
 
@@ -181,12 +188,14 @@ class AppComponentThemes {
 
   static IconButtonThemeData iconButton = IconButtonThemeData(
     style: IconButton.styleFrom(
-        foregroundColor: AppColorScheme.light.onSurfaceVariant),
+      foregroundColor: AppColorScheme.light.onSurfaceVariant,
+    ),
   );
 
   static IconButtonThemeData darkIconButton = IconButtonThemeData(
     style: IconButton.styleFrom(
-        foregroundColor: AppColorScheme.dark.onSurfaceVariant),
+      foregroundColor: AppColorScheme.dark.onSurfaceVariant,
+    ),
   );
 
   // ─── FAB ──────────────────────────────────────────────────────────────────
@@ -231,7 +240,9 @@ class AppComponentThemes {
       color: AppColorScheme.light.onSurface,
     ),
     subtitleTextStyle: TextStyle(
-        fontSize: 12, color: AppColorScheme.light.onSurfaceVariant),
+      fontSize: 12,
+      color: AppColorScheme.light.onSurfaceVariant,
+    ),
   );
 
   static ListTileThemeData darkListTile = ListTileThemeData(
@@ -243,7 +254,9 @@ class AppComponentThemes {
       color: AppColorScheme.dark.onSurface,
     ),
     subtitleTextStyle: TextStyle(
-        fontSize: 12, color: AppColorScheme.dark.onSurfaceVariant),
+      fontSize: 12,
+      color: AppColorScheme.dark.onSurfaceVariant,
+    ),
   );
 
   // ─── Checkbox ────────────────────────────────────────────────────────────
@@ -299,28 +312,32 @@ class AppComponentThemes {
 
   static BottomNavigationBarThemeData lightBottomNav =
       BottomNavigationBarThemeData(
-    backgroundColor: AppColorScheme.light.surface,
-    selectedItemColor: AppColorScheme.light.primary,
-    unselectedItemColor: AppColorScheme.light.outline,
-    showSelectedLabels: true,
-    showUnselectedLabels: true,
-    elevation: 8,
-    type: BottomNavigationBarType.fixed,
-    selectedLabelStyle:
-        const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-    unselectedLabelStyle:
-        const TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
-  );
+        backgroundColor: AppColorScheme.light.surface,
+        selectedItemColor: AppColorScheme.light.primary,
+        unselectedItemColor: AppColorScheme.light.outline,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        elevation: 8,
+        type: BottomNavigationBarType.fixed,
+        selectedLabelStyle: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+        ),
+      );
 
   static BottomNavigationBarThemeData darkBottomNav =
       BottomNavigationBarThemeData(
-    backgroundColor: AppColorScheme.dark.surface,
-    selectedItemColor: AppColorScheme.dark.primary,
-    unselectedItemColor: AppColorScheme.dark.outlineVariant,
-    showSelectedLabels: true,
-    showUnselectedLabels: true,
-    type: BottomNavigationBarType.fixed,
-  );
+        backgroundColor: AppColorScheme.dark.surface,
+        selectedItemColor: AppColorScheme.dark.primary,
+        unselectedItemColor: AppColorScheme.dark.outlineVariant,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
+      );
 
   // ─── Tab bar ──────────────────────────────────────────────────────────────
 
@@ -330,8 +347,10 @@ class AppComponentThemes {
     indicatorColor: AppColorScheme.light.primary,
     indicatorSize: TabBarIndicatorSize.tab,
     labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-    unselectedLabelStyle:
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+    unselectedLabelStyle: const TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
+    ),
   );
 
   static TabBarThemeData darkTabBar = TabBarThemeData(
@@ -340,8 +359,10 @@ class AppComponentThemes {
     indicatorColor: AppColorScheme.dark.primary,
     indicatorSize: TabBarIndicatorSize.tab,
     labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-    unselectedLabelStyle:
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+    unselectedLabelStyle: const TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
+    ),
   );
 
   // ─── Chip ─────────────────────────────────────────────────────────────────
@@ -374,6 +395,7 @@ class AppComponentThemes {
   static DialogThemeData dialog = DialogThemeData(
     backgroundColor: AppColorScheme.light.surface,
     elevation: 0,
+    insetPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(ThemeRadius.xl),
     ),
@@ -391,6 +413,7 @@ class AppComponentThemes {
   static DialogThemeData darkDialog = DialogThemeData(
     backgroundColor: AppColorScheme.dark.surfaceContainer,
     elevation: 0,
+    insetPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(ThemeRadius.xl),
     ),
@@ -434,11 +457,13 @@ class AppComponentThemes {
 
   // ─── Progress indicator ───────────────────────────────────────────────────
 
-  static ProgressIndicatorThemeData lightProgress =
-      ProgressIndicatorThemeData(color: AppColorScheme.light.primary);
+  static ProgressIndicatorThemeData lightProgress = ProgressIndicatorThemeData(
+    color: AppColorScheme.light.primary,
+  );
 
-  static ProgressIndicatorThemeData darkProgress =
-      ProgressIndicatorThemeData(color: AppColorScheme.dark.primary);
+  static ProgressIndicatorThemeData darkProgress = ProgressIndicatorThemeData(
+    color: AppColorScheme.dark.primary,
+  );
 
   // ─── Popup menu ───────────────────────────────────────────────────────────
 
@@ -448,8 +473,7 @@ class AppComponentThemes {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(ThemeRadius.lg),
     ),
-    textStyle:
-        TextStyle(fontSize: 13, color: AppColorScheme.light.onSurface),
+    textStyle: TextStyle(fontSize: 13, color: AppColorScheme.light.onSurface),
   );
 
   static PopupMenuThemeData darkPopupMenu = PopupMenuThemeData(
@@ -459,8 +483,7 @@ class AppComponentThemes {
       borderRadius: BorderRadius.circular(ThemeRadius.lg),
       side: BorderSide(color: AppColorScheme.dark.outlineVariant),
     ),
-    textStyle:
-        TextStyle(fontSize: 13, color: AppColorScheme.dark.onSurface),
+    textStyle: TextStyle(fontSize: 13, color: AppColorScheme.dark.onSurface),
   );
 
   // ─── Menu (MenuAnchor) ────────────────────────────────────────────────────
@@ -468,13 +491,11 @@ class AppComponentThemes {
   // appMenuStyle can be used directly on MenuAnchor.style for consistency.
 
   static MenuStyle get appMenuStyle => MenuStyle(
-    backgroundColor:
-        WidgetStatePropertyAll(AppColorScheme.light.surface),
+    backgroundColor: WidgetStatePropertyAll(AppColorScheme.light.surface),
     elevation: const WidgetStatePropertyAll(8),
     shadowColor: const WidgetStatePropertyAll(Colors.black26),
     surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
-    padding:
-        const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 4)),
+    padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 4)),
     shape: WidgetStatePropertyAll(
       RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(ThemeRadius.lg),
@@ -488,12 +509,11 @@ class AppComponentThemes {
     style: ButtonStyle(
       minimumSize: const WidgetStatePropertyAll(Size(160, 36)),
       padding: const WidgetStatePropertyAll(
-          EdgeInsets.symmetric(horizontal: 16)),
+        EdgeInsets.symmetric(horizontal: 16),
+      ),
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      foregroundColor:
-          WidgetStatePropertyAll(AppColorScheme.light.onSurface),
-      iconColor:
-          WidgetStatePropertyAll(AppColorScheme.light.onSurfaceVariant),
+      foregroundColor: WidgetStatePropertyAll(AppColorScheme.light.onSurface),
+      iconColor: WidgetStatePropertyAll(AppColorScheme.light.onSurfaceVariant),
       iconSize: const WidgetStatePropertyAll(16),
       textStyle: const WidgetStatePropertyAll(TextStyle(fontSize: 13)),
     ),

@@ -6,7 +6,6 @@ class AppImages {
 
   static const String logo = '${_images}logo.svg';
   static const String logoDark = '${_images}logo_dark.png';
-  static const String splash = '${_images}logo_splash.png';
 
   static const String authBanner = '${_images}auth_banner.png';
   static const String phoneBanner = '${_images}phone_banner.png';
