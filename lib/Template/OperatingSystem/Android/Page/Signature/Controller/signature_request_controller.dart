@@ -20,7 +20,7 @@ import '../Model/signature_request_model.dart';
 import '../Repository/signature_request_repository.dart';
 import '../../../../../Commons/Widgets/document_source_sheet.dart';
 import '../../../../../Commons/Widgets/app_text_field.dart';
-
+import 'in_app_signing_controller.dart';
 
 class SignatureRequestController extends GetxController {
   final UserController _userController = Get.find<UserController>();
@@ -443,7 +443,7 @@ class SignatureRequestController extends GetxController {
         createdAt: DateTime.now(),
       );
 
-      await _repo.createRequest(
+      final requestId = await _repo.createRequest(
         request,
         _userController.displayName,
         requesterEmail: _userController.displayEmail,
@@ -452,7 +452,32 @@ class SignatureRequestController extends GetxController {
             : messageController.text.trim(),
       );
 
+      // Check if current user is a signer to trigger in-app signing redirect
+      final currentUserEmail = _userController.displayEmail.toLowerCase();
+      final senderAsSigner = signers.firstWhereOrNull(
+        (s) => s.signerEmail.toLowerCase() == currentUserEmail,
+      );
+
       AppLoader.hide();
+
+      if (senderAsSigner != null) {
+        // Fetch the full request from Firestore to get IDs and any backend-generated tokens
+        final doc = await FirebaseUtils.signatureRequestDoc(requestId).get();
+        if (doc.exists) {
+          final fullRequest = SignatureRequestModel.fromFirestore(doc);
+          final signerModel = fullRequest.signers.firstWhere(
+            (s) => s.signerEmail.toLowerCase() == currentUserEmail,
+          );
+
+          final signingController = Get.find<InAppSigningController>();
+          signingController.init(fullRequest, signerModel);
+
+          _clearAll();
+          AppDialogs.showSnackSuccess('Request sent. Redirecting to sign...');
+          Get.offNamed(MainRoutes.inAppSigning);
+          return;
+        }
+      }
 
       _clearAll();
       AppDialogs.showSnackSuccess('Signature request sent.');

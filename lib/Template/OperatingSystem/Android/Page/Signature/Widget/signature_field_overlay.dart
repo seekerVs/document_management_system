@@ -76,6 +76,8 @@ class SignatureFieldOverlay extends StatelessWidget {
     final double renderWidth = field.width * canvasWidth;
     final double renderHeight = field.height * canvasHeight;
 
+    final isFilled = child != null || field.value != null;
+
     return Positioned(
       left: left,
       top: top,
@@ -120,12 +122,12 @@ class SignatureFieldOverlay extends StatelessWidget {
                     maxHeight: renderHeight,
                   ),
             decoration: BoxDecoration(
-              color: Colors.transparent,
+              color: isFilled ? Colors.transparent : color,
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
                 color: isFieldSelected ? Colors.white : color,
-                width: isFieldSelected ? 2.0 : 1.0,
-                style: (field.isRequired || isFieldSelected)
+                width: isFieldSelected ? (isFilled ? 1.0 : 2.0) : 1.0,
+                style: (isFieldSelected || !isFilled)
                     ? BorderStyle.solid
                     : BorderStyle.none,
               ),
