@@ -48,3 +48,4 @@ firebase.json
 /android/app/release
 lib/firebase_options.dart
 app signing.mp4
+project_context.txt
