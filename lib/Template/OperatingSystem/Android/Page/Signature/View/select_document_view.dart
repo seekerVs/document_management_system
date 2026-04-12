@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../Commons/Styles/style.dart';
 import '../../../../../Commons/Widgets/app_button.dart';
-import '../../../../../Utils/Popups/dialog.dart';
-import '../../Documents/Widget/pdf_viewer.dart';
+import 'package:pdfx/pdfx.dart';
+import '../../../../../Commons/Widgets/app_pdf_viewer.dart';
 import '../Controller/signature_request_controller.dart';
 
 class SelectDocumentView extends GetView<SignatureRequestController> {
@@ -11,61 +11,72 @@ class SelectDocumentView extends GetView<SignatureRequestController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Documents'),
-        leading: IconButton(
-          icon: const Icon(Icons.chevron_left),
-          onPressed: Get.back,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        controller.onBackRequest();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Add Documents'),
+          leading: IconButton(
+            icon: const Icon(Icons.chevron_left),
+            onPressed: controller.onBackRequest,
+          ),
         ),
-      ),
-      body: Obx(() {
-        final doc = controller.selectedDocument.value;
-        return Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  if (doc != null) ...[
-                    _DocumentTile(controller: controller),
-                    const SizedBox(height: 8),
-                  ],
-                  // Add another document row
-                  GestureDetector(
-                    onTap: controller.showDocumentSourceSheet,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      decoration: AppStyle.cardOf(context),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.add,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            doc == null
-                                ? 'Select a document'
-                                : 'Add another document',
-                            style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(color: Theme.of(context).colorScheme.primary),
-                          ),
-                        ],
+        body: Obx(() {
+          final doc = controller.selectedDocument.value;
+          return Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    if (doc != null) ...[
+                      _DocumentTile(controller: controller),
+                      const SizedBox(height: 8),
+                    ],
+                    // Add another document row
+                    GestureDetector(
+                      onTap: controller.showDocumentSourceSheet,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        decoration: AppStyle.cardOf(context),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.add,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              doc == null
+                                  ? 'Select a document'
+                                  : 'Add another document',
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                  ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            _BottomActions(controller: controller),
-          ],
-        );
-      }),
+              _BottomActions(controller: controller),
+            ],
+          );
+        }),
+      ),
     );
   }
 }
@@ -104,9 +115,28 @@ class _DocumentTile extends StatelessWidget {
                   onPressed: Get.back,
                 ),
               ),
-              body: PdfViewer(
-                localPath: doc.file.path,
-                onError: (e) => AppDialogs.showSnackError('Failed to load PDF'),
+              body: FutureBuilder<PdfDocument>(
+                future: PdfDocument.openFile(doc.file.path),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError || !snapshot.hasData) {
+                    return Center(
+                      child: Text(
+                        'Failed to load PDF',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    );
+                  }
+                  return AppPdfViewer(
+                    document: snapshot.data!,
+                    docId: doc.name,
+                    fieldBuilder: (ctx, page, w, h) => const SizedBox.shrink(),
+                  );
+                },
               ),
             ),
           );
@@ -172,7 +202,10 @@ class _BottomActions extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          AppButton.outlined(label: 'Cancel', onPressed: Get.back),
+          AppButton.outlined(
+            label: 'Cancel',
+            onPressed: () => controller.onBackRequest(forceDialog: true),
+          ),
         ],
       ),
     );

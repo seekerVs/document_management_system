@@ -4,7 +4,6 @@ import '../../../../../Commons/Widgets/section_header.dart';
 import '../../../../../Commons/Widgets/app_document_tile.dart';
 import '../../../../../Commons/Widgets/empty_state.dart';
 import '../../../../../Commons/Widgets/loading_shimmer.dart';
-import '../../../../../Utils/Constant/colors.dart';
 import '../../../../../Utils/Constant/enum.dart';
 import '../../../../../Utils/Constant/texts.dart';
 import '../../../../../Utils/Formatters/formatter.dart';
@@ -19,6 +18,7 @@ class TasksView extends GetView<TasksController> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tasks'),
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.chevron_left),
           onPressed: Get.back,
@@ -30,8 +30,8 @@ class TasksView extends GetView<TasksController> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: 6,
             itemBuilder: (_, _) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: LoadingShimmer.card(),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+              child: LoadingShimmer.card(context),
             ),
           );
         }
@@ -49,7 +49,7 @@ class TasksView extends GetView<TasksController> {
         return RefreshIndicator(
           onRefresh: controller.loadTasks,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
             children: [
               const SectionHeader(title: 'Recents'),
               const SizedBox(height: 8),
@@ -65,17 +65,53 @@ class TasksView extends GetView<TasksController> {
                     subtitle2: _getStatusLabel(signer),
 
                     trailing2: AppFormatter.dateShort(request.createdAt),
-                    onTap: () => controller.openTask(request),
-                    onMoreTap: () => controller.showTaskOptions(request),
+                    onTap: () {
+                      if (signer.status == SignerStatus.pending) {
+                        controller.signDocument(request);
+                      } else {
+                        controller.viewTaskDetails(request);
+                      }
+                    },
+                    trailingWidget: PopupMenuButton<String>(
+                      position: PopupMenuPosition.under,
+                      icon: Icon(
+                        Icons.more_vert,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        size: 20,
+                      ),
+                      onSelected: (value) {
+                        if (value == 'details') controller.viewTaskDetails(request);
+                      },
+                      itemBuilder: (_) => [
+                        PopupMenuItem(
+                          value: 'details',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                size: 20,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Task Details',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      ],
+                    ),
                   ),
                 );
               }),
               const SizedBox(height: 32),
-              const Center(
+              Center(
                 child: Text(
                   'No more tasks',
                   style: TextStyle(
-                    color: AppColors.textHint,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
@@ -96,8 +132,6 @@ class TasksView extends GetView<TasksController> {
         return 'Needs to sign';
       case SignerStatus.signed:
         return 'Signed';
-      case SignerStatus.declined:
-        return 'Declined';
     }
   }
 }

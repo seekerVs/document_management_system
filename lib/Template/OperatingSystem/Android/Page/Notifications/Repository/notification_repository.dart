@@ -28,8 +28,8 @@ class NotificationRepository {
         'actorName': actorName,
         'createdAt': FieldValue.serverTimestamp(),
       });
-    } on FirebaseException catch (e) {
-      throw firestoreExceptionFromCode(e.code);
+    } catch (e) {
+      // We don't want to block the main process if a notification fails to send
     }
   }
 

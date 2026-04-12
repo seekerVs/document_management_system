@@ -18,8 +18,13 @@ import '../../Profile/Controller/user_controller.dart';
 import '../Model/selected_document.dart';
 import '../Model/signature_request_model.dart';
 import '../Repository/signature_request_repository.dart';
+import '../../Profile/Repository/user_repository.dart';
 import '../../../../../Commons/Widgets/document_source_sheet.dart';
 import '../../../../../Commons/Widgets/app_text_field.dart';
+import '../../Documents/Widget/prepare_upload_dialog.dart';
+import '../../Documents/Model/prepare_upload_model.dart';
+import '../../Documents/Model/document_model.dart';
+import '../Widget/library_picker_sheet.dart';
 import 'in_app_signing_controller.dart';
 
 class SignatureRequestController extends GetxController {
@@ -49,6 +54,40 @@ class SignatureRequestController extends GetxController {
   final RxBool isSending = false.obs;
   final RxBool isScanning = false.obs;
 
+  // ─── State Helpers ───────────────────────────────────────────────────────
+
+  bool get hasProgress => selectedDocument.value != null || signers.isNotEmpty;
+
+  bool get isRecipientFormDirty =>
+      nameController.text.trim().isNotEmpty ||
+      emailController.text.trim().isNotEmpty;
+
+  // Called when user tries to go back to dashboard/exit the flow
+  void onBackRequest({bool forceDialog = false}) {
+    if (forceDialog || hasProgress) {
+      cancelRequest();
+    } else {
+      Get.back();
+    }
+  }
+
+  // Called when user tries to go back from Add Recipient
+  void onAddRecipientBack() {
+    if (isRecipientFormDirty) {
+      AppDialogs.showConfirm(
+        title: 'Discard recipient?',
+        message: 'The details you entered will be lost.',
+        confirmLabel: 'Discard',
+        onConfirm: () {
+          _clearRecipientForm();
+          Get.back();
+        },
+      );
+    } else {
+      Get.back();
+    }
+  }
+
   // ─── Step 1 — Document selection ─────────────────────────────────────────
 
   // Open document source bottom sheet
@@ -58,6 +97,7 @@ class SignatureRequestController extends GetxController {
       onDrive: pickFromDrive,
       onPhotos: pickFromPhotos,
       onFiles: pickFromFiles,
+      onLibrary: pickFromLibrary,
     );
   }
 
@@ -66,6 +106,26 @@ class SignatureRequestController extends GetxController {
     if (Get.currentRoute != MainRoutes.selectDocument) {
       Get.toNamed(MainRoutes.selectDocument);
     }
+  }
+
+  // Browse and pick from existing library docs
+  void pickFromLibrary() {
+    LibraryPickerSheet.show(
+      onPick: (DocumentModel model) {
+        selectedDocument.value = SelectedDocument(
+          name: model.name,
+          file: File(''), // Not needed for library docs
+          sizeMB: model.fileSizeMB,
+          documentId: model.documentId,
+          storagePath: model.fileUrl,
+        );
+
+        emailSubject.value = 'Complete with DocuSign: ${model.name}';
+        subjectController.text = emailSubject.value;
+
+        _goToSelectDocument();
+      },
+    );
   }
 
   // Launch camera scanner
@@ -124,18 +184,30 @@ class SignatureRequestController extends GetxController {
       final name =
           'Scan ${DateTime.now().toString().substring(0, 16).replaceAll(':', '').replaceAll(' ', '_')}.pdf';
       final sizeBytes = await file.length();
+      final sizeMB = sizeBytes / (1024 * 1024);
+
+      AppLoader.hide();
+
+      // Collect Metadata without uploading
+      final prep = await PrepareUploadDialog.show(
+        file: file,
+        originalName: name,
+        fileSizeMB: sizeMB,
+      );
+
+      if (prep == null) return;
 
       selectedDocument.value = SelectedDocument(
-        name: name,
+        name: prep.fileName + prep.extension,
         file: file,
-        sizeMB: sizeBytes / (1024 * 1024),
+        sizeMB: sizeMB,
+        folderId: prep.folderId,
       );
 
       // Pre-fill email subject
-      emailSubject.value = 'Complete with DocuSign: $name';
+      emailSubject.value = 'Complete with DocuSign: ${selectedDocument.value?.name}';
       subjectController.text = emailSubject.value;
 
-      AppLoader.hide();
       _goToSelectDocument();
     } on NetworkException catch (e) {
       AppLoader.hide();
@@ -164,10 +236,22 @@ class SignatureRequestController extends GetxController {
       final path = result.files.single.path!;
       final file = File(path);
       final sizeBytes = await file.length();
-      selectedDocument.value = SelectedDocument(
-        name: p.basename(path),
+      final sizeMB = sizeBytes / (1024 * 1024);
+
+      // Collect Metadata without uploading
+      final prep = await PrepareUploadDialog.show(
         file: file,
-        sizeMB: sizeBytes / (1024 * 1024),
+        originalName: result.files.single.name,
+        fileSizeMB: sizeMB,
+      );
+
+      if (prep == null) return;
+
+      selectedDocument.value = SelectedDocument(
+        name: prep.fileName + prep.extension,
+        file: file,
+        sizeMB: sizeMB,
+        folderId: prep.folderId,
       );
 
       // Initialize email subject with default
@@ -290,10 +374,11 @@ class SignatureRequestController extends GetxController {
   void assignToMe() {
     nameController.text = _userController.displayName;
     emailController.text = _userController.displayEmail;
+    // Note: photoUrl will be handled by saveRecipient lookup or directly here
   }
 
   // Validate and save recipient then go to list
-  void saveRecipient() {
+  Future<void> saveRecipient() async {
     final name = nameController.text.trim();
     final email = emailController.text.trim();
 
@@ -310,10 +395,26 @@ class SignatureRequestController extends GetxController {
       return;
     }
 
+    String? photoUrl;
+    String? signerUid;
+
+    // Try to find if user exists to get their photo and UID
+    try {
+      final user = await UserRepository().getByEmail(email);
+      if (user != null) {
+        photoUrl = user.photoUrl;
+        signerUid = user.uid;
+      }
+    } catch (e) {
+      debugPrint('Error looking up recipient by email: $e');
+    }
+
     signers.add(
       SignerModel(
         signerName: name,
         signerEmail: email,
+        signerUid: signerUid,
+        photoUrl: photoUrl,
         role: selectedRole.value,
         order: signers.length,
       ),
@@ -392,49 +493,53 @@ class SignatureRequestController extends GetxController {
       }
 
       final uid = FirebaseUtils.currentUid!;
+      String finalStoragePath;
+      String? finalDocId;
 
-      // Upload file to Supabase via Express
-      final upload = await SupabaseService.uploadFile(
-        filePath: doc.file.path,
-        uid: uid,
-        fileName: doc.name,
-      );
+      if (doc.documentId != null && doc.storagePath != null) {
+        // Case A: Library document — already uploaded
+        finalStoragePath = doc.storagePath!;
+        finalDocId = doc.documentId;
+        AppLoader.updateMessage('Preparing document...');
+      } else {
+        // Case B: Device document — needs upload
+        AppLoader.updateMessage('Uploading document...');
+        final upload = await SupabaseService.uploadFile(
+          filePath: doc.file.path,
+          uid: uid,
+          fileName: doc.name,
+        );
+        finalStoragePath = upload.storagePath;
 
-      // Fetch signed URL so signers can view the PDF
+        AppLoader.updateMessage('Creating document...');
+        final docRef = FirebaseUtils.documentsRef.doc();
+        final now = Timestamp.fromDate(DateTime.now());
+        finalDocId = docRef.id;
 
-      AppLoader.updateMessage('Creating document...');
-
-      // Create Firestore document record
-      final docRef = FirebaseUtils.documentsRef.doc();
-      final now = Timestamp.fromDate(DateTime.now());
-      final signerEmails = signers
-          .map((s) => s.signerEmail.toLowerCase())
-          .toList();
-
-      await docRef.set({
-        'ownerUid': uid,
-        'name': doc.name,
-        'fileUrl':
-            upload.storagePath, // FIXED: Save path, not 1-hour signed URL
-        'storagePath': upload.storagePath,
-        'fileType': 'pdf',
-        'fileSizeMB': upload.fileSizeMB,
-        'status': 'pending',
-        'folderId': null,
-        'authorizedEmails': signerEmails,
-        'createdAt': now,
-        'updatedAt': now,
-      });
+        await docRef.set({
+          'ownerUid': uid,
+          'name': doc.name,
+          'fileUrl': finalStoragePath,
+          'storagePath': finalStoragePath,
+          'fileType': 'pdf',
+          'fileSizeMB': doc.sizeMB,
+          'status': 'pending',
+          'folderId': doc.folderId,
+          'authorizedEmails': signers.map((s) => s.signerEmail.toLowerCase()).toList(),
+          'createdAt': now,
+          'updatedAt': now,
+        });
+      }
 
       AppLoader.updateMessage('Sending request...');
 
       // Build model with current document reference
       final request = SignatureRequestModel(
         requestId: '',
-        documentId: docRef.id,
+        documentId: finalDocId!,
         documentName: doc.name,
-        documentUrl: upload.storagePath,
-        storagePath: upload.storagePath,
+        documentUrl: finalStoragePath,
+        storagePath: finalStoragePath,
         requestedByUid: uid,
         requesterName: _userController.displayName,
         signers: signers.toList(),
@@ -473,7 +578,6 @@ class SignatureRequestController extends GetxController {
           signingController.init(fullRequest, signerModel);
 
           _clearAll();
-          AppDialogs.showSnackSuccess('Request sent. Redirecting to sign...');
           Get.offNamed(MainRoutes.inAppSigning);
           return;
         }

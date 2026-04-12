@@ -32,15 +32,35 @@ class UserRepository extends BaseRepository {
     );
   });
 
-  Future<void> updateProfile(String uid, {String? name, String? photoUrl}) =>
+  Future<void> updateProfile(String uid, {
+    String? name, 
+    String? photoUrl,
+    String? signatureUrl,
+    String? initialsUrl,
+    bool clearSignature = false,
+    bool clearInitials = false,
+  }) =>
       handleRequest(() async {
+        final Map<String, dynamic> data = {'updatedAt': Timestamp.now()};
+        if (name != null) data['name'] = name;
+        if (photoUrl != null) data['photoUrl'] = photoUrl;
+        if (photoUrl?.isEmpty == true) data['photoUrl'] = '';
+        
+        if (clearSignature) {
+          data['signatureUrl'] = FieldValue.delete();
+        } else if (signatureUrl != null) {
+          data['signatureUrl'] = signatureUrl;
+        }
+
+        if (clearInitials) {
+          data['initialsUrl'] = FieldValue.delete();
+        } else if (initialsUrl != null) {
+          data['initialsUrl'] = initialsUrl;
+        }
+
         await FirebaseMethod.updateDocument(
           ref: FirebaseUtils.userDoc(uid),
-          data: {
-            'name': ?name,
-            'photoUrl': ?photoUrl,
-            'updatedAt': Timestamp.now(),
-          },
+          data: data,
         );
       });
 

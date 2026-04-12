@@ -21,17 +21,18 @@ class SignatureDrawPad extends StatefulWidget {
 
 class _SignatureDrawPadState extends State<SignatureDrawPad> {
   late SignatureController _controller;
-  Color _selectedColor = Colors.black;
-
-  final List<Color> _colors = [
-    Colors.black,
-    const Color(0xFF0066FF), // Blue
-    const Color(0xFFFF0000), // Red
-  ];
+  late List<Color> _colors;
+  late Color _selectedColor;
 
   @override
   void initState() {
     super.initState();
+    _colors = [
+      Get.theme.colorScheme.onSurface,
+      const Color(0xFF0066FF), // Blue
+      const Color(0xFFFF0000), // Red
+    ];
+    _selectedColor = _colors[0];
     _initController();
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
+import '../../../../../Commons/Widgets/app_button.dart';
 import 'dashed_rect_painter.dart';
 
 class UploadSignatureTab extends StatelessWidget {
@@ -22,7 +23,7 @@ class UploadSignatureTab extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      margin: const EdgeInsets.only(top: 24),
+      margin: const EdgeInsets.only(top: 24, left: 20, right: 20),
       width: double.infinity,
       child: CustomPaint(
         painter: DashedRectPainter(
@@ -39,9 +40,9 @@ class UploadSignatureTab extends StatelessWidget {
               color: colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: 16),
-            OutlinedButton(
+            AppButton.outlined(
+              label: 'UPLOAD YOUR SIGNATURE',
               onPressed: _pickImage,
-              child: const Text('UPLOAD YOUR SIGNATURE'),
             ),
             const SizedBox(height: 8),
             Text(

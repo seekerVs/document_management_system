@@ -56,6 +56,7 @@ class SignatureFieldModel {
 
   SignatureFieldModel copyWith({
     SignatureFieldType? type,
+    int? page,
     double? x,
     double? y,
     double? width,
@@ -66,7 +67,7 @@ class SignatureFieldModel {
     return SignatureFieldModel(
       fieldId: fieldId,
       type: type ?? this.type,
-      page: page,
+      page: page ?? this.page,
       x: x ?? this.x,
       y: y ?? this.y,
       width: width ?? this.width,

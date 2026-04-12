@@ -12,7 +12,6 @@ class StorageBanner extends GetView<DocumentsController> {
     final cs = Theme.of(context).colorScheme;
     return Obx(
       () => Container(
-        margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: cs.tertiaryContainer,
@@ -77,8 +76,9 @@ class StorageBanner extends GetView<DocumentsController> {
 
   String get _freeLabel {
     final free = controller.freeStorageMB;
+    final freeGB = controller.freeStorageGB;
     return free >= 1024
-        ? '${controller.freeStorageGB.toStringAsFixed(1)} GB free of 2 GB'
-        : '${free.toStringAsFixed(0)} MB free of 2 GB';
+        ? '${freeGB.toStringAsFixed(2)} GB free of 2 GB'
+        : '${free.toStringAsFixed(1)} MB free of 2 GB';
   }
 }

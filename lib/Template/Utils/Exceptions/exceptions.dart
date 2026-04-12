@@ -143,10 +143,7 @@ class SignatureAlreadyCompletedException extends AppException {
     : super('This document has already been signed.');
 }
 
-class SignatureDeclinedException extends AppException {
-  const SignatureDeclinedException()
-    : super('The signature request was declined.');
-}
+
 
 AppException authExceptionFromCode(String code) {
   switch (code) {

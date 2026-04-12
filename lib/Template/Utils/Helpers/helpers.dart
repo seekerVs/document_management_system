@@ -66,21 +66,41 @@ class AppHelpers {
     return (a, b) {
       switch (order) {
         case SortOrder.nameAsc:
-          return a.name.compareTo(b.name);
+          return a.name.toString().toLowerCase().compareTo(
+                b.name.toString().toLowerCase(),
+              );
         case SortOrder.nameDesc:
-          return b.name.compareTo(a.name);
+          return b.name.toString().toLowerCase().compareTo(
+                a.name.toString().toLowerCase(),
+              );
         case SortOrder.dateNewest:
-          return b.updatedAt.compareTo(a.updatedAt);
+          final aDate = a.updatedAt as DateTime;
+          final bDate = b.updatedAt as DateTime;
+          return bDate.compareTo(aDate);
         case SortOrder.dateOldest:
-          return a.updatedAt.compareTo(b.updatedAt);
+          final aDate = a.updatedAt as DateTime;
+          final bDate = b.updatedAt as DateTime;
+          return aDate.compareTo(bDate);
         case SortOrder.sizeAsc:
-          return a.fileSizeMB.compareTo(b.fileSizeMB);
+          final aSize = _getSize(a);
+          final bSize = _getSize(b);
+          return aSize.compareTo(bSize);
         case SortOrder.sizeDesc:
-          return b.fileSizeMB.compareTo(a.fileSizeMB);
+          final aSize = _getSize(a);
+          final bSize = _getSize(b);
+          return bSize.compareTo(aSize);
         case SortOrder.type:
           return 0;
       }
     };
+  }
+
+  static double _getSize(dynamic item) {
+    try {
+      return (item.fileSizeMB as num).toDouble();
+    } catch (_) {
+      return 0.0;
+    }
   }
 
   // Validate email format
@@ -90,4 +110,30 @@ class AppHelpers {
   // Check file size against max MB limit
   static bool exceedsMaxFileSize(int bytes, {double maxMB = 20}) =>
       bytes > maxMB * 1024 * 1024;
+
+  // Resolve unique name by appending suffix if exists (Professional OS approach)
+  static String resolveUniqueName(String name, Iterable<String> existingNames) {
+    final existingSet = existingNames.map((e) => e.toLowerCase()).toSet();
+    if (!existingSet.contains(name.toLowerCase().trim())) return name.trim();
+
+    final dot = name.lastIndexOf('.');
+    // For folders, extension is empty. For files, it preserves it.
+    final base = (dot != -1) ? name.substring(0, dot) : name;
+    final ext = (dot != -1) ? name.substring(dot) : '';
+
+    var counter = 1;
+    while (true) {
+      final candidate = '$base ($counter)$ext';
+      if (!existingSet.contains(candidate.toLowerCase().trim())) {
+        return candidate.trim();
+      }
+      counter++;
+    }
+  }
+
+  // Check if name exists in a list (case-insensitive)
+  static bool nameExists(String name, Iterable<String> existingNames) {
+    final trimmed = name.trim().toLowerCase();
+    return existingNames.any((e) => e.toLowerCase().trim() == trimmed);
+  }
 }

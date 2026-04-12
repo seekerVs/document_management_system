@@ -26,14 +26,48 @@ class AssignedTasksSection extends StatelessWidget {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
 
-              itemCount: tasks.length,
+              itemCount: tasks.length > 3 ? 4 : tasks.length,
               separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (_, i) {
+                if (tasks.length > 3 && i == 3) {
+                  return InkWell(
+                    onTap: () => controller.goToTasks(),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: 100,
+                      decoration: AppStyle.cardOf(context, radius: 8),
+                      alignment: Alignment.center,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'See more',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
                 final task = tasks[i];
-                return _TaskCard(
-                  title: 'Signature Request',
-                  from: task.requesterName ?? 'Unknown',
-                  filename: task.documentName,
+                return InkWell(
+                  onTap: () => controller.openTask(task),
+                  borderRadius: BorderRadius.circular(8),
+                  child: _TaskCard(
+                    title: 'Signature Request',
+                    from: task.requesterName ?? 'Unknown',
+                    filename: task.documentName,
+                  ),
                 );
               },
             ),

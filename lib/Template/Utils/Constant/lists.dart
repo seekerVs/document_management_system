@@ -13,6 +13,15 @@ class AppLists {
     {'label': 'Files', 'icon': 'folder'},
   ];
 
+  static const List<String> defaultFolders = [
+    'Identity Documents',
+    'Vital Records',
+    'Academic Records',
+    'Career & Employment',
+    'Health & Medical',
+    'Financial & Property',
+  ];
+
   static const List<Map<String, dynamic>> sortOptions = [
     {'label': 'Name (A–Z)', 'value': SortOrder.nameAsc},
     {'label': 'Name (Z–A)', 'value': SortOrder.nameDesc},
@@ -78,7 +87,6 @@ class AppLists {
     ActivityAction.moved: 'moved',
     ActivityAction.copied: 'copied',
     ActivityAction.renamed: 'renamed',
-    ActivityAction.declined: 'declined to sign',
     ActivityAction.folderCreated: 'created a folder',
     ActivityAction.folderDeleted: 'deleted a folder',
     ActivityAction.shared: 'shared',
@@ -87,10 +95,40 @@ class AppLists {
   static const Map<NotificationType, String> notificationLabels = {
     NotificationType.signatureRequested: 'Signature requested',
     NotificationType.documentSigned: 'Document signed',
-    NotificationType.signatureDeclined: 'Signature declined',
     NotificationType.tokenExpired: 'Signing link expired',
     NotificationType.documentCompleted: 'Document completed',
     NotificationType.documentShared: 'Document shared',
     NotificationType.generalInfo: 'Info',
   };
+
+  static const List<Map<String, String>> faqs = [
+    {
+      'question': 'What is Scrivener?',
+      'answer': 'Scrivener is a digital platform that allows users to securely store, manage, share, and electronically sign documents.',
+    },
+    {
+      'question': 'Who can use the app?',
+      'answer': 'Anyone needing to efficiently organize files, request signatures, or electronically sign documents can use the app.',
+    },
+    {
+      'question': 'Are electronic signatures legally valid?',
+      'answer': 'Yes, electronic signatures performed through our platform are secure, traceable, and legally binding in most jurisdictions.',
+    },
+    {
+      'question': 'What types of documents can I upload?',
+      'answer': 'We support a variety of file formats, including PDF, JPG, JPEG, PNG, DOC, and DOCX.',
+    },
+    {
+      'question': 'How do I request a signature?',
+      'answer': 'Simply open a document, select "Request Signature" from the actions menu, add your signers\' emails, and they will receive a secure signing link.',
+    },
+    {
+      'question': 'What should I do if a signing link expires?',
+      'answer': 'Signing links are configured to expire after a certain period (e.g., 24, 48, or 72 hours) for security. If a link expires, the sender must issue a new signature request.',
+    },
+    {
+      'question': 'How can I sign a document?',
+      'answer': 'When opening a signature request, you can choose to draw your signature, type it using standard fonts, or upload an image of your physical signature.',
+    },
+  ];
 }

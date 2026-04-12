@@ -12,70 +12,79 @@ class RecipientsListView extends GetView<SignatureRequestController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Recipients'),
-        leading: IconButton(
-          icon: const Icon(Icons.chevron_left),
-          onPressed: Get.back,
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+        // Normal wizard navigation back to previous step
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Add Recipients'),
+          leading: IconButton(
+            icon: const Icon(Icons.chevron_left),
+            onPressed: Get.back,
+          ),
         ),
-      ),
-      body: Obx(() {
-        final signers = controller.signers;
-        return Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  _SigningOrderToggle(controller: controller),
-                  const SizedBox(height: 16),
-                  if (signers.isEmpty)
-                    const SizedBox.shrink()
-                  else
-                    controller.signingOrderEnabled.value
-                        ? _ReorderableSignerList(
-                            controller: controller,
-                            signers: signers,
-                          )
-                        : _StaticSignerList(
-                            controller: controller,
-                            signers: signers,
-                          ),
-                  const SizedBox(height: 8),
-                  // Add another recipient row
-                  GestureDetector(
-                    onTap: controller.goToAddRecipient,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      decoration: AppStyle.cardOf(context),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.add,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Add another recipient',
-                            style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(color: Theme.of(context).colorScheme.primary),
-                          ),
-                        ],
+        body: Obx(() {
+          final signers = controller.signers;
+          return Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    _SigningOrderToggle(controller: controller),
+                    const SizedBox(height: 16),
+                    if (signers.isEmpty)
+                      const SizedBox.shrink()
+                    else
+                      controller.signingOrderEnabled.value
+                          ? _ReorderableSignerList(
+                              controller: controller,
+                              signers: signers,
+                            )
+                          : _StaticSignerList(
+                              controller: controller,
+                              signers: signers,
+                            ),
+                    const SizedBox(height: 8),
+                    // Add another recipient row
+                    GestureDetector(
+                      onTap: controller.goToAddRecipient,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        decoration: AppStyle.cardOf(context),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.add,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Add another recipient',
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                  ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            _BottomActions(controller: controller, signers: signers),
-          ],
-        );
-      }),
+              _BottomActions(controller: controller, signers: signers),
+            ],
+          );
+        }),
+      ),
     );
   }
 }
@@ -182,7 +191,11 @@ class _SignerTile extends StatelessWidget {
       decoration: AppStyle.cardOf(context),
       child: ListTile(
         contentPadding: const EdgeInsets.only(left: 16),
-        leading: AppAvatar(name: signer.signerName),
+        leading: AppAvatar(
+          name: signer.signerName,
+          photoUrl: signer.photoUrl,
+          radius: 22,
+        ),
         title: Text(
           signer.signerEmail == controller.currentUserEmail
               ? '${signer.signerName} (ME)'
@@ -204,9 +217,9 @@ class _SignerTile extends StatelessWidget {
               signer.role == SignerRole.needsToSign
                   ? 'Needs to sign'
                   : 'Receives a copy',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -215,7 +228,10 @@ class _SignerTile extends StatelessWidget {
                 index: index!,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Icon(Icons.drag_handle, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  child: Icon(
+                    Icons.drag_handle,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               )
             : IconButton(

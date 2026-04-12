@@ -6,6 +6,8 @@ class UserModel {
   final String name;
   final String email;
   final String? photoUrl;
+  final String? signatureUrl;
+  final String? initialsUrl;
   final UserRole role;
   final double usedStorageMB;
   final DateTime createdAt;
@@ -18,6 +20,8 @@ class UserModel {
     required this.name,
     required this.email,
     this.photoUrl,
+    this.signatureUrl,
+    this.initialsUrl,
     this.role = UserRole.owner,
     this.usedStorageMB = 0,
     required this.createdAt,
@@ -37,6 +41,8 @@ class UserModel {
       name: data['name'] ?? '',
       email: data['email'] ?? '',
       photoUrl: data['photoUrl'],
+      signatureUrl: data['signatureUrl'],
+      initialsUrl: data['initialsUrl'],
       role: UserRole.values.firstWhere(
         (r) => r.name == (data['role'] ?? 'owner'),
         orElse: () => UserRole.owner,
@@ -52,6 +58,8 @@ class UserModel {
       'name': name,
       'email': email,
       'photoUrl': photoUrl,
+      'signatureUrl': signatureUrl,
+      'initialsUrl': initialsUrl,
       'role': role.name,
       'usedStorageMB': usedStorageMB,
       'createdAt': Timestamp.fromDate(createdAt),
@@ -63,6 +71,8 @@ class UserModel {
     String? name,
     String? email,
     String? photoUrl,
+    String? signatureUrl,
+    String? initialsUrl,
     UserRole? role,
     double? usedStorageMB,
     DateTime? updatedAt,
@@ -72,6 +82,8 @@ class UserModel {
       name: name ?? this.name,
       email: email ?? this.email,
       photoUrl: photoUrl ?? this.photoUrl,
+      signatureUrl: signatureUrl ?? this.signatureUrl,
+      initialsUrl: initialsUrl ?? this.initialsUrl,
       role: role ?? this.role,
       usedStorageMB: usedStorageMB ?? this.usedStorageMB,
       createdAt: createdAt,

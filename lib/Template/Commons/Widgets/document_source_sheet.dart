@@ -9,6 +9,7 @@ class DocumentSourceSheet extends StatelessWidget {
   final VoidCallback onDrive;
   final VoidCallback onPhotos;
   final VoidCallback onFiles;
+  final VoidCallback? onLibrary;
 
   const DocumentSourceSheet({
     super.key,
@@ -16,6 +17,7 @@ class DocumentSourceSheet extends StatelessWidget {
     required this.onDrive,
     required this.onPhotos,
     required this.onFiles,
+    this.onLibrary,
   });
 
   // Show sheet with callbacks — works from any controller context
@@ -24,6 +26,7 @@ class DocumentSourceSheet extends StatelessWidget {
     required VoidCallback onDrive,
     required VoidCallback onPhotos,
     required VoidCallback onFiles,
+    VoidCallback? onLibrary,
   }) {
     Get.bottomSheet(
       DocumentSourceSheet(
@@ -31,6 +34,7 @@ class DocumentSourceSheet extends StatelessWidget {
         onDrive: onDrive,
         onPhotos: onPhotos,
         onFiles: onFiles,
+        onLibrary: onLibrary,
       ),
       isScrollControlled: true,
     );
@@ -58,6 +62,15 @@ class DocumentSourceSheet extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 16),
+          if (onLibrary != null)
+            _SourceTile(
+              icon: Icons.cloud_outlined,
+              label: 'Library',
+              onTap: () {
+                Get.back();
+                onLibrary!();
+              },
+            ),
           _SourceTile(
             icon: Icons.document_scanner_outlined,
             label: 'Scan',

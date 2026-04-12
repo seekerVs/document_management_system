@@ -6,18 +6,19 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
-import '../Model/document_model.dart';
-import '../Model/folder_model.dart';
+import '../../../../../OperatingSystem/Android/Page/Documents/Model/document_model.dart';
+import '../../../../../OperatingSystem/Android/Page/Documents/Model/folder_model.dart';
 import '../Repository/document_repository.dart';
 import '../Repository/folder_repository.dart';
 import '../../../../../Commons/Widgets/document_details_sheet.dart';
 import '../Widget/folder_picker_sheet.dart';
-import '../../../../../../Template/Utils/Exceptions/exceptions.dart';
-import '../../../../../../Template/Utils/Firebase/firebase_utils.dart';
-import '../../../../../../Template/Utils/Formatters/formatter.dart';
-import '../../../../../../Template/Utils/Popups/dialog.dart';
-import '../../../../../../Template/Utils/Popups/full_screen_loader.dart';
-import '../../../../../../Template/Utils/Services/supabase_service.dart';
+import '../../../../../Utils/Exceptions/exceptions.dart';
+import '../../../../../Utils/Firebase/firebase_utils.dart';
+import '../../../../../Utils/Formatters/formatter.dart';
+import '../../../../../Utils/Helpers/helpers.dart';
+import '../../../../../Utils/Popups/dialog.dart';
+import '../../../../../Utils/Popups/full_screen_loader.dart';
+import '../../../../../Utils/Services/supabase_service.dart';
 import '../../Profile/Controller/user_controller.dart';
 
 mixin DocumentsMultiselectMixin on GetxController {
@@ -29,6 +30,7 @@ mixin DocumentsMultiselectMixin on GetxController {
   RxList<String> get selectedIds;
   RxBool get isMultiSelect;
   RxList<DocumentModel> get folderDocs;
+  RxList<DocumentModel> get searchResults;
 
   Future<void> loadAll();
 
@@ -37,7 +39,9 @@ mixin DocumentsMultiselectMixin on GetxController {
   bool get isSingleSelection => selectedIds.length == 1;
 
   List<DocumentModel> get selectedDocuments {
-    final pool = folderDocs.isNotEmpty ? folderDocs : documents;
+    final pool = folderDocs.isNotEmpty
+        ? folderDocs
+        : (searchResults.isNotEmpty ? searchResults : documents);
     return pool.where((d) => selectedIds.contains(d.documentId)).toList();
   }
 
@@ -149,9 +153,7 @@ mixin DocumentsMultiselectMixin on GetxController {
 
   // Copy
   void showCopyPicker() {
-    FolderPickerSheet.show(
-      onPick: (folderId) => _executeCopy(folderId),
-    );
+    FolderPickerSheet.show(onPick: (folderId, _) => _executeCopy(folderId));
   }
 
   Future<void> _executeCopy(String? destFolderId) async {
@@ -161,7 +163,10 @@ mixin DocumentsMultiselectMixin on GetxController {
     double totalSizeMB = docs.fold(0.0, (total, d) => total + d.fileSizeMB);
     for (final folder in folderList) {
       final folderDocsList = await docRepo.getFolderDocuments(folder.folderId);
-      totalSizeMB += folderDocsList.fold(0.0, (total, d) => total + d.fileSizeMB);
+      totalSizeMB += folderDocsList.fold(
+        0.0,
+        (total, d) => total + d.fileSizeMB,
+      );
     }
 
     if (userController.user.value != null) {
@@ -235,7 +240,7 @@ mixin DocumentsMultiselectMixin on GetxController {
         : await docRepo.getRootDocuments();
     final existingNames = destDocs.map((d) => d.name).toSet();
     final resolvedName =
-        nameOverride ?? _resolveDocName(doc.name, existingNames);
+        nameOverride ?? AppHelpers.resolveUniqueName(doc.name, existingNames);
 
     final signedUrl = await SupabaseService.getSignedUrl(doc.fileUrl);
     final response = await http.get(Uri.parse(signedUrl));
@@ -272,7 +277,10 @@ mixin DocumentsMultiselectMixin on GetxController {
     required void Function(String) onProgress,
   }) async {
     final existingFolderNames = folders.map((f) => f.name).toSet();
-    final resolvedName = _resolveFolderName(folder.name, existingFolderNames);
+    final resolvedName = AppHelpers.resolveUniqueName(
+      folder.name,
+      existingFolderNames,
+    );
 
     final newFolderId = const Uuid().v4();
     final now = DateTime.now();
@@ -309,7 +317,7 @@ mixin DocumentsMultiselectMixin on GetxController {
       title: 'Move to',
       excludeFolderId: currentFolderId,
       excludeRoot: excludeRoot,
-      onPick: (destFolderId) =>
+      onPick: (destFolderId, _) =>
           _executeMove(destFolderId, warnFolders: hasFolders),
     );
   }
@@ -337,7 +345,10 @@ mixin DocumentsMultiselectMixin on GetxController {
               ? await docRepo.getFolderDocuments(destFolderId)
               : await docRepo.getRootDocuments();
           final existingNames = destDocs.map((d) => d.name).toSet();
-          final resolvedName = _resolveDocName(doc.name, existingNames);
+          final resolvedName = AppHelpers.resolveUniqueName(
+            doc.name,
+            existingNames,
+          );
 
           await FirebaseUtils.documentDoc(doc.documentId).update({
             'folderId': destFolderId,
@@ -452,31 +463,6 @@ mixin DocumentsMultiselectMixin on GetxController {
         ),
         isScrollControlled: true,
       );
-    }
-  }
-
-  // Name resolvers
-
-  String _resolveDocName(String name, Set<String> existing) {
-    if (!existing.contains(name)) return name;
-    final dot = name.lastIndexOf('.');
-    final base = dot != -1 ? name.substring(0, dot) : name;
-    final ext = dot != -1 ? name.substring(dot) : '';
-    var counter = 1;
-    while (true) {
-      final candidate = '$base ($counter)$ext';
-      if (!existing.contains(candidate)) return candidate;
-      counter++;
-    }
-  }
-
-  String _resolveFolderName(String name, Set<String> existing) {
-    if (!existing.contains(name)) return name;
-    var counter = 1;
-    while (true) {
-      final candidate = '$name ($counter)';
-      if (!existing.contains(candidate)) return candidate;
-      counter++;
     }
   }
 }

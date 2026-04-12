@@ -85,9 +85,9 @@ class FirebaseMethod {
   }
 
   /// Run multiple writes atomically. All succeed or all fail.
-  static Future<bool> runBatch({
-    required Future<void> Function(WriteBatch batch) operations,
-  }) async {
+  static Future<bool> runBatch(
+    Future<void> Function(WriteBatch batch) operations,
+  ) async {
     try {
       final batch = FirebaseFirestore.instance.batch();
       await operations(batch);

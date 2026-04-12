@@ -3,7 +3,7 @@ class MainRoutes {
 
   static const String signIn = '/sign-in';
   static const String signUp = '/sign-up';
-  static const String home = '/home';
+  static const String dashboard = '/dashboard';
   static const String documents = '/documents';
   static const String folderContents = '/folder-contents';
   static const String documentViewer = '/document-viewer';
@@ -19,6 +19,8 @@ class MainRoutes {
   static const requestReview = '/request-review';
   static const inAppSigning = '/in-app-signing';
   static const tasks = '/tasks';
+  static const taskDetails = '/task-details';
+
 
   // Forgot password flow
   static const String forgotPassword = '/forgot-password';

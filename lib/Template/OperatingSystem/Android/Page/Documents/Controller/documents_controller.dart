@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../Profile/Model/user_model.dart';
 import '../Model/document_model.dart';
 import '../Model/folder_model.dart';
 import '../Repository/document_repository.dart';
@@ -42,11 +43,12 @@ class DocumentsController extends GetxController
   @override
   final RxBool isMultiSelect = false.obs;
 
+  @override
   final RxList<DocumentModel> searchResults = <DocumentModel>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isSearching = false.obs;
   final RxBool isGridView = true.obs;
-  final Rx<SortOrder> sortOrder = SortOrder.nameAsc.obs;
+  final Rx<SortOrder> sortOrder = SortOrder.dateNewest.obs;
   final searchController = TextEditingController();
 
   // Folder docs pool for multiselect operations inside folder view
@@ -57,13 +59,19 @@ class DocumentsController extends GetxController
   void registerFolderDocs(List<DocumentModel> docs) => _folderDocs.value = docs;
   void clearFolderDocs() => _folderDocs.clear();
 
-  // Storage computed
-  double get usedStorageMB => _userController.user.value?.usedStorageMB ?? 0;
-  double get freeStorageMB => _userController.user.value?.freeStorageMB ?? 0;
+  // Storage computed (Real-time synced)
+  final RxDouble realtimeUsedStorageMB = 0.0.obs;
+  final RxInt realtimeTotalItems = 0.obs;
+
+  double get usedStorageMB => realtimeUsedStorageMB.value;
+
+  double get freeStorageMB => UserModel.maxStorageMB - usedStorageMB;
+
   double get freeStorageGB => freeStorageMB / 1024;
-  double get storagePercent =>
-      _userController.user.value?.storageUsagePercent ?? 0;
-  int get totalItems => folders.length + documents.length;
+
+  double get storagePercent => usedStorageMB / UserModel.maxStorageMB;
+
+  int get totalItems => realtimeTotalItems.value;
 
   late final void Function(String) _debouncedSearch;
 
@@ -93,10 +101,20 @@ class DocumentsController extends GetxController
       final results = await Future.wait([
         _folderRepo.getFolders(),
         _docRepo.getRootDocuments(),
+        _docRepo.getTotalStorageMB(),
+        _docRepo.getDocumentCount(),
+        _folderRepo.getFolderCount(),
       ]);
+
       folders.value = results[0] as List<FolderModel>;
       documents.value = results[1] as List<DocumentModel>;
-      _applySortToDocuments();
+      realtimeUsedStorageMB.value = (results[2] as double);
+      realtimeTotalItems.value = (results[3] as int) + (results[4] as int);
+
+      _applySortToAll();
+
+      // Sync storage usage to Firestore if it has drifted
+      await _userController.syncStorageUsage(realtimeUsedStorageMB.value);
     } on AppException catch (e) {
       AppDialogs.showSnackError(e.message);
     } finally {
@@ -135,13 +153,19 @@ class DocumentsController extends GetxController
 
   void applySortOrder(SortOrder order) {
     sortOrder.value = order;
-    _applySortToDocuments();
+    _applySortToAll();
   }
 
-  void _applySortToDocuments() {
-    final sorted = [...documents];
-    sorted.sort(AppHelpers.documentComparator(sortOrder.value));
-    documents.value = sorted;
+  void _applySortToAll() {
+    // Sort documents
+    final sortedDocs = [...documents];
+    sortedDocs.sort(AppHelpers.documentComparator(sortOrder.value));
+    documents.value = sortedDocs;
+
+    // Sort folders
+    final sortedFolders = [...folders];
+    sortedFolders.sort(AppHelpers.documentComparator(sortOrder.value));
+    folders.value = sortedFolders;
   }
 
   void toggleViewMode() => isGridView.toggle();

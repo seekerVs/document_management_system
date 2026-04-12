@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../Commons/Styles/style.dart';
+
 import '../../../../../Commons/Widgets/document_details_sheet.dart';
 import '../../../../../Utils/Firebase/firebase_utils.dart';
 import '../../../../../Utils/Popups/dialog.dart';
@@ -10,6 +10,7 @@ import '../../Activity/Model/activity_model.dart';
 import '../../Documents/Model/document_model.dart';
 import '../../Profile/Controller/user_controller.dart';
 import '../../Signature/Model/signature_request_model.dart';
+import '../../Signature/Controller/in_app_signing_controller.dart';
 import '../../Profile/Repository/user_repository.dart';
 import '../Repository/dashboard_repository.dart';
 
@@ -136,9 +137,10 @@ class DashboardController extends GetxController {
   void _listenToTaskCount() {
     final email = FirebaseUtils.currentEmail;
     if (email == null) return;
+    final currentUserEmail = email.trim().toLowerCase();
     _taskCountSub?.cancel();
     _taskCountSub = FirebaseUtils.signatureRequestsRef
-        .where('signerEmails', arrayContains: email.toLowerCase())
+        .where('signerEmails', arrayContains: currentUserEmail)
         .where('status', whereIn: ['pending', 'inProgress'])
         .snapshots()
         .listen((snap) {
@@ -149,7 +151,8 @@ class DashboardController extends GetxController {
             );
             return signers.any(
               (s) =>
-                  s['signerEmail'] == email &&
+                  (s['signerEmail'] ?? '').toString().trim().toLowerCase() ==
+                      currentUserEmail &&
                   s['role'] == 'needsToSign' &&
                   s['status'] == 'pending',
             );
@@ -157,26 +160,32 @@ class DashboardController extends GetxController {
         }, onError: (_) => pendingTaskCount.value = 0);
   }
 
+  // Get the signer entry for current user in a request
+  SignerModel? currentSigner(SignatureRequestModel request) {
+    final email = FirebaseUtils.currentEmail;
+    if (email == null) return null;
+    return request.signers
+        .where((s) => s.signerEmail.toLowerCase() == email.toLowerCase())
+        .firstOrNull;
+  }
+
+  // Open in-app signing for this task
+  void openTask(SignatureRequestModel request) {
+    final signer = currentSigner(request);
+    if (signer == null) return;
+    final controller = Get.find<InAppSigningController>();
+    controller.init(request, signer);
+    Get.toNamed(MainRoutes.inAppSigning);
+  }
+
   // Open document in viewer
   void openDocument(DocumentModel doc) =>
       Get.toNamed(MainRoutes.documentViewer, arguments: doc);
 
-  // Show document options sheet
-  void showDocumentOptions(DocumentModel doc) {
+  // Show document details sheet
+  void showDocumentDetails(DocumentModel doc) {
     Get.bottomSheet(
-      _DocumentOptionsSheet(
-        onOpen: () {
-          Get.back();
-          openDocument(doc);
-        },
-        onDetails: () {
-          Get.back();
-          Get.bottomSheet(
-            DocumentDetailsSheet(doc: doc),
-            isScrollControlled: true,
-          );
-        },
-      ),
+      DocumentDetailsSheet(doc: doc),
       isScrollControlled: true,
     );
   }
@@ -195,57 +204,5 @@ class DashboardController extends GetxController {
     } catch (_) {
       AppDialogs.showSnackError('Could not sign out. Please try again.');
     }
-  }
-}
-
-class _DocumentOptionsSheet extends StatelessWidget {
-  final VoidCallback onOpen;
-  final VoidCallback onDetails;
-  const _DocumentOptionsSheet({required this.onOpen, required this.onDetails});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-      decoration: AppStyle.bottomSheetDecoration(context),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: AppStyle.bottomSheetHandleOf(context),
-            ),
-          ),
-          const SizedBox(height: 8),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(
-              Icons.open_in_new_outlined,
-              color: cs.onSurface,
-            ),
-            title: Text(
-              'Open in Documents',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            onTap: onOpen,
-          ),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(
-              Icons.info_outline,
-              color: cs.onSurface,
-            ),
-            title: Text(
-              'Details',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            onTap: onDetails,
-          ),
-        ],
-      ),
-    );
   }
 }

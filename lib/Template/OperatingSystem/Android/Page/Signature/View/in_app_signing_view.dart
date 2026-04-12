@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:http/http.dart' as http;
+import '../../../../../Commons/Widgets/app_pdf_viewer.dart';
 import '../../../../../Commons/Widgets/app_button.dart';
 import '../../../../../Utils/Constant/enum.dart';
+import '../../../../../Utils/Services/pdf_renderer_service.dart';
 import '../Controller/in_app_signing_controller.dart';
 import '../Model/signature_field_model.dart';
 import '../Widget/signature_field_overlay.dart';
+import '../Widget/in_app_signing_splash_overlay.dart';
 import '../../../../../Utils/Services/supabase_service.dart';
 
 class InAppSigningView extends StatefulWidget {
@@ -20,7 +23,7 @@ class InAppSigningView extends StatefulWidget {
 class _InAppSigningViewState extends State<InAppSigningView> {
   final InAppSigningController _controller = Get.find<InAppSigningController>();
   PdfDocument? _document;
-  final ScrollController _scrollController = ScrollController();
+  String? _docId;
 
   @override
   void initState() {
@@ -37,6 +40,8 @@ class _InAppSigningViewState extends State<InAppSigningView> {
         url = await SupabaseService.getSignedUrl(url);
       }
 
+      _docId = url; // Use URL as doc ID for caching
+
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final doc = await PdfDocument.openData(response.bodyBytes);
@@ -49,204 +54,109 @@ class _InAppSigningViewState extends State<InAppSigningView> {
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _document?.close();
+    if (_docId != null) PdfRendererService.clearCache(docId: _docId);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final request = _controller.request;
-    final signer = _controller.signer;
+    return Obx(() {
+      if (_controller.showSplash.value) {
+        return const InAppSigningSplashOverlay();
+      }
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text(
-          request.documentName,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Get.offAllNamed('/dashboard'),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(40),
-          child: Column(
-            children: [
-              Obx(
-                () => LinearProgressIndicator(
-                  value: _controller.progress,
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.surfaceContainer,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).colorScheme.primary,
+      final request = _controller.request;
+      final signer = _controller.signer;
+
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          _controller.onExit();
+        },
+        child: Scaffold(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          appBar: AppBar(
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Complete with Scrivener: ${request.documentName}',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
-                  minHeight: 3,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              Container(
-                width: double.infinity,
-                color: Theme.of(context).colorScheme.surfaceContainer,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+                Text(
+                  'Now Signing: ${signer.signerName}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.person_outline,
-                      size: 14,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Now Signing: ${signer.signerName}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
+            leading: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => _controller.onExit(),
+            ),
           ),
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: _document == null
-                ? const Center(child: CircularProgressIndicator())
-                : InteractiveViewer(
-                    minScale: 0.5,
-                    maxScale: 3.0,
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 24,
-                        horizontal: 16,
-                      ),
-                      itemCount: _document!.pagesCount,
-                      itemBuilder: (context, index) {
-                        return _PdfSigningPage(
+          body: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  color: const Color(0xFFF5F5F5),
+                  child: _document == null
+                      ? const Center(child: CircularProgressIndicator())
+                      : AppPdfViewer(
                           document: _document!,
-                          pageIndex: index + 1,
-                          controller: _controller,
-                        );
-                      },
-                    ),
-                  ),
+                          docId: _docId ?? 'default',
+                          fieldBuilder: (context, pageIndex, displayW, displayH) {
+                            return _buildPageFields(pageIndex, displayW, displayH);
+                          },
+                        ),
+                ),
+              ),
+              _BottomBar(controller: _controller),
+            ],
           ),
-          _BottomBar(controller: _controller),
-        ],
-      ),
-    );
-  }
-}
-
-class _PdfSigningPage extends StatefulWidget {
-  final PdfDocument document;
-  final int pageIndex;
-  final InAppSigningController controller;
-
-  const _PdfSigningPage({
-    required this.document,
-    required this.pageIndex,
-    required this.controller,
-  });
-
-  @override
-  State<_PdfSigningPage> createState() => _PdfSigningPageState();
-}
-
-class _PdfSigningPageState extends State<_PdfSigningPage> {
-  PdfPageImage? _image;
-
-  @override
-  void initState() {
-    super.initState();
-    _renderPage();
-  }
-
-  Future<void> _renderPage() async {
-    final page = await widget.document.getPage(widget.pageIndex);
-    final img = await page.render(
-      width: page.width * 2,
-      height: page.height * 2,
-    );
-    if (mounted) setState(() => _image = img);
-    await page.close();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_image == null) {
-      return const SizedBox(
-        height: 600,
-        child: Center(child: CircularProgressIndicator()),
+        ),
       );
-    }
+    });
+  }
 
-    final double pdfW = (_image!.width ?? 1).toDouble();
-    final double pdfH = (_image!.height ?? 1).toDouble();
+  Widget _buildPageFields(int pageIndex, double displayW, double displayH) {
+    final fields = _controller.fields.where((f) => f.page == pageIndex).toList();
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double displayW = constraints.maxWidth;
-        final double displayH = displayW * (pdfH / pdfW);
+    if (fields.isEmpty) return const SizedBox.shrink();
 
-        final fields = widget.controller.fields
-            .where((f) => f.page == widget.pageIndex - 1)
-            .toList();
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 24),
-          width: displayW,
-          height: displayH,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 8,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Image.memory(_image!.bytes, fit: BoxFit.fill),
-              ),
-              Obx(() => Stack(
-                children: fields.map(
-                  (f) => SignatureFieldOverlay(
-                    key: ValueKey(f.fieldId),
+    return Obx(
+      () => Stack(
+        children: fields.map((f) {
+          return SignatureFieldOverlay(
+            key: ValueKey(f.fieldId),
+            field: f,
+            signer: _controller.signer,
+            color: _controller.fieldColor(f.fieldId),
+            canvasWidth: displayW,
+            canvasHeight: displayH,
+            isSelected: _controller.selectedFieldId.value == f.fieldId,
+            onTap: () => _controller.onFieldTap(f),
+            child: _controller.isFieldFilled(f.fieldId)
+                ? _FilledFieldContent(
                     field: f,
-                    signer: widget.controller.signer,
-                    color: widget.controller.fieldColor(f.fieldId),
-                    canvasWidth: displayW,
-                    canvasHeight: displayH,
-                    onTap: () => widget.controller.onFieldTap(f),
-                    child: widget.controller.isFieldFilled(f.fieldId)
-                        ? _FilledFieldContent(
-                            field: f,
-                            imageBytes:
-                                widget.controller.signatureImages[f.fieldId],
-                            textValue: widget.controller.fieldValues[f.fieldId],
-                            color: widget.controller.fieldColor(f.fieldId),
-                          )
-                        : null,
-                  ),
-                ).toList(),
-              )),
-            ],
-          ),
-        );
-      },
+                    imageBytes: _controller.signatureImages[f.fieldId],
+                    textValue: _controller.fieldValues[f.fieldId],
+                    color: _controller.fieldColor(f.fieldId),
+                  )
+                : null,
+          );
+        }).toList(),
+      ),
     );
   }
 }
@@ -267,14 +177,23 @@ class _FilledFieldContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imageBytes != null) {
-      return Padding(
-        padding: const EdgeInsets.all(2.0),
-        child: Image.memory(
-          imageBytes!,
-          fit: BoxFit.contain,
-        ),
-      );
+      final isSignatureOrInitial =
+          field.type == SignatureFieldType.signature ||
+          field.type == SignatureFieldType.initials;
+
+      if (isSignatureOrInitial) {
+        final double scale = field.type == SignatureFieldType.signature
+            ? 1.6
+            : 1.2;
+        return Transform.scale(
+          scale: scale,
+          child: Image.memory(imageBytes!, fit: BoxFit.contain),
+        );
+      }
+
+      return Image.memory(imageBytes!, fit: BoxFit.contain);
     }
+
     return Center(
       child: Text(
         textValue ?? '',
@@ -315,14 +234,27 @@ class _BottomBar extends StatelessWidget {
         ],
       ),
       child: Obx(() {
+        final allFilled = controller.allFieldsFilled;
+        final manuallyStarted = controller.hasStartedManual.value;
+
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             AppButton.primary(
-              label: 'Confirm & Sign',
-              onPressed: controller.allFieldsFilled
-                  ? controller.confirmSigning
-                  : null,
+              label: !manuallyStarted
+                  ? 'Finish'
+                  : (allFilled
+                        ? 'Finish'
+                        : (controller.signatureImages.isNotEmpty
+                              ? 'Continue Signing'
+                              : controller.footerLabel.value)),
+              onPressed: !manuallyStarted
+                  ? () => controller.showSplash.value = true
+                  : (controller.allFieldsFilled
+                        ? controller.handleFinishAction
+                        : (controller.footerLabel.value == 'Finish'
+                              ? controller.handleFinishAction
+                              : controller.startSigningProcess)),
             ),
           ],
         );

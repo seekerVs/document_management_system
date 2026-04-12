@@ -1,65 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import '../../../../../Utils/Constant/enum.dart';
 import '../Model/signature_field_model.dart';
 import '../Model/signature_request_model.dart';
-import '../Controller/signature_placement_controller.dart';
 
 class SignatureFieldOverlay extends StatelessWidget {
   final SignatureFieldModel field;
   final SignerModel signer;
   final Color color;
-  final SignaturePlacementController? controller;
   final double canvasWidth;
   final double canvasHeight;
   final Widget? child;
   final VoidCallback? onTap;
+  final VoidCallback? onDragStarted;
   final bool isSelected;
+  final bool canDrag;
 
   const SignatureFieldOverlay({
     super.key,
     required this.field,
     required this.signer,
     required this.color,
-    this.controller,
     required this.canvasWidth,
     required this.canvasHeight,
     this.child,
     this.onTap,
+    this.onDragStarted,
     this.isSelected = false,
+    this.canDrag = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    // If we have a controller, we reactive based on its state
-    if (controller != null) {
-      return Obx(() {
-        final pos = controller!.fieldPositions[field.fieldId];
-        final isFieldSelected =
-            controller!.selectedFieldId.value == field.fieldId;
+    // Use normalized coordinates from model directly
+    final double left = field.x * canvasWidth;
+    final double top = field.y * canvasHeight;
 
-        // Use normalized coordinates from model, or live pixels from controller if dragging
-        final double left = pos != null ? pos.x : field.x * canvasWidth;
-        final double top = pos != null ? pos.y : field.y * canvasHeight;
-
-        return _buildField(
-          context,
-          left,
-          top,
-          isFieldSelected,
-          true, // canDrag
-        );
-      });
-    }
-
-    // Static mode (Signing)
-    return _buildField(
-      context,
-      field.x * canvasWidth,
-      field.y * canvasHeight,
-      isSelected,
-      false, // canDrag
-    );
+    return _buildField(context, left, top, isSelected, canDrag);
   }
 
   Widget _buildField(
@@ -73,153 +49,224 @@ class SignatureFieldOverlay extends StatelessWidget {
         field.type == SignatureFieldType.textbox ||
         field.type == SignatureFieldType.dateSigned;
 
-    final double renderWidth = field.width * canvasWidth;
-    final double renderHeight = field.height * canvasHeight;
+    // Max rendered field sizes in pixels — prevents fields from ballooning on large screens
+    // Matching web signing logic
+    // Max rendered field sizes in pixels — prevents fields from ballooning on large screens
+    // Matching web signing logic
+    const double maxSigW = 120.0;
+    const double maxFieldW = 50.0;
+    const double maxFieldH = 50.0;
+    const double maxRectW = 100.0;
+    const double maxRectH = 28.0;
+
+    // Compute rendered size: normalized value * page dimension, clamped to a max
+    final isSignature = field.type == SignatureFieldType.signature;
+    final double maxWidth = isSignature
+        ? maxSigW
+        : (isRect ? maxRectW : maxFieldW);
+
+    final double renderWidth = (field.width * canvasWidth).clamp(
+      20.0,
+      maxWidth,
+    );
+    final double renderHeight = (field.height * canvasHeight).clamp(
+      20.0,
+      isRect ? maxRectH : maxFieldH,
+    );
+
+    // Scale factor for internal UI elements (icons, text) relative to a 600px reference page
+    final double placeholderScale = (canvasWidth / 600.0).clamp(0.5, 1.2);
 
     final isFilled = child != null || field.value != null;
 
     return Positioned(
       left: left,
       top: top,
-      // We don't specify width/height on Positioned so the child can grow
-      child: Listener(
-        onPointerDown: (_) {
-          if (canDrag) controller?.selectField(field.fieldId);
-        },
-        child: GestureDetector(
-          onTap: onTap ??
-              () {
-                if (canDrag) controller?.selectField(field.fieldId);
-              },
-          onPanUpdate: canDrag
-              ? (d) {
-                  controller?.updateFieldPosition(
-                    field.fieldId,
-                    d.delta.dx,
-                    d.delta.dy,
-                    canvasWidth,
-                    canvasHeight,
-                  );
-                }
-              : null,
-          onPanEnd: canDrag
-              ? (_) => controller?.commitFieldPosition(
-                    field.fieldId,
-                    signer,
-                    canvasWidth,
-                    canvasHeight,
-                  )
-              : null,
-          child: Container(
-            width: child == null ? renderWidth : null,
-            height: child == null ? renderHeight : null,
-            constraints: child == null
-                ? null
-                : BoxConstraints(
-                    minWidth: renderWidth,
-                    minHeight: renderHeight,
-                    maxWidth: renderWidth,
-                    maxHeight: renderHeight,
+      child: canDrag
+          ? LongPressDraggable<String>(
+              data: field.fieldId,
+              dragAnchorStrategy: pointerDragAnchorStrategy,
+              feedback: Material(
+                color: Colors.transparent,
+                child: Opacity(
+                  opacity: 0.8,
+                  child: _buildFieldContent(
+                    context,
+                    renderWidth,
+                    renderHeight,
+                    isFieldSelected,
+                    placeholderScale,
+                    isFilled,
                   ),
-            decoration: BoxDecoration(
-              color: isFilled ? Colors.transparent : color,
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: isFieldSelected ? Colors.white : color,
-                width: isFieldSelected ? (isFilled ? 1.0 : 2.0) : 1.0,
-                style: (isFieldSelected || !isFilled)
-                    ? BorderStyle.solid
-                    : BorderStyle.none,
+                ),
               ),
-              boxShadow: isFieldSelected
-                  ? [
-                      BoxShadow(
-                        color: color.withValues(alpha: 0.4),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                      ),
-                    ]
-                  : [
-                      const BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
+              childWhenDragging: Opacity(
+                opacity: 0.3,
+                child: _buildFieldContent(
+                  context,
+                  renderWidth,
+                  renderHeight,
+                  isFieldSelected,
+                  placeholderScale,
+                  isFilled,
+                ),
+              ),
+              onDragStarted: onDragStarted,
+              child: GestureDetector(
+                onTap: onTap,
+                child: _buildFieldContent(
+                  context,
+                  renderWidth,
+                  renderHeight,
+                  isFieldSelected,
+                  placeholderScale,
+                  isFilled,
+                ),
+              ),
+            )
+          : GestureDetector(
+              onTap: onTap,
+              child: _buildFieldContent(
+                context,
+                renderWidth,
+                renderHeight,
+                isSelected,
+                placeholderScale,
+                isFilled,
+              ),
             ),
-            child: Stack(
-              clipBehavior: Clip.none, // Allow expansion
-              children: [
-                // High contrast outer accent for selection
-                if (isFieldSelected)
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10), // Slightly larger than parent
-                        border: Border.all(color: color, width: 2),
-                      ),
-                    ),
-                  ),
-                child ??
-                    (isRect
-                        ? Align(
-                            alignment: Alignment.topLeft,
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 2, top: 1),
-                              child: Text(
-                                field.type == SignatureFieldType.textbox
-                                    ? 'Add Text'
-                                    : 'Date Signed',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w300,
-                                  letterSpacing: -0.2,
-                                ),
-                              ),
-                            ),
-                          )
-                        : Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  _fieldIcon(field.type),
-                                  color: Colors.white,
-                                  size: 14,
-                                ),
-                                const SizedBox(height: 1),
-                                Text(
-                                  field.type == SignatureFieldType.initials
-                                      ? 'Initial'
-                                      : 'Sign',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 7,
-                                    fontWeight: FontWeight.w300,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 
-  IconData _fieldIcon(SignatureFieldType type) {
-    switch (type) {
-      case SignatureFieldType.signature:
-        return Icons.draw_outlined;
-      case SignatureFieldType.initials:
-        return Icons.draw_outlined;
-      case SignatureFieldType.dateSigned:
-        return Icons.calendar_today_outlined;
-      case SignatureFieldType.textbox:
-        return Icons.text_snippet_outlined;
-    }
+  Widget _buildFieldContent(
+    BuildContext context,
+    double renderWidth,
+    double renderHeight,
+    bool isFieldSelected,
+    double placeholderScale,
+    bool isFilled,
+  ) {
+    final isRect =
+        field.type == SignatureFieldType.textbox ||
+        field.type == SignatureFieldType.dateSigned;
+
+    return Container(
+      width: child == null ? renderWidth : null,
+      height: child == null ? renderHeight : null,
+      constraints: child == null
+          ? null
+          : BoxConstraints(
+              minWidth: renderWidth,
+              minHeight: renderHeight,
+              maxWidth: renderWidth,
+              maxHeight: renderHeight,
+            ),
+      decoration: BoxDecoration(
+        color: isFilled ? Colors.transparent : color,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: (isFieldSelected && !isFilled)
+              ? Colors.white
+              : (isFieldSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : color),
+          width: 2.0,
+          style: (isFieldSelected || !isFilled)
+              ? BorderStyle.solid
+              : BorderStyle.none,
+        ),
+        boxShadow: isFieldSelected
+            ? [
+                BoxShadow(
+                  color: color.withValues(alpha: isFilled ? 0.4 : 0.15),
+                  blurRadius: 8,
+                  spreadRadius: 2,
+                ),
+              ]
+            : (isFilled
+                  ? []
+                  : [
+                      BoxShadow(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.shadow.withValues(alpha: 0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]),
+      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          if (isFieldSelected && isFilled)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: color, width: 2),
+                ),
+              ),
+            ),
+          child ??
+              (isRect
+                  ? Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: 2 * placeholderScale,
+                          top: 1 * placeholderScale,
+                        ),
+                        child: Text(
+                          field.type == SignatureFieldType.textbox
+                              ? 'Add Text'
+                              : 'Date Signed',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: (8 * placeholderScale).clamp(7.0, 10.0),
+                            fontWeight: FontWeight.w300,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _fieldIcon(field.type),
+                            color: Colors.white,
+                            size: (14 * placeholderScale).clamp(12.0, 20.0),
+                          ),
+                          SizedBox(height: 1 * placeholderScale),
+                          Text(
+                            field.type == SignatureFieldType.initials
+                                ? 'Initial'
+                                : 'Sign',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: (7 * placeholderScale).clamp(6.0, 10.0),
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+        ],
+      ),
+    );
+  }
+}
+
+IconData _fieldIcon(SignatureFieldType type) {
+  switch (type) {
+    case SignatureFieldType.signature:
+      return Icons.draw_outlined;
+    case SignatureFieldType.initials:
+      return Icons.draw_outlined;
+    case SignatureFieldType.dateSigned:
+      return Icons.calendar_today_outlined;
+    case SignatureFieldType.textbox:
+      return Icons.text_snippet_outlined;
   }
 }

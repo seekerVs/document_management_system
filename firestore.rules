@@ -96,7 +96,16 @@ service cloud.firestore {
     // Users can read their own activity; Cloud Functions write
 
     match /activities/{activityId} {
-      allow read: if isSignedIn() && resource.data.actorUid == request.auth.uid;
+      allow read: if isSignedIn() && (
+        resource.data.actorUid == request.auth.uid ||
+        (
+          resource.data.documentId != null &&
+          (
+            get(/databases/$(database)/documents/documents/$(resource.data.documentId)).data.ownerUid == request.auth.uid ||
+            (request.auth.token.email != null && request.auth.token.email.lower() in get(/databases/$(database)/documents/documents/$(resource.data.documentId)).data.authorizedEmails)
+          )
+        )
+      );
       allow create: if isSignedIn() && request.resource.data.actorUid == request.auth.uid;
       allow update, delete: if false;
     }
@@ -106,7 +115,7 @@ service cloud.firestore {
 
     match /notifications/{notificationId} {
       allow read: if isSignedIn() && resource.data.recipientUid == request.auth.uid;
-      allow create: if false; // Cloud Functions only
+      allow create: if isSignedIn();
       allow update: if isSignedIn()
         && resource.data.recipientUid == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);

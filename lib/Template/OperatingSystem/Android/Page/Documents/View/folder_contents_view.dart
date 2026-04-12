@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../Commons/Widgets/empty_state.dart';
-import '../../../../../Commons/Widgets/loading_shimmer.dart';
-import '../../../../../Utils/Themes/component_themes.dart';
 import '../Controller/documents_controller.dart';
 import '../Controller/upload_controller.dart';
 import '../Model/document_model.dart';
@@ -10,6 +8,7 @@ import '../Model/folder_model.dart';
 import '../Widget/breadcrumb_trail.dart';
 import '../Widget/document_grid_card.dart';
 import '../Widget/document_list_tile.dart';
+import '../Widget/documents_shimmer.dart';
 import '../Widget/multiselect_bar.dart';
 import '../Widget/sort_menu.dart';
 import '../../../../../../Template/Utils/Exceptions/exceptions.dart';
@@ -17,6 +16,7 @@ import '../../../../../../Template/Utils/Firebase/firebase_method.dart';
 import '../../../../../../Template/Utils/Firebase/firebase_utils.dart';
 import '../../../../../../Template/Utils/Helpers/helpers.dart';
 import '../../../../../../Template/Utils/Popups/dialog.dart';
+import '../../../../../../Template/Utils/Popups/full_screen_loader.dart';
 
 class FolderContentsView extends StatefulWidget {
   const FolderContentsView({super.key});
@@ -38,6 +38,8 @@ class _FolderContentsViewState extends State<FolderContentsView> {
   final TextEditingController searchController = TextEditingController();
 
   Worker? _sortWorker;
+
+  final GlobalKey<PopupMenuButtonState<String>> _menuKey = GlobalKey();
 
   @override
   void initState() {
@@ -117,16 +119,32 @@ class _FolderContentsViewState extends State<FolderContentsView> {
       initialValue: doc.name,
       confirmLabel: 'Rename',
       onConfirm: (name) async {
+        final trimmedName = name.trim();
+        if (trimmedName.isEmpty) return;
+        if (trimmedName.toLowerCase() == doc.name.toLowerCase()) return;
+
+        if (AppHelpers.nameExists(trimmedName, docs.map((d) => d.name))) {
+          AppDialogs.showSnackError('A file with this name already exists.');
+          return;
+        }
+
         try {
+          AppLoader.show(message: 'Renaming Document...');
           await FirebaseMethod.updateDocument(
             ref: FirebaseUtils.documentDoc(doc.documentId),
-            data: {'name': name},
+            data: {'name': trimmedName},
           );
           final i = docs.indexWhere((d) => d.documentId == doc.documentId);
-          if (i != -1) docs[i] = doc.copyWith(name: name);
+          if (i != -1) {
+            docs[i] = doc.copyWith(name: trimmedName);
+            docs.refresh();
+          }
           _applyFilter(searchController.text);
+          AppDialogs.showSnackSuccess('Document renamed.');
         } catch (_) {
           AppDialogs.showSnackError('Failed to rename document.');
+        } finally {
+          AppLoader.hide();
         }
       },
     );
@@ -177,20 +195,39 @@ class _FolderContentsViewState extends State<FolderContentsView> {
           ],
         ),
         bottomNavigationBar: isMultiSelect ? const MultiSelectBar() : null,
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        body: Stack(
           children: [
-            BreadcrumbTrail(folderName: folder.name),
-            if (!isMultiSelect) _buildToolbar(context),
-            const SizedBox(height: 4),
-            Expanded(
-              child: _FolderBody(
-                docs: filteredDocs,
-                isLoading: isLoading,
-                isGridView: isGridView,
-                onRename: _renameDoc,
-                onDelete: _deleteDoc,
+            Positioned.fill(
+              child: RefreshIndicator(
                 onRefresh: _loadDocs,
+                child: SingleChildScrollView(
+                  physics: isLoading.value
+                      ? const NeverScrollableScrollPhysics()
+                      : const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 800),
+                      child: isLoading.value
+                          ? const DocumentsShimmer(showStorageBanner: false)
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                BreadcrumbTrail(folderName: folder.name),
+                                const SizedBox(height: 12),
+                                if (!isMultiSelect) _buildToolbar(context),
+                                const SizedBox(height: 12),
+                                _FolderBody(
+                                  docs: filteredDocs,
+                                  isGridView: isGridView,
+                                  onRename: _renameDoc,
+                                  onDelete: _deleteDoc,
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
@@ -204,55 +241,70 @@ class _FolderContentsViewState extends State<FolderContentsView> {
     return Column(
       children: [
         // Search field — full width, same as documents_view
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: Obx(
-            () => TextField(
-              controller: searchController,
-              onChanged: _onSearchChanged,
-              style: Theme.of(context).textTheme.bodyLarge,
-              decoration: InputDecoration(
-                hintText: 'Search in folder',
-                hintStyle: TextStyle(color: cs.onSurfaceVariant.withValues(alpha: 0.7)),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: cs.onSurfaceVariant,
-                  size: 20,
-                ),
-                suffixIcon: isSearching.value
-                    ? IconButton(
-                        icon: Icon(
-                          Icons.close,
-                          size: 18,
-                          color: cs.onSurfaceVariant,
-                        ),
-                        onPressed: _clearSearch,
-                      )
-                    : null,
+        Obx(
+          () => TextField(
+            controller: searchController,
+            onChanged: _onSearchChanged,
+            style: Theme.of(context).textTheme.bodyLarge,
+            decoration: InputDecoration(
+              hintText: 'Search in folder',
+              hintStyle: TextStyle(
+                color: cs.onSurfaceVariant.withValues(alpha: 0.7),
               ),
+              prefixIcon: Icon(
+                Icons.search,
+                color: cs.onSurfaceVariant,
+                size: 20,
+              ),
+              suffixIcon: isSearching.value
+                  ? IconButton(
+                      icon: Icon(
+                        Icons.close,
+                        size: 18,
+                        color: cs.onSurfaceVariant,
+                      ),
+                      onPressed: _clearSearch,
+                    )
+                  : null,
             ),
           ),
         ),
         // Toolbar row — + New | spacer | grid/list | sort
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+          padding: const EdgeInsets.only(top: 12, bottom: 4),
           child: Row(
             children: [
-              MenuAnchor(
-                style: AppComponentThemes.appMenuStyle,
-                menuChildren: [
-                  MenuItemButton(
-                    leadingIcon: const Icon(Icons.upload_file_outlined),
-                    onPressed: () => _uploadController.pickAndUploadToFolder(
-                      folder.folderId,
+              PopupMenuButton<String>(
+                key: _menuKey,
+                position: PopupMenuPosition.under,
+                onSelected: (value) {
+                  if (value == 'upload') {
+                    _uploadController.showUploadSourceSheet(
+                      folderId: folder.folderId,
+                    );
+                  }
+                },
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: 'upload',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.upload_file_outlined,
+                          size: 20,
+                          color: cs.onSurface,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Upload file',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
                     ),
-                    child: const Text('Upload file'),
                   ),
                 ],
-                builder: (_, menuController, _) => ElevatedButton.icon(
-                  onPressed: () => menuController.isOpen
-                      ? menuController.close()
-                      : menuController.open(),
+                child: ElevatedButton.icon(
+                  onPressed: () => _menuKey.currentState?.showButtonMenu(),
                   icon: const Icon(Icons.add, size: 18),
                   label: const Text('New'),
                   style: ElevatedButton.styleFrom(
@@ -289,52 +341,35 @@ class _FolderContentsViewState extends State<FolderContentsView> {
 
 class _FolderBody extends StatelessWidget {
   final RxList<DocumentModel> docs;
-  final RxBool isLoading;
   final RxBool isGridView;
   final void Function(DocumentModel) onRename;
   final void Function(DocumentModel) onDelete;
-  final Future<void> Function() onRefresh;
 
   const _FolderBody({
     required this.docs,
-    required this.isLoading,
     required this.isGridView,
     required this.onRename,
     required this.onDelete,
-    required this.onRefresh,
   });
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (isLoading.value) {
-        return isGridView.value
-            ? LoadingShimmer.documentGrid()
-            : LoadingShimmer.documentList();
-      }
       if (docs.isEmpty) {
-        return RefreshIndicator(
-          onRefresh: onRefresh,
-          child: ListView(
-            children: const [
-              EmptyState(
-                icon: Icons.folder_open_outlined,
-                message: 'This folder is empty',
-                subtitle: 'Tap + New to upload a file',
-              ),
-            ],
-          ),
+        return const EmptyState(
+          icon: Icons.folder_open_outlined,
+          message: 'This folder is empty',
+          subtitle: 'Tap + New to upload a file',
         );
       }
-      return RefreshIndicator(
-        onRefresh: onRefresh,
-        child: isGridView.value ? _buildGrid() : _buildList(),
-      );
+      return isGridView.value ? _buildGrid() : _buildList();
     });
   }
 
   Widget _buildList() {
     return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
       itemCount: docs.length,
       itemBuilder: (_, i) => DocumentListTile(
@@ -347,7 +382,9 @@ class _FolderBody extends StatelessWidget {
 
   Widget _buildGrid() {
     return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(top: 8, bottom: 16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,

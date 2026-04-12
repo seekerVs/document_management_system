@@ -1,6 +1,6 @@
 enum UserRole { owner, signer, viewer }
 
-enum DocumentStatus { draft, pending, completed, declined }
+enum DocumentStatus { draft, pending, completed }
 
 enum DocumentFileType { pdf }
 
@@ -22,11 +22,10 @@ enum SignatureRequestStatus {
   pending,
   inProgress,
   completed,
-  declined,
   expired,
 }
 
-enum SignerStatus { pending, signed, declined }
+enum SignerStatus { pending, signed }
 
 enum SignerRole { needsToSign, receivesACopy }
 
@@ -44,8 +43,9 @@ enum ActivityAction {
   moved,
   copied,
   renamed,
-  declined,
+  completed,
   folderCreated,
+
   folderDeleted,
   shared,
 }
@@ -53,7 +53,6 @@ enum ActivityAction {
 enum NotificationType {
   signatureRequested,
   documentSigned,
-  signatureDeclined,
   tokenExpired,
   documentCompleted,
   documentShared,

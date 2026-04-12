@@ -30,7 +30,7 @@ class DocumentListTile extends GetView<DocumentsController> {
             : controller.openDocument(doc),
         onLongPress: () => controller.selectItem(doc.documentId),
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          margin: const EdgeInsets.symmetric(vertical: 4),
           decoration: AppStyle.cardOf(context).copyWith(
             border: Border.all(
               color: isSelected ? cs.primary : cs.outline,

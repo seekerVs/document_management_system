@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uuid/uuid.dart';
 import '../../../../../../Template/Utils/Firebase/firebase_method.dart';
 import '../../../../../../Template/Utils/Firebase/firebase_utils.dart';
 import '../../../../../Utils/Firebase/base_repository.dart';
+import '../../../../../Utils/Constant/lists.dart';
 import '../Model/folder_model.dart';
 
 class FolderRepository extends BaseRepository {
@@ -27,6 +29,25 @@ class FolderRepository extends BaseRepository {
     );
   });
 
+  Future<void> initializeDefaultFolders(String uid) => handleRequest(() async {
+        await FirebaseMethod.runBatch((batch) async {
+          for (final name in AppLists.defaultFolders) {
+            final folderId = const Uuid().v4();
+            final folder = FolderModel(
+              folderId: folderId,
+              ownerUid: uid,
+              name: name,
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            );
+            batch.set(
+              FirebaseUtils.folderDoc(folderId),
+              folder.toFirestore(),
+            );
+          }
+        });
+      });
+
   Future<void> renameFolder(String folderId, String name) =>
       handleRequest(() async {
         await FirebaseMethod.updateDocument(
@@ -46,4 +67,15 @@ class FolderRepository extends BaseRepository {
           'updatedAt': Timestamp.now(),
         });
       });
+
+  Future<int> getFolderCount() async {
+    final result = await handleRequest(() async {
+      final snap = await FirebaseUtils.foldersRef
+          .where('ownerUid', isEqualTo: currentUid)
+          .count()
+          .get();
+      return snap.count ?? 0;
+    });
+    return result ?? 0;
+  }
 }

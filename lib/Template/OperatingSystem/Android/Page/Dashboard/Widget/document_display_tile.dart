@@ -6,19 +6,23 @@ import '../../Documents/Model/document_model.dart';
 class DocumentDisplayTile extends StatelessWidget {
   final DocumentModel document;
   final VoidCallback? onTap;
-  final VoidCallback? onMoreTap;
+  final VoidCallback? onOpen;
+  final VoidCallback? onDetails;
   final EdgeInsetsGeometry margin;
 
   const DocumentDisplayTile({
     super.key,
     required this.document,
     this.onTap,
-    this.onMoreTap,
+    this.onOpen,
+    this.onDetails,
     this.margin = const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
   });
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -32,14 +36,14 @@ class DocumentDisplayTile extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.error,
+                  color: cs.error,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
                   child: Text(
                     'PDF',
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.onError,
+                      color: cs.onError,
                       fontWeight: FontWeight.w800,
                       fontSize: 11,
                     ),
@@ -74,13 +78,41 @@ class DocumentDisplayTile extends StatelessWidget {
                   ],
                 ),
               ),
-              IconButton(
+              PopupMenuButton<_DocMenuOption>(
+                position: PopupMenuPosition.under,
                 icon: Icon(
                   Icons.more_vert,
                   size: 18,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: cs.onSurfaceVariant,
                 ),
-                onPressed: onMoreTap,
+                onSelected: (option) {
+                  if (option == _DocMenuOption.open) onOpen?.call();
+                  if (option == _DocMenuOption.details) onDetails?.call();
+                },
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: _DocMenuOption.open,
+                    child: Row(
+                      children: [
+                        Icon(Icons.open_in_new_outlined, size: 20, color: cs.onSurface),
+                        const SizedBox(width: 12),
+                        Text('Open in Documents',
+                            style: Theme.of(context).textTheme.bodyMedium),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: _DocMenuOption.details,
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, size: 20, color: cs.onSurface),
+                        const SizedBox(width: 12),
+                        Text('Details',
+                            style: Theme.of(context).textTheme.bodyMedium),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -89,3 +121,5 @@ class DocumentDisplayTile extends StatelessWidget {
     );
   }
 }
+
+enum _DocMenuOption { open, details }

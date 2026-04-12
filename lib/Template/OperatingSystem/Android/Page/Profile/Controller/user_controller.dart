@@ -12,6 +12,8 @@ class UserController extends GetxService {
   final RxBool isLoading = false.obs;
 
   final RxString resolvedPhotoUrl = ''.obs;
+  final RxString resolvedSignatureUrl = ''.obs;
+  final RxString resolvedInitialsUrl = ''.obs;
 
   StreamSubscription<User?>? _authSubscription;
 
@@ -21,7 +23,11 @@ class UserController extends GetxService {
     _listenToAuthChanges();
 
     // Re-resolve photo URL whenever user changes
-    ever(user, (u) => _resolvePhotoUrl(u?.photoUrl));
+    ever(user, (u) {
+      _resolvePhotoUrl(u?.photoUrl);
+      _resolveSignatureUrl(u?.signatureUrl);
+      _resolveInitialsUrl(u?.initialsUrl);
+    });
   }
 
   Future<void> _resolvePhotoUrl(String? path) async {
@@ -45,6 +51,40 @@ class UserController extends GetxService {
     }
   }
 
+  Future<void> _resolveSignatureUrl(String? path) async {
+    if (path == null || path.isEmpty) {
+      resolvedSignatureUrl.value = '';
+      return;
+    }
+    if (path.startsWith('http')) {
+      resolvedSignatureUrl.value = path;
+      return;
+    }
+    try {
+      final url = await SupabaseService.getSignedUrl(path);
+      resolvedSignatureUrl.value = url;
+    } catch (_) {
+      resolvedSignatureUrl.value = '';
+    }
+  }
+
+  Future<void> _resolveInitialsUrl(String? path) async {
+    if (path == null || path.isEmpty) {
+      resolvedInitialsUrl.value = '';
+      return;
+    }
+    if (path.startsWith('http')) {
+      resolvedInitialsUrl.value = path;
+      return;
+    }
+    try {
+      final url = await SupabaseService.getSignedUrl(path);
+      resolvedInitialsUrl.value = url;
+    } catch (_) {
+      resolvedInitialsUrl.value = '';
+    }
+  }
+
   void _listenToAuthChanges() {
     _authSubscription = FirebaseUtils.auth.authStateChanges().listen((
       firebaseUser,
@@ -56,6 +96,8 @@ class UserController extends GetxService {
       } else {
         user.value = null;
         resolvedPhotoUrl.value = '';
+        resolvedSignatureUrl.value = '';
+        resolvedInitialsUrl.value = '';
       }
     });
   }
@@ -97,6 +139,18 @@ class UserController extends GetxService {
     );
     await FirebaseUtils.userDoc(uid).update({'usedStorageMB': newValue});
     await refreshUser();
+  }
+
+  // Syncs the Firestore usedStorageMB field with the provided actual value
+  Future<void> syncStorageUsage(double actualUsedMB) async {
+    final uid = FirebaseUtils.currentUid;
+    if (uid == null || user.value == null) return;
+
+    // Only update if difference is significant (e.g. > 0.01 MB) or if it's the first sync
+    if ((user.value!.usedStorageMB - actualUsedMB).abs() > 0.01) {
+      await FirebaseUtils.userDoc(uid).update({'usedStorageMB': actualUsedMB});
+      await refreshUser();
+    }
   }
 
   bool get isLoggedIn => user.value != null;

@@ -8,6 +8,9 @@ import '../../../../../../Template/Utils/Popups/full_screen_loader.dart';
 import '../../../../../../Template/Utils/Routes/main_routes.dart';
 import '../../../../../../Template/Utils/Services/supabase_service.dart';
 import '../../../../../Commons/Widgets/app_text_field.dart';
+import '../../Signature/Widget/modern_signing_modal.dart';
+import '../../../../../Utils/Constant/enum.dart';
+import 'dart:typed_data';
 import '../Model/user_model.dart';
 import '../Repository/user_repository.dart';
 import 'user_controller.dart';
@@ -35,6 +38,8 @@ class ProfileController extends GetxController {
   String get displayName => _userController.displayName;
   String get displayEmail => _userController.displayEmail;
   String? get photoUrl => _userController.resolvedPhotoUrl.value;
+  String? get signatureUrl => _userController.resolvedSignatureUrl.value;
+  String? get initialsUrl => _userController.resolvedInitialsUrl.value;
 
   @override
   void onReady() {
@@ -141,6 +146,119 @@ class ProfileController extends GetxController {
       isUploadingPhoto.value = false;
       AppLoader.hide();
     }
+  }
+
+  Future<void> addSignature() async {
+    ModernSigningModal.show(
+      fieldType: SignatureFieldType.signature,
+      onSave: (bytes) async {
+        if (bytes != null) {
+          await _uploadSignatureOrInitials(bytes, true);
+        }
+      },
+    );
+  }
+
+  Future<void> addInitials() async {
+    ModernSigningModal.show(
+      fieldType: SignatureFieldType.initials,
+      onSave: (bytes) async {
+        if (bytes != null) {
+          await _uploadSignatureOrInitials(bytes, false);
+        }
+      },
+    );
+  }
+
+  Future<void> _uploadSignatureOrInitials(
+    Uint8List bytes,
+    bool isSignature,
+  ) async {
+    AppLoader.show(
+      message: isSignature ? 'Saving signature...' : 'Saving initials...',
+    );
+    try {
+      final uid = FirebaseUtils.currentUid;
+      if (uid == null) throw const SessionExpiredException();
+
+      final fileName = isSignature ? 'signature.png' : 'initials.png';
+      final uploadResult = await SupabaseService.uploadBytes(
+        bytes: bytes,
+        storagePath: 'users/$uid/$fileName',
+        fileName: fileName,
+      );
+
+      if (isSignature) {
+        await _repo.updateProfile(uid, signatureUrl: uploadResult.storagePath);
+      } else {
+        await _repo.updateProfile(uid, initialsUrl: uploadResult.storagePath);
+      }
+
+      await _userController.refreshUser();
+      AppDialogs.showSnackSuccess(
+        isSignature ? 'Signature saved.' : 'Initials saved.',
+      );
+    } catch (e) {
+      AppDialogs.showSnackError(
+        'Failed to save ${isSignature ? 'signature' : 'initials'}.',
+      );
+    } finally {
+      AppLoader.hide();
+    }
+  }
+
+  Future<void> deleteSignature() async {
+    AppDialogs.showConfirm(
+      title: 'Delete Signature',
+      message: 'Are you sure you want to delete your saved signature?',
+      confirmLabel: 'Delete',
+      isDangerous: true,
+      onConfirm: () async {
+        AppLoader.show(message: 'Deleting signature...');
+        try {
+          final uid = FirebaseUtils.currentUid;
+          if (uid == null) throw const SessionExpiredException();
+
+          await _repo.updateProfile(uid, clearSignature: true);
+          if (signatureUrl != null && signatureUrl!.isNotEmpty) {
+            try {
+              await SupabaseService.deleteFile(signatureUrl!);
+            } catch (_) {}
+          }
+          await _userController.refreshUser();
+          AppDialogs.showSnackSuccess('Signature deleted.');
+        } finally {
+          AppLoader.hide();
+        }
+      },
+    );
+  }
+
+  Future<void> deleteInitials() async {
+    AppDialogs.showConfirm(
+      title: 'Delete Initials',
+      message: 'Are you sure you want to delete your saved initials?',
+      confirmLabel: 'Delete',
+      isDangerous: true,
+      onConfirm: () async {
+        AppLoader.show(message: 'Deleting initials...');
+        try {
+          final uid = FirebaseUtils.currentUid;
+          if (uid == null) throw const SessionExpiredException();
+
+          await _repo.updateProfile(uid, clearInitials: true);
+          if (initialsUrl != null && initialsUrl!.isNotEmpty) {
+            try {
+              await SupabaseService.deleteFile(initialsUrl!);
+            } catch (_) {}
+          }
+          await _userController.refreshUser();
+          AppDialogs.showSnackSuccess('Initials deleted.');
+        } finally {
+          AppLoader.hide();
+        }
+      },
+    );
   }
 
   Future<void> removePhoto() async {

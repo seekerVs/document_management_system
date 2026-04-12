@@ -486,24 +486,7 @@ class AppComponentThemes {
     textStyle: TextStyle(fontSize: 13, color: AppColorScheme.dark.onSurface),
   );
 
-  // ─── Menu (MenuAnchor) ────────────────────────────────────────────────────
-  // Single source of truth for all MenuAnchor styling.
-  // appMenuStyle can be used directly on MenuAnchor.style for consistency.
 
-  static MenuStyle get appMenuStyle => MenuStyle(
-    backgroundColor: WidgetStatePropertyAll(AppColorScheme.light.surface),
-    elevation: const WidgetStatePropertyAll(8),
-    shadowColor: const WidgetStatePropertyAll(Colors.black26),
-    surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
-    padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 4)),
-    shape: WidgetStatePropertyAll(
-      RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ThemeRadius.lg),
-      ),
-    ),
-  );
-
-  static MenuThemeData get menuTheme => MenuThemeData(style: appMenuStyle);
 
   static MenuButtonThemeData menuButtonTheme = MenuButtonThemeData(
     style: ButtonStyle(

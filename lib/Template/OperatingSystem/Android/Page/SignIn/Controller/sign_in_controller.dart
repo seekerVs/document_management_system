@@ -29,7 +29,7 @@ class SignInController extends GetxController {
       );
       if (user != null) {
         await Get.find<UserController>().refreshUser();
-        Get.offAllNamed(MainRoutes.home);
+        Get.offAllNamed(MainRoutes.dashboard);
       }
     } on AppException catch (e) {
       errorMessage.value = e.message;
@@ -46,7 +46,7 @@ class SignInController extends GetxController {
       final user = await _repo.signInWithGoogle();
       if (user != null) {
         await Get.find<UserController>().refreshUser();
-        Get.offAllNamed(MainRoutes.home);
+        Get.offAllNamed(MainRoutes.dashboard);
       }
     } on AppException catch (e) {
       AppDialogs.showSnackError(e.message);

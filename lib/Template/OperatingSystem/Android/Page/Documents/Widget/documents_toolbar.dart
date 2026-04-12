@@ -1,40 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../Utils/Themes/component_themes.dart';
 import '../Controller/documents_controller.dart';
 import '../Controller/upload_controller.dart';
 import 'sort_menu.dart';
 
 class DocumentsToolbar extends GetView<DocumentsController> {
-  const DocumentsToolbar({super.key});
+  DocumentsToolbar({super.key});
 
   UploadController get _uploadController => Get.find<UploadController>();
+  final GlobalKey<PopupMenuButtonState<String>> _menuKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.only(top: 12, bottom: 4),
       child: Row(
         children: [
-          MenuAnchor(
-            style: AppComponentThemes.appMenuStyle,
-            menuChildren: [
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.upload_file_outlined),
-                onPressed: _uploadController.showUploadSourceSheet,
-                child: const Text('Upload file'),
+          PopupMenuButton<String>(
+            key: _menuKey,
+            position: PopupMenuPosition.under,
+            onSelected: (value) {
+              if (value == 'upload') _uploadController.showUploadSourceSheet();
+              if (value == 'folder') controller.showCreateFolderDialog();
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'upload',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.upload_file_outlined,
+                      size: 20,
+                      color: cs.onSurface,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Upload file',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
               ),
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.create_new_folder_outlined),
-                onPressed: controller.showCreateFolderDialog,
-                child: const Text('New folder'),
+              PopupMenuItem(
+                value: 'folder',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.create_new_folder_outlined,
+                      size: 20,
+                      color: cs.onSurface,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'New folder',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
               ),
             ],
-            builder: (_, menuController, _) => ElevatedButton.icon(
-              onPressed: () => menuController.isOpen
-                  ? menuController.close()
-                  : menuController.open(),
+            child: ElevatedButton.icon(
+              onPressed: () => _menuKey.currentState?.showButtonMenu(),
               icon: const Icon(Icons.add, size: 18),
               label: const Text('New'),
               style: ElevatedButton.styleFrom(

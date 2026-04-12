@@ -34,9 +34,6 @@ class AppBadge extends StatelessWidget {
       case SignerStatus.signed:
         color = AppColors.green;
         surface = AppColors.greenLight;
-      case SignerStatus.declined:
-        color = AppColors.red;
-        surface = AppColors.redLight;
     }
     return AppBadge(
       label: AppFormatter.signerStatus(status),

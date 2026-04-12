@@ -10,7 +10,7 @@ class BreadcrumbTrail extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.only(top: 12),
       child: Row(
         children: [
           GestureDetector(

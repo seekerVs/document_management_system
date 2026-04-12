@@ -16,6 +16,7 @@ class SignerModel {
   final DateTime? tokenExpiry;
   final bool tokenUsed;
   final String? ipAddress;
+  final String? photoUrl;
 
   SignerModel({
     required this.signerEmail,
@@ -31,6 +32,7 @@ class SignerModel {
     this.tokenExpiry,
     this.tokenUsed = false,
     this.ipAddress,
+    this.photoUrl,
   });
 
   factory SignerModel.fromMap(Map<String, dynamic> data) {
@@ -60,6 +62,7 @@ class SignerModel {
           : null,
       tokenUsed: data['tokenUsed'] ?? false,
       ipAddress: data['ipAddress'],
+      photoUrl: data['photoUrl'],
     );
   }
 
@@ -78,6 +81,7 @@ class SignerModel {
       'tokenExpiry': tokenExpiry?.toIso8601String(),
       'tokenUsed': tokenUsed,
       'ipAddress': ipAddress,
+      'photoUrl': photoUrl,
     };
   }
 
@@ -101,6 +105,7 @@ class SignerModel {
     DateTime? tokenExpiry,
     bool? tokenUsed,
     String? ipAddress,
+    String? photoUrl,
   }) {
     return SignerModel(
       signerEmail: signerEmail,
@@ -116,6 +121,7 @@ class SignerModel {
       tokenExpiry: tokenExpiry ?? this.tokenExpiry,
       tokenUsed: tokenUsed ?? this.tokenUsed,
       ipAddress: ipAddress ?? this.ipAddress,
+      photoUrl: photoUrl ?? this.photoUrl,
     );
   }
 }

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../Commons/Widgets/empty_state.dart';
-import '../../../../../Commons/Widgets/loading_shimmer.dart';
 import '../Controller/documents_controller.dart';
 import '../Model/document_model.dart';
 import '../Model/folder_model.dart';
 import '../Widget/document_grid_card.dart';
 import '../Widget/document_list_tile.dart';
 import '../Widget/documents_toolbar.dart';
+import '../Widget/documents_shimmer.dart';
 import '../Widget/folder_grid_card.dart';
 import '../Widget/folder_list_tile.dart';
 import '../Widget/multiselect_bar.dart';
@@ -21,17 +21,54 @@ class DocumentsView extends GetView<DocumentsController> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: _buildAppBar(context),
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        behavior: HitTestBehavior.opaque,
-        child: Column(
-          children: [
-            _SearchBar(),
-            const StorageBanner(),
-            const DocumentsToolbar(),
-            Expanded(child: _Body()),
-          ],
-        ),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              behavior: HitTestBehavior.opaque,
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 800),
+                        child: DocumentsShimmer(
+                          isGridView: controller.isGridView.value,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: controller.loadAll,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 800),
+                        child: Column(
+                          children: [
+                            _SearchBar(),
+                            const SizedBox(height: 12),
+                            const StorageBanner(),
+                            DocumentsToolbar(),
+                            const SizedBox(height: 8),
+                            _Body(),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: Obx(
         () => controller.isMultiSelect.value
@@ -71,24 +108,21 @@ class _SearchBar extends GetView<DocumentsController> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      child: TextField(
-        controller: controller.searchController,
-        onChanged: controller.onSearchChanged,
-        style: Theme.of(context).textTheme.bodyLarge,
-        decoration: InputDecoration(
-          hintText: 'Search document',
-          hintStyle: TextStyle(color: cs.onSurfaceVariant.withValues(alpha: 0.7)),
-          prefixIcon: Icon(Icons.search, size: 20, color: cs.onSurfaceVariant),
-          suffixIcon: Obx(
-            () => controller.isSearching.value
-                ? IconButton(
-                    icon: Icon(Icons.close, size: 18, color: cs.onSurfaceVariant),
-                    onPressed: controller.clearSearch,
-                  )
-                : const SizedBox.shrink(),
-          ),
+    return TextField(
+      controller: controller.searchController,
+      onChanged: controller.onSearchChanged,
+      style: Theme.of(context).textTheme.bodyLarge,
+      decoration: InputDecoration(
+        hintText: 'Search document',
+        hintStyle: TextStyle(color: cs.onSurfaceVariant.withValues(alpha: 0.7)),
+        prefixIcon: Icon(Icons.search, size: 20, color: cs.onSurfaceVariant),
+        suffixIcon: Obx(
+          () => controller.isSearching.value
+              ? IconButton(
+                  icon: Icon(Icons.close, size: 18, color: cs.onSurfaceVariant),
+                  onPressed: controller.clearSearch,
+                )
+              : const SizedBox.shrink(),
         ),
       ),
     );
@@ -101,12 +135,6 @@ class _Body extends GetView<DocumentsController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (controller.isLoading.value) {
-        return controller.isGridView.value
-            ? LoadingShimmer.documentGrid()
-            : LoadingShimmer.documentList();
-      }
-
       if (controller.isSearching.value) {
         if (controller.searchResults.isEmpty) {
           return const EmptyState(
@@ -115,6 +143,8 @@ class _Body extends GetView<DocumentsController> {
           );
         }
         return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
           padding: EdgeInsets.zero,
           itemCount: controller.searchResults.length,
           itemBuilder: (_, i) =>
@@ -123,26 +153,16 @@ class _Body extends GetView<DocumentsController> {
       }
 
       if (controller.folders.isEmpty && controller.documents.isEmpty) {
-        return RefreshIndicator(
-          onRefresh: controller.loadAll,
-          child: ListView(
-            children: const [
-              EmptyState(
-                icon: Icons.folder_open_outlined,
-                message: 'No documents yet',
-                subtitle: 'Tap + New to upload a file or create a folder',
-              ),
-            ],
-          ),
+        return const EmptyState(
+          icon: Icons.folder_open_outlined,
+          message: 'No documents yet',
+          subtitle: 'Tap + New to upload a file or create a folder',
         );
       }
 
-      return RefreshIndicator(
-        onRefresh: controller.loadAll,
-        child: controller.isGridView.value
-            ? const _GridBody()
-            : const _ListBody(),
-      );
+      return controller.isGridView.value
+          ? const _GridBody()
+          : const _ListBody();
     });
   }
 }
@@ -159,7 +179,9 @@ class _GridBody extends GetView<DocumentsController> {
         ...controller.documents.map((d) => _Item.document(d)),
       ];
       return GridView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(top: 8, bottom: 16),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: 12,
@@ -183,22 +205,15 @@ class _ListBody extends GetView<DocumentsController> {
   @override
   Widget build(BuildContext context) {
     return Obx(
-      () => CustomScrollView(
-        slivers: [
+      () => ListView(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.zero,
+        children: [
           if (controller.folders.isNotEmpty)
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (_, i) => FolderListTile(folder: controller.folders[i]),
-                childCount: controller.folders.length,
-              ),
-            ),
+            ...controller.folders.map((f) => FolderListTile(folder: f)),
           if (controller.documents.isNotEmpty)
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (_, i) => DocumentListTile(doc: controller.documents[i]),
-                childCount: controller.documents.length,
-              ),
-            ),
+            ...controller.documents.map((d) => DocumentListTile(doc: d)),
         ],
       ),
     );

@@ -21,7 +21,7 @@ class FolderListTile extends GetView<DocumentsController> {
             : controller.goToFolder(folder),
         onLongPress: () => controller.selectItem(folder.folderId),
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          margin: const EdgeInsets.symmetric(vertical: 4),
           decoration: AppStyle.cardOf(context).copyWith(
             border: Border.all(
               color: isSelected ? cs.primary : cs.outline,

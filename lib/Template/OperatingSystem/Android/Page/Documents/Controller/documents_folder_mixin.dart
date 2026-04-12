@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
+import '../../../../../Utils/Helpers/helpers.dart';
+import '../Model/document_model.dart';
 import '../Model/folder_model.dart';
 import '../Repository/folder_repository.dart';
 import '../Repository/document_repository.dart';
@@ -7,6 +9,7 @@ import '../../../../../../Template/Utils/Exceptions/exceptions.dart';
 import '../../../../../../Template/Utils/Popups/dialog.dart';
 import '../../../../../../Template/Utils/Routes/main_routes.dart';
 import '../../../../../../Template/Utils/Services/supabase_service.dart';
+import '../../../../../../Template/Utils/Popups/full_screen_loader.dart';
 import '../../Profile/Controller/user_controller.dart';
 
 mixin DocumentsFolderMixin on GetxController {
@@ -14,6 +17,7 @@ mixin DocumentsFolderMixin on GetxController {
   DocumentRepository get docRepo;
   UserController get userController;
   RxList<FolderModel> get folders;
+  RxList<DocumentModel> get documents;
 
   Future<void> loadAll();
 
@@ -29,10 +33,16 @@ mixin DocumentsFolderMixin on GetxController {
 
   Future<void> _createFolder(String name) async {
     try {
+      final existingNames = [
+        ...folders.map((f) => f.name),
+        ...documents.map((d) => d.name),
+      ];
+      final resolvedName = AppHelpers.resolveUniqueName(name, existingNames);
+
       final folder = FolderModel(
         folderId: const Uuid().v4(),
         ownerUid: docRepo.currentUid,
-        name: name,
+        name: resolvedName,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -55,12 +65,33 @@ mixin DocumentsFolderMixin on GetxController {
   }
 
   Future<void> _renameFolder(FolderModel folder, String name) async {
+    final trimmedName = name.trim();
+    if (trimmedName.isEmpty) return;
+    if (trimmedName.toLowerCase() == folder.name.toLowerCase()) return;
+
+    final existingNames = [
+      ...folders.map((f) => f.name),
+      ...documents.map((d) => d.name),
+    ];
+
+    if (AppHelpers.nameExists(trimmedName, existingNames)) {
+      AppDialogs.showSnackError('An item with this name already exists.');
+      return;
+    }
+
     try {
-      await folderRepo.renameFolder(folder.folderId, name);
+      AppLoader.show(message: 'Renaming Folder...');
+      await folderRepo.renameFolder(folder.folderId, trimmedName);
       final i = folders.indexWhere((f) => f.folderId == folder.folderId);
-      if (i != -1) folders[i] = folder.copyWith(name: name);
+      if (i != -1) {
+        folders[i] = folder.copyWith(name: trimmedName);
+        folders.refresh();
+      }
+      AppDialogs.showSnackSuccess('Folder renamed.');
     } on AppException catch (e) {
       AppDialogs.showSnackError(e.message);
+    } finally {
+      AppLoader.hide();
     }
   }
 

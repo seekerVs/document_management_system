@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:pdfx/pdfx.dart';
 import '../../../../../Utils/Constant/enum.dart';
+import '../../../../../Commons/Widgets/app_pdf_viewer.dart';
 import '../Model/document_model.dart';
 import '../Widget/image_viewer.dart';
-import '../Widget/pdf_viewer.dart';
 import '../Widget/viewer_error_state.dart';
 import '../Widget/viewer_loading_state.dart';
-import '../../../../../../Template/Utils/Services/supabase_service.dart';
+import '../../../../../Utils/Services/supabase_service.dart';
 
 class DocumentViewerView extends StatefulWidget {
   const DocumentViewerView({super.key});
@@ -21,7 +22,7 @@ class DocumentViewerView extends StatefulWidget {
 class _DocumentViewerViewState extends State<DocumentViewerView> {
   late final DocumentModel doc;
 
-  String? _localPdfPath;
+  PdfDocument? _pdfDocument;
   String? _signedImageUrl;
   bool _isLoading = true;
   String? _error;
@@ -37,6 +38,7 @@ class _DocumentViewerViewState extends State<DocumentViewerView> {
 
   @override
   void dispose() {
+    _pdfDocument?.close();
     super.dispose();
   }
 
@@ -54,12 +56,16 @@ class _DocumentViewerViewState extends State<DocumentViewerView> {
         if (response.statusCode != 200) {
           throw Exception('Failed to download PDF');
         }
-        final dir = await getTemporaryDirectory();
-        final file = File('${dir.path}/${doc.documentId}.pdf');
-        await file.writeAsBytes(response.bodyBytes);
+        
+        final tempDir = await getTemporaryDirectory();
+        final tempFile = File('${tempDir.path}/${doc.documentId}.pdf');
+        await tempFile.writeAsBytes(response.bodyBytes);
+        
+        final pdfDoc = await PdfDocument.openFile(tempFile.path);
+
         if (mounted) {
           setState(() {
-            _localPdfPath = file.path;
+            _pdfDocument = pdfDoc;
             _isLoading = false;
           });
         }
@@ -131,7 +137,7 @@ class _DocumentViewerViewState extends State<DocumentViewerView> {
       return ImageViewer(imageUrl: _signedImageUrl!);
     }
 
-    if (_localPdfPath != null) {
+    if (_pdfDocument != null) {
       return _buildPdfBody();
     }
 
@@ -139,13 +145,10 @@ class _DocumentViewerViewState extends State<DocumentViewerView> {
   }
 
   Widget _buildPdfBody() {
-    return PdfViewer(
-      localPath: _localPdfPath!,
-      onRender: (_) {},
-      onPageChanged: (_, _) {},
-      onError: (e) {
-        if (mounted) setState(() => _error = e);
-      },
+    return AppPdfViewer(
+      document: _pdfDocument!,
+      docId: doc.documentId,
+      fieldBuilder: (ctx, page, w, h) => const SizedBox.shrink(),
     );
   }
 }

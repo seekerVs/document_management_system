@@ -4,6 +4,7 @@ import '../../../../../Utils/Exceptions/exceptions.dart';
 import '../../../../../../Template/Utils/Routes/main_routes.dart';
 import '../../../../../../Template/Utils/Popups/full_screen_loader.dart';
 import '../../Profile/Controller/user_controller.dart';
+import '../../Documents/Repository/folder_repository.dart';
 import '../Repository/auth_repository.dart';
 
 class SignUpController extends GetxController {
@@ -31,8 +32,9 @@ class SignUpController extends GetxController {
         password: passwordController.text,
       );
       if (user != null) {
+        await FolderRepository().initializeDefaultFolders(user.uid);
         await Get.find<UserController>().refreshUser();
-        Get.offAllNamed(MainRoutes.home);
+        Get.offAllNamed(MainRoutes.dashboard);
       }
     } on AppException catch (e) {
       errorMessage.value = e.message;

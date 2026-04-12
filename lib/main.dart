@@ -13,6 +13,7 @@ import 'Template/Utils/Routes/main_routes.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'Template/Commons/Widgets/no_internet_screen.dart';
 import 'Template/Utils/Services/network_manager.dart';
+import 'Template/Utils/Services/storage_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -22,6 +23,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize storage (Hive)
+  await StorageService.init();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
@@ -55,7 +59,7 @@ class App extends StatelessWidget {
       darkTheme: AppTheme.dark,
       initialBinding: GeneralBindings(),
       initialRoute: FirebaseUtils.auth.currentUser != null
-          ? MainRoutes.home
+          ? MainRoutes.dashboard
           : MainRoutes.signIn,
       getPages: AppRoutes.pages,
       builder: (context, child) {

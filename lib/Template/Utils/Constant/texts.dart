@@ -25,7 +25,6 @@ class AppText {
   static const String statusDraft = 'Draft';
   static const String statusPending = 'Pending signature';
   static const String statusCompleted = 'Completed';
-  static const String statusDeclined = 'Declined';
 
   static const String noDocuments = 'No documents yet';
   static const String noFolders = 'No folders yet';

@@ -9,64 +9,71 @@ class AddRecipientView extends GetView<SignatureRequestController> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          title: const Text('Recipient Role'),
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: Get.back,
-          ),
-          actions: [
-            TextButton(
-              onPressed: controller.saveRecipient,
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.only(right: 16),
-              ),
-              child: const Text('Save'),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        controller.onAddRecipientBack();
+      },
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          appBar: AppBar(
+            title: const Text('Recipient Role'),
+            leading: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: controller.onAddRecipientBack,
             ),
-          ],
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Role', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 12),
-              _RolePicker(controller: controller),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Recipient',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  TextButton(
-                    onPressed: controller.assignToMe,
-                    child: const Text('Assign to me'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              AppTextField(
-                hint: 'Recipient name',
-                label: 'Recipient name',
-                controller: controller.nameController,
-                textCapitalization: TextCapitalization.words,
-              ),
-              const SizedBox(height: 12),
-              AppTextField(
-                hint: 'Recipient email',
-                label: 'Recipient email',
-                controller: controller.emailController,
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.done,
+            actions: [
+              TextButton(
+                onPressed: controller.saveRecipient,
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.only(right: 16),
+                ),
+                child: const Text('Save'),
               ),
             ],
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Role', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 12),
+                _RolePicker(controller: controller),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Recipient',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    TextButton(
+                      onPressed: controller.assignToMe,
+                      child: const Text('Assign to me'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                AppTextField(
+                  hint: 'Recipient name',
+                  label: 'Recipient name',
+                  controller: controller.nameController,
+                  textCapitalization: TextCapitalization.words,
+                ),
+                const SizedBox(height: 12),
+                AppTextField(
+                  hint: 'Recipient email',
+                  label: 'Recipient email',
+                  controller: controller.emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.done,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -131,7 +138,9 @@ class _RoleOption extends StatelessWidget {
           color: Theme.of(context).colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outlineVariant,
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outlineVariant,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -141,7 +150,9 @@ class _RoleOption extends StatelessWidget {
               isSelected
                   ? Icons.radio_button_checked
                   : Icons.radio_button_unchecked,
-              color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurfaceVariant,
+              color: isSelected
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
               size: 20,
             ),
             const SizedBox(width: 12),

@@ -8,7 +8,10 @@ import '../Widget/activity_section.dart';
 import '../Widget/assigned_tasks_section.dart';
 import '../Widget/dashboard_banner.dart';
 import '../Widget/dashboard_fab.dart';
+import '../Widget/dashboard_shimmer.dart';
 import '../Widget/recent_documents_section.dart';
+import '../../../../../Utils/Helpers/fab_location_helper.dart';
+import '../../Faq/View/faq_view.dart';
 
 class DashboardView extends GetView<DashboardController> {
   const DashboardView({super.key});
@@ -28,14 +31,28 @@ class DashboardView extends GetView<DashboardController> {
       extendBody: true,
       appBar: _buildAppBar(context),
       floatingActionButton: const DashboardFab(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation: SafeEndFloatFabLocation(bottomPadding),
       body: Stack(
         children: [
           /// MAIN CONTENT
           Positioned.fill(
             child: Obx(() {
               if (controller.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
+                return SingleChildScrollView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    16,
+                    20,
+                    fabAreaBottom + 16, // dynamic bottom padding
+                  ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 800),
+                      child: const DashboardShimmer(),
+                    ),
+                  ),
+                );
               }
 
               return RefreshIndicator(
@@ -145,7 +162,7 @@ class DashboardView extends GetView<DashboardController> {
             color: Theme.of(context).colorScheme.onSurfaceVariant,
             size: 24, // Standard Material icon size
           ),
-          onPressed: () {},
+          onPressed: () => Get.to(() => const FaqView()),
         ),
         Obx(
           () => Stack(
@@ -160,7 +177,7 @@ class DashboardView extends GetView<DashboardController> {
                 onPressed: controller.goToTasks,
               ),
               if (controller.pendingTaskCount.value > 0)
-                const Positioned(right: 12, top: 12, child: _NotificationDot()),
+                const Positioned(right: 10, top: 10, child: _NotificationDot()),
             ],
           ),
         ),
@@ -190,11 +207,22 @@ class _NotificationDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 8,
-      height: 8,
+      width: 10,
+      height: 10,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.error,
         shape: BoxShape.circle,
+        border: Border.all(
+          color: Theme.of(context).colorScheme.surface,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
     );
   }

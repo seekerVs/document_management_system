@@ -104,4 +104,29 @@ class DocumentRepository extends BaseRepository {
     });
     return result ?? 0;
   }
+
+  Future<List<DocumentModel>> getAllDocuments() async {
+    final result = await handleRequest(() async {
+      final snap = await FirebaseUtils.documentsRef
+          .where('ownerUid', isEqualTo: currentUid)
+          .orderBy('updatedAt', descending: true)
+          .get();
+      return snap.docs.map((d) => DocumentModel.fromFirestore(d)).toList();
+    });
+    return result ?? [];
+  }
+
+  Future<double> getTotalStorageMB() async {
+    final result = await handleRequest(() async {
+      final snap = await FirebaseUtils.documentsRef
+          .where('ownerUid', isEqualTo: currentUid)
+          .get();
+      return snap.docs.fold<double>(
+        0,
+        (sum, doc) =>
+            sum + ((doc.data() as Map<String, dynamic>)['fileSizeMB'] ?? 0),
+      );
+    });
+    return result ?? 0;
+  }
 }

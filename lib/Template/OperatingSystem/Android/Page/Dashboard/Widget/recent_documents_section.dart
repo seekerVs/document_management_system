@@ -31,12 +31,13 @@ class RecentDocumentsSection extends StatelessWidget {
               : ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: docs.length,
+                  itemCount: docs.length > 4 ? 4 : docs.length,
                   itemBuilder: (_, i) => DocumentDisplayTile(
                     document: docs[i],
                     margin: const EdgeInsets.symmetric(vertical: 4),
                     onTap: () => controller.openDocument(docs[i]),
-                    onMoreTap: () => controller.showDocumentOptions(docs[i]),
+                    onOpen: () => controller.openDocument(docs[i]),
+                    onDetails: () => controller.showDocumentDetails(docs[i]),
                   ),
                 ),
         ],

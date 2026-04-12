@@ -52,6 +52,7 @@ dependencies:
 
   # UI
   cupertino_icons: ^1.0.8
+  timelines_plus: ^2.0.0
   http: ^1.6.0
   pdfx: ^2.9.2
 

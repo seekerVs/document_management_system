@@ -9,7 +9,7 @@ class AppDocumentTile extends StatelessWidget {
   final String? trailing2;
   final IconData icon;
   final VoidCallback? onTap;
-  final VoidCallback? onMoreTap;
+  final Widget? trailingWidget;
 
   const AppDocumentTile({
     super.key,
@@ -20,11 +20,13 @@ class AppDocumentTile extends StatelessWidget {
     this.trailing2,
     this.icon = Icons.edit_outlined,
     this.onTap,
-    this.onMoreTap,
+    this.trailingWidget,
   });
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -37,13 +39,13 @@ class AppDocumentTile extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerLow,
+                color: cs.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
                 child: Icon(
                   icon,
-                  color: Theme.of(context).colorScheme.onSurface,
+                  color: cs.onSurface,
                   size: 28,
                 ),
               ),
@@ -60,7 +62,7 @@ class AppDocumentTile extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      color: cs.onSurface,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -71,59 +73,50 @@ class AppDocumentTile extends StatelessWidget {
                       subtitle1!,
                       style: TextStyle(
                         fontSize: 11,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ],
                   const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        if (subtitle2 != null)
-                          Text(
-                            subtitle2!,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
+                  Row(
+                    children: [
+                      if (subtitle2 != null)
+                        Text(
+                          subtitle2!,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: cs.onSurfaceVariant,
                           ),
-                        const Spacer(),
-                        if (trailing1 != null)
-                          Text(
-                            trailing1!,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
+                        ),
+                      const Spacer(),
+                      if (trailing1 != null)
+                        Text(
+                          trailing1!,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: cs.onSurfaceVariant,
                           ),
-                        if (trailing1 != null && trailing2 != null)
-                          const SizedBox(width: 8),
-                        if (trailing2 != null)
-                          Text(
-                            trailing2!,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
+                        ),
+                      if (trailing1 != null && trailing2 != null)
+                        const SizedBox(width: 8),
+                      if (trailing2 != null)
+                        Text(
+                          trailing2!,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: cs.onSurfaceVariant,
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
+                  ),
                 ],
               ),
             ),
 
-            // More options button
-            if (onMoreTap != null) ...[
+            // Trailing Widget
+            if (trailingWidget != null) ...[
               const SizedBox(width: 8),
-              IconButton(
-                icon: Icon(
-                  Icons.more_vert,
-                  color: Theme.of(context).colorScheme.onSurface,
-                  size: 20,
-                ),
-                onPressed: onMoreTap,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
+              trailingWidget!,
             ],
           ],
         ),

@@ -184,7 +184,7 @@
         },
         {
           "fieldPath": "timestamp",
-          "order": "DESCENDING"
+          "order": "ASCENDING"
         }
       ]
     },

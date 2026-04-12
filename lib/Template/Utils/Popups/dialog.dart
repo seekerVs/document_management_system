@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../Constant/colors.dart';
 import '../Constant/texts.dart';
 import '../../Commons/Widgets/app_text_field.dart';
+import '../../Commons/Styles/style.dart';
 
 class AppDialogs {
   AppDialogs._();
@@ -174,63 +175,48 @@ class AppDialogs {
 
     return Get.bottomSheet<T>(
       Container(
-        padding: const EdgeInsets.only(top: 12, bottom: 24),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainer,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+        decoration: AppStyle.bottomSheetDecoration(context),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: colorScheme.onSurfaceVariant.withAlpha(50),
-                borderRadius: BorderRadius.circular(4),
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: AppStyle.bottomSheetHandleOf(context),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
+            const SizedBox(height: 20),
+            Text(title, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 16),
-            Divider(height: 1, color: colorScheme.outlineVariant),
             Flexible(
               child: SingleChildScrollView(
                 child: Column(
                   children: options
                       .map(
                         (option) => ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 4,
-                          ),
-                          leading: Icon(
-                            option.icon,
-                            color: option.isDangerous
-                                ? colorScheme.error
-                                : colorScheme.onSurfaceVariant,
-                            size: 24,
+                          contentPadding: EdgeInsets.zero,
+                          leading: SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: Icon(
+                              option.icon,
+                              color: option.isDangerous
+                                  ? colorScheme.error
+                                  : colorScheme.onSurfaceVariant,
+                              size: 28,
+                            ),
                           ),
                           title: Text(
                             option.label,
-                            style: TextStyle(
-                              color: option.isDangerous
-                                  ? colorScheme.error
-                                  : colorScheme.onSurface,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
+                                  color: option.isDangerous
+                                      ? colorScheme.error
+                                      : colorScheme.onSurface,
+                                ),
                           ),
                           onTap: () => Get.back(result: option.value),
                         ),

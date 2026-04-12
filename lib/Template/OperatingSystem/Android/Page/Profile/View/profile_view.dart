@@ -113,6 +113,36 @@ class ProfileView extends GetView<ProfileController> {
 
             const SizedBox(height: 24),
 
+            const _SectionLabel(label: 'Signatures & Initials'),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Obx(
+                    () => _SignatureCard(
+                      title: 'Signature',
+                      url: controller.signatureUrl,
+                      onAdd: controller.addSignature,
+                      onDelete: controller.deleteSignature,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Obx(
+                    () => _SignatureCard(
+                      title: 'Initials',
+                      url: controller.initialsUrl,
+                      onAdd: controller.addInitials,
+                      onDelete: controller.deleteInitials,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
             const _SectionLabel(label: 'Preferences'),
             const SizedBox(height: 8),
             Container(
@@ -184,7 +214,9 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         label.toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45),
+          color: Theme.of(
+            context,
+          ).colorScheme.onSurface.withValues(alpha: 0.45),
           letterSpacing: 1,
           fontWeight: FontWeight.w600,
         ),
@@ -233,4 +265,168 @@ class _ProfileTile extends StatelessWidget {
           : null,
     );
   }
+}
+
+class _SignatureCard extends StatelessWidget {
+  final String title;
+  final String? url;
+  final VoidCallback onAdd;
+  final VoidCallback onDelete;
+
+  const _SignatureCard({
+    required this.title,
+    this.url,
+    required this.onAdd,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasSignature = url != null && url!.isNotEmpty;
+    final cs = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: hasSignature ? null : onAdd,
+          child: Container(
+            height: 100,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: hasSignature
+                  ? cs.surface
+                  : cs.surface.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
+              border: hasSignature
+                  ? Border.all(color: cs.outline.withValues(alpha: 0.2))
+                  : null,
+            ),
+            child: Stack(
+              children: [
+                if (!hasSignature)
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _DashedBorderPainter(
+                        color: cs.onSurface.withValues(alpha: 0.3),
+                        radius: 12,
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add, color: cs.primary),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Add $title',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: cs.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Positioned.fill(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Image.network(
+                        url!,
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, progress) {
+                          if (progress == null) return child;
+                          return const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(child: Icon(Icons.error_outline));
+                        },
+                      ),
+                    ),
+                  ),
+
+                if (hasSignature)
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: InkWell(
+                      onTap: onDelete,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: AppColors.red.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.delete_outline,
+                          size: 16,
+                          color: AppColors.red,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double radius;
+
+  _DashedBorderPainter({required this.color, required this.radius});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    final path = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, 0, size.width, size.height),
+          Radius.circular(radius),
+        ),
+      );
+
+    // Dash pattern
+    const double dashWidth = 6;
+    const double dashSpace = 4;
+
+    final dashedPath = Path();
+    for (var pathMetric in path.computeMetrics()) {
+      double distance = 0.0;
+      while (distance < pathMetric.length) {
+        dashedPath.addPath(
+          pathMetric.extractPath(distance, distance + dashWidth),
+          Offset.zero,
+        );
+        distance += dashWidth + dashSpace;
+      }
+    }
+
+    canvas.drawPath(dashedPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

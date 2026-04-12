@@ -96,8 +96,6 @@ class AppFormatter {
         return AppText.statusPending;
       case DocumentStatus.completed:
         return AppText.statusCompleted;
-      case DocumentStatus.declined:
-        return AppText.statusDeclined;
     }
   }
 
@@ -121,11 +119,6 @@ class AppFormatter {
           color: AppColors.green,
           surface: AppColors.greenLight,
         );
-      case DocumentStatus.declined:
-        return (
-          color: AppColors.red,
-          surface: AppColors.redLight,
-        );
     }
   }
 
@@ -135,8 +128,6 @@ class AppFormatter {
         return 'Pending';
       case SignerStatus.signed:
         return 'Signed';
-      case SignerStatus.declined:
-        return 'Declined';
     }
   }
 
@@ -148,8 +139,6 @@ class AppFormatter {
         return 'In Progress';
       case SignatureRequestStatus.completed:
         return 'Completed';
-      case SignatureRequestStatus.declined:
-        return 'Declined';
       case SignatureRequestStatus.expired:
         return 'Expired';
     }

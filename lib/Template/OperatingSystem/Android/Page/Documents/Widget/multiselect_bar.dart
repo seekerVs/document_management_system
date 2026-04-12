@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../Utils/Themes/component_themes.dart';
 import '../Controller/documents_controller.dart';
 
 class MultiSelectBar extends GetView<DocumentsController> {
@@ -56,28 +55,50 @@ class MultiSelectBar extends GetView<DocumentsController> {
 // ─── More MenuAnchor ──────────────────────────────────────────────────────────
 
 class _MoreMenu extends GetView<DocumentsController> {
+  final GlobalKey<PopupMenuButtonState<String>> _menuKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
-    return MenuAnchor(
-      style: AppComponentThemes.appMenuStyle,
-      menuChildren: [
-        MenuItemButton(
-          leadingIcon: const Icon(Icons.info_outline),
-          onPressed: controller.showSelectedDetails,
-          child: const Text('Details'),
+    return PopupMenuButton<String>(
+      key: _menuKey,
+      onSelected: (value) {
+        if (value == 'details') controller.showSelectedDetails();
+        if (value == 'share') controller.shareSelected();
+      },
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: 'details',
+          child: Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 20,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              const SizedBox(width: 12),
+              Text('Details', style: Theme.of(context).textTheme.bodyMedium),
+            ],
+          ),
         ),
-        MenuItemButton(
-          leadingIcon: const Icon(Icons.share_outlined),
-          onPressed: controller.shareSelected,
-          child: const Text('Share'),
+        PopupMenuItem(
+          value: 'share',
+          child: Row(
+            children: [
+              Icon(
+                Icons.share_outlined,
+                size: 20,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              const SizedBox(width: 12),
+              Text('Share', style: Theme.of(context).textTheme.bodyMedium),
+            ],
+          ),
         ),
       ],
-      builder: (_, menuController, _) => _BarAction(
+      child: _BarAction(
         icon: Icons.more_horiz,
         label: 'More',
-        onTap: () => menuController.isOpen
-            ? menuController.close()
-            : menuController.open(),
+        onTap: () => _menuKey.currentState?.showButtonMenu(),
       ),
     );
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../Commons/Widgets/placeholder_view.dart';
+import '../../OperatingSystem/Android/Page/Activity/Controller/activity_controller.dart';
+import '../../OperatingSystem/Android/Page/Activity/View/activity_view.dart';
 import '../../OperatingSystem/Android/Page/Dashboard/Controller/dashboard_controller.dart';
 import '../../OperatingSystem/Android/Page/Dashboard/View/dashboard_view.dart';
 import '../../OperatingSystem/Android/Page/Documents/Controller/documents_controller.dart';
@@ -22,7 +24,9 @@ import '../../OperatingSystem/Android/Page/Signature/View/add_recipient_view.dar
 import '../../OperatingSystem/Android/Page/Signature/View/recipients_list_view.dart';
 import '../../OperatingSystem/Android/Page/Signature/View/select_document_view.dart';
 import '../../OperatingSystem/Android/Page/Tasks/Controller/tasks_controller.dart';
+import '../../OperatingSystem/Android/Page/Tasks/Controller/task_details_controller.dart';
 import '../../OperatingSystem/Android/Page/Tasks/View/tasks_view.dart';
+import '../../OperatingSystem/Android/Page/Tasks/View/task_details_view.dart';
 import '../../OperatingSystem/Android/Page/Signature/View/in_app_signing_view.dart';
 import '../../OperatingSystem/Android/Page/Signature/View/request_review_view.dart';
 import '../../OperatingSystem/Android/Page/Signature/View/signature_placement_view.dart';
@@ -61,7 +65,7 @@ class AppRoutes {
 
     // ─── Dashboard ────────────────────────────────────────────────────────
     GetPage(
-      name: MainRoutes.home,
+      name: MainRoutes.dashboard,
       page: () => const DashboardView(),
       binding: BindingsBuilder(
         () => Get.lazyPut(() => DashboardController(), fenix: true),
@@ -92,6 +96,13 @@ class AppRoutes {
       page: () => const TasksView(),
       binding: BindingsBuilder(
         () => Get.lazyPut(() => TasksController(), fenix: true),
+      ),
+    ),
+    GetPage(
+      name: MainRoutes.taskDetails,
+      page: () => const TaskDetailsView(),
+      binding: BindingsBuilder(
+        () => Get.lazyPut(() => TaskDetailsController(), fenix: true),
       ),
     ),
 
@@ -145,9 +156,9 @@ class AppRoutes {
     ),
     GetPage(
       name: MainRoutes.activity,
-      page: () => const PlaceholderView(
-        title: 'Activity',
-        icon: Icons.history_outlined,
+      page: () => const ActivityView(),
+      binding: BindingsBuilder(
+        () => Get.lazyPut(() => ActivityController(), fenix: true),
       ),
     ),
     GetPage(

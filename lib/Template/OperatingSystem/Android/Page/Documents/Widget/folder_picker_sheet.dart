@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../Controller/documents_controller.dart';
+import '../../../../../../Template/Utils/Constant/texts.dart';
 import '../../../../../Commons/Styles/style.dart';
+import '../Model/folder_model.dart';
+import '../Repository/folder_repository.dart';
 
-class FolderPickerSheet extends GetView<DocumentsController> {
-  final void Function(String? folderId) onPick;
+class FolderPickerSheet extends StatelessWidget {
+  final List<FolderModel>? folders;
+  final void Function(String? folderId, String folderName) onPick;
   final String title;
   final String? excludeFolderId;
   final bool excludeRoot;
 
   const FolderPickerSheet({
     super.key,
+    this.folders,
     required this.onPick,
     this.title = 'Copy to',
     this.excludeFolderId,
@@ -18,19 +22,25 @@ class FolderPickerSheet extends GetView<DocumentsController> {
   });
 
   static Future<void> show({
-    required void Function(String? folderId) onPick,
+    List<FolderModel>? folders,
+    required void Function(String? folderId, String folderName) onPick,
     String title = 'Copy to',
     String? excludeFolderId,
     bool excludeRoot = false,
-  }) => Get.bottomSheet(
-    FolderPickerSheet(
-      onPick: onPick,
-      title: title,
-      excludeFolderId: excludeFolderId,
-      excludeRoot: excludeRoot,
-    ),
-    isScrollControlled: true,
-  );
+  }) {
+    return Get.bottomSheet(
+      FolderPickerSheet(
+        folders: folders,
+        onPick: onPick,
+        title: title,
+        excludeFolderId: excludeFolderId,
+        excludeRoot: excludeRoot,
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      enterBottomSheetDuration: const Duration(milliseconds: 300),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,44 +66,36 @@ class FolderPickerSheet extends GetView<DocumentsController> {
             // Root option
             _PickerTile(
               icon: Icons.home_outlined,
-              name: 'My Documents',
+              name: AppText.myDocuments,
               subtitle: 'Root folder',
               disabled: excludeRoot,
               onTap: excludeRoot
                   ? null
                   : () {
                       Get.back();
-                      onPick(null);
+                      onPick(null, AppText.myDocuments);
                     },
             ),
-            if (controller.folders.isNotEmpty) ...[
-              const Divider(height: 16),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.4,
-                ),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemBuilder: (_, i) {
-                    final folder = controller.folders
-                        .where((f) => f.folderId != excludeFolderId)
-                        .toList()[i];
-                    return _PickerTile(
-                      icon: Icons.folder_outlined,
-                      name: folder.name,
-                      subtitle: '${folder.itemCount} items',
-                      onTap: () {
-                        Get.back();
-                        onPick(folder.folderId);
-                      },
+            
+            // Sub-folders with independent loading if needed
+            if (folders != null)
+              _buildList(context, folders!)
+            else
+              FutureBuilder<List<FolderModel>>(
+                future: FolderRepository().getFolders(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
                     );
-                  },
-                  itemCount: controller.folders
-                      .where((f) => f.folderId != excludeFolderId)
-                      .length,
-                ),
+                  }
+                  if (snapshot.hasError || !snapshot.hasData) {
+                    return const SizedBox.shrink();
+                  }
+                  return _buildList(context, snapshot.data!);
+                },
               ),
-            ],
             const SizedBox(height: 16),
           ],
         ),
@@ -101,7 +103,39 @@ class FolderPickerSheet extends GetView<DocumentsController> {
     );
   }
 
+  Widget _buildList(BuildContext context, List<FolderModel> foldersList) {
+    final filtered = foldersList.where((f) => f.folderId != excludeFolderId).toList();
+    if (filtered.isEmpty) return const SizedBox.shrink();
 
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Divider(height: 16),
+        ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.4,
+          ),
+          child: ListView.builder(
+            shrinkWrap: true,
+            physics: const BouncingScrollPhysics(),
+            itemBuilder: (_, i) {
+              final folder = filtered[i];
+              return _PickerTile(
+                icon: Icons.folder_outlined,
+                name: folder.name,
+                subtitle: '${folder.itemCount} items',
+                onTap: () {
+                  Get.back();
+                  onPick(folder.folderId, folder.name);
+                },
+              );
+            },
+            itemCount: filtered.length,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _PickerTile extends StatelessWidget {
