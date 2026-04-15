@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'dart:math' as math;
 import '../../Profile/Model/user_model.dart';
 import '../Model/document_model.dart';
 import '../Model/folder_model.dart';
@@ -46,10 +47,14 @@ class DocumentsController extends GetxController
   @override
   final RxList<DocumentModel> searchResults = <DocumentModel>[].obs;
   final RxBool isLoading = false.obs;
+  final RxBool isPageLoading = false.obs;
   final RxBool isSearching = false.obs;
   final RxBool isGridView = true.obs;
   final Rx<SortOrder> sortOrder = SortOrder.dateNewest.obs;
+  final RxInt currentPage = 1.obs;
   final searchController = TextEditingController();
+
+  static const int pageSize = 10;
 
   // Folder docs pool for multiselect operations inside folder view
   final RxList<DocumentModel> _folderDocs = <DocumentModel>[].obs;
@@ -64,14 +69,38 @@ class DocumentsController extends GetxController
   final RxInt realtimeTotalItems = 0.obs;
 
   double get usedStorageMB => realtimeUsedStorageMB.value;
-
   double get freeStorageMB => UserModel.maxStorageMB - usedStorageMB;
-
   double get freeStorageGB => freeStorageMB / 1024;
-
   double get storagePercent => usedStorageMB / UserModel.maxStorageMB;
-
   int get totalItems => realtimeTotalItems.value;
+
+  // Full sorted list of all items (folders + documents combined)
+  final RxList<FolderModel> _allFolders = <FolderModel>[].obs;
+  final RxList<DocumentModel> _allDocuments = <DocumentModel>[].obs;
+
+  // Total combined item count
+  int get _totalItemCount => _allFolders.length + _allDocuments.length;
+
+  int get totalPages => math.max(1, (_totalItemCount / pageSize).ceil());
+
+  // Paged folders for current page
+  List<FolderModel> get pagedFolders {
+    final start = (currentPage.value - 1) * pageSize;
+    final end = math.min(start + pageSize, _allFolders.length);
+    if (start >= _allFolders.length) return [];
+    return _allFolders.sublist(start, end);
+  }
+
+  // Paged documents for current page (after folders fill their slots)
+  List<DocumentModel> get pagedDocuments {
+    final start = (currentPage.value - 1) * pageSize;
+    final foldersOnPage = pagedFolders.length;
+    final docsStart = math.max(0, start - _allFolders.length);
+    final slotsLeft = pageSize - foldersOnPage;
+    if (slotsLeft <= 0 || docsStart >= _allDocuments.length) return [];
+    final docsEnd = math.min(docsStart + slotsLeft, _allDocuments.length);
+    return _allDocuments.sublist(docsStart, docsEnd);
+  }
 
   late final void Function(String) _debouncedSearch;
 
@@ -106,20 +135,41 @@ class DocumentsController extends GetxController
         _folderRepo.getFolderCount(),
       ]);
 
-      folders.value = results[0] as List<FolderModel>;
-      documents.value = results[1] as List<DocumentModel>;
+      _allFolders.value = results[0] as List<FolderModel>;
+      _allDocuments.value = results[1] as List<DocumentModel>;
       realtimeUsedStorageMB.value = (results[2] as double);
       realtimeTotalItems.value = (results[3] as int) + (results[4] as int);
 
       _applySortToAll();
+      currentPage.value = 1;
+      _refreshCurrentPage();
 
-      // Sync storage usage to Firestore if it has drifted
       await _userController.syncStorageUsage(realtimeUsedStorageMB.value);
     } on AppException catch (e) {
       AppDialogs.showSnackError(e.message);
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // Pagination
+
+  void goToPage(int page) {
+    final clamped = page.clamp(1, totalPages);
+    if (currentPage.value == clamped) return;
+    isPageLoading.value = true;
+    currentPage.value = clamped;
+    _refreshCurrentPage();
+    isPageLoading.value = false;
+  }
+
+  Future<void> nextPage() async => goToPage(currentPage.value + 1);
+
+  Future<void> previousPage() async => goToPage(currentPage.value - 1);
+
+  void _refreshCurrentPage() {
+    folders.value = pagedFolders;
+    documents.value = pagedDocuments;
   }
 
   // Search
@@ -154,19 +204,25 @@ class DocumentsController extends GetxController
   void applySortOrder(SortOrder order) {
     sortOrder.value = order;
     _applySortToAll();
+    currentPage.value = 1;
+    _refreshCurrentPage();
   }
 
   void _applySortToAll() {
-    // Sort documents
-    final sortedDocs = [...documents];
+    final sortedDocs = [..._allDocuments];
     sortedDocs.sort(AppHelpers.documentComparator(sortOrder.value));
-    documents.value = sortedDocs;
+    _allDocuments.value = sortedDocs;
 
-    // Sort folders
-    final sortedFolders = [...folders];
+    final sortedFolders = [..._allFolders];
     sortedFolders.sort(AppHelpers.documentComparator(sortOrder.value));
-    folders.value = sortedFolders;
+    _allFolders.value = sortedFolders;
   }
 
   void toggleViewMode() => isGridView.toggle();
+
+  @override
+  void onClose() {
+    searchController.dispose();
+    super.onClose();
+  }
 }
