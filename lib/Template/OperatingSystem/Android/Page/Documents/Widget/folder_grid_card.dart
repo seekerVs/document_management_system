@@ -7,14 +7,21 @@ import '../../../../../../Template/Utils/Formatters/formatter.dart';
 
 class FolderGridCard extends GetView<DocumentsController> {
   final FolderModel folder;
-  const FolderGridCard({super.key, required this.folder});
+  final VoidCallback? onTapOverride;
+  const FolderGridCard({super.key, required this.folder, this.onTapOverride});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => controller.isMultiSelect.value
-          ? controller.toggleSelection(folder.folderId)
-          : controller.goToFolder(folder),
+      onTap: () {
+        if (controller.isMultiSelect.value) {
+          controller.toggleSelection(folder.folderId);
+        } else if (onTapOverride != null) {
+          onTapOverride!();
+        } else {
+          controller.goToFolder(folder);
+        }
+      },
       onLongPress: () => controller.selectItem(folder.folderId),
       child: Obx(() {
         final cs = Theme.of(context).colorScheme;

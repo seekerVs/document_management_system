@@ -123,8 +123,8 @@ class DocumentRepository extends BaseRepository {
           .get();
       return snap.docs.fold<double>(
         0,
-        (sum, doc) =>
-            sum + ((doc.data() as Map<String, dynamic>)['fileSizeMB'] ?? 0),
+        (total, doc) =>
+            total + ((doc.data() as Map<String, dynamic>)['fileSizeMB'] ?? 0),
       );
     });
     return result ?? 0;

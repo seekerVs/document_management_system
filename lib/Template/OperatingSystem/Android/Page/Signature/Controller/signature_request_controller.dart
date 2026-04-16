@@ -4,7 +4,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_doc_scanner/flutter_doc_scanner.dart';
 import 'package:get/get.dart';
-import 'package:path/path.dart' as p;
 import '../../../../../Utils/Constant/enum.dart';
 import '../../../../../Utils/Exceptions/exceptions.dart';
 import '../../../../../Utils/Firebase/firebase_utils.dart';
@@ -21,8 +20,7 @@ import '../Repository/signature_request_repository.dart';
 import '../../Profile/Repository/user_repository.dart';
 import '../../../../../Commons/Widgets/document_source_sheet.dart';
 import '../../../../../Commons/Widgets/app_text_field.dart';
-import '../../Documents/Widget/prepare_upload_dialog.dart';
-import '../../Documents/Model/prepare_upload_model.dart';
+import '../../Documents/Repository/folder_repository.dart';
 import '../../Documents/Model/document_model.dart';
 import '../Widget/library_picker_sheet.dart';
 import 'in_app_signing_controller.dart';
@@ -188,24 +186,15 @@ class SignatureRequestController extends GetxController {
 
       AppLoader.hide();
 
-      // Collect Metadata without uploading
-      final prep = await PrepareUploadDialog.show(
-        file: file,
-        originalName: name,
-        fileSizeMB: sizeMB,
-      );
-
-      if (prep == null) return;
-
       selectedDocument.value = SelectedDocument(
-        name: prep.fileName + prep.extension,
+        name: name,
         file: file,
         sizeMB: sizeMB,
-        folderId: prep.folderId,
       );
 
       // Pre-fill email subject
-      emailSubject.value = 'Complete with DocuSign: ${selectedDocument.value?.name}';
+      emailSubject.value =
+          'Complete with DocuSign: ${selectedDocument.value?.name}';
       subjectController.text = emailSubject.value;
 
       _goToSelectDocument();
@@ -238,20 +227,10 @@ class SignatureRequestController extends GetxController {
       final sizeBytes = await file.length();
       final sizeMB = sizeBytes / (1024 * 1024);
 
-      // Collect Metadata without uploading
-      final prep = await PrepareUploadDialog.show(
-        file: file,
-        originalName: result.files.single.name,
-        fileSizeMB: sizeMB,
-      );
-
-      if (prep == null) return;
-
       selectedDocument.value = SelectedDocument(
-        name: prep.fileName + prep.extension,
+        name: result.files.single.name,
         file: file,
         sizeMB: sizeMB,
-        folderId: prep.folderId,
       );
 
       // Initialize email subject with default
@@ -502,7 +481,6 @@ class SignatureRequestController extends GetxController {
         finalDocId = doc.documentId;
         AppLoader.updateMessage('Preparing document...');
       } else {
-        // Case B: Device document — needs upload
         AppLoader.updateMessage('Uploading document...');
         final upload = await SupabaseService.uploadFile(
           filePath: doc.file.path,
@@ -510,6 +488,10 @@ class SignatureRequestController extends GetxController {
           fileName: doc.name,
         );
         finalStoragePath = upload.storagePath;
+
+        AppLoader.updateMessage('Resolving destination...');
+        final templatesFolderId =
+            await FolderRepository().getOrCreateFolderByName('Templates');
 
         AppLoader.updateMessage('Creating document...');
         final docRef = FirebaseUtils.documentsRef.doc();
@@ -524,8 +506,9 @@ class SignatureRequestController extends GetxController {
           'fileType': 'pdf',
           'fileSizeMB': doc.sizeMB,
           'status': 'pending',
-          'folderId': doc.folderId,
-          'authorizedEmails': signers.map((s) => s.signerEmail.toLowerCase()).toList(),
+          'folderId': templatesFolderId,
+          'authorizedEmails':
+              signers.map((s) => s.signerEmail.toLowerCase()).toList(),
           'createdAt': now,
           'updatedAt': now,
         });

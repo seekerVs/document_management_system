@@ -67,6 +67,9 @@ class TaskDetailsController extends GetxController {
       status: DocumentStatus.pending,
     );
 
-    Get.toNamed(MainRoutes.documentViewer, arguments: doc);
+    Get.toNamed(
+      MainRoutes.documentViewer,
+      arguments: {'doc': doc, 'task': task},
+    );
   }
 }

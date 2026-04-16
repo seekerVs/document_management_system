@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../Controller/task_details_controller.dart';
 import '../Widget/task_activity_timeline.dart';
-import '../../Signature/Model/signature_request_model.dart';
-
 import '../Widget/task_recipients_list.dart';
 import '../../../../../Utils/Formatters/formatter.dart';
 import '../../../../../Commons/Widgets/app_badge.dart';

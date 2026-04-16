@@ -30,6 +30,7 @@ mixin DocumentsMultiselectMixin on GetxController {
   RxList<String> get selectedIds;
   RxBool get isMultiSelect;
   RxList<DocumentModel> get folderDocs;
+  RxList<FolderModel> get folderSubs;
   RxList<DocumentModel> get searchResults;
 
   Future<void> loadAll();
@@ -45,8 +46,10 @@ mixin DocumentsMultiselectMixin on GetxController {
     return pool.where((d) => selectedIds.contains(d.documentId)).toList();
   }
 
-  List<FolderModel> get selectedFolders =>
-      folders.where((f) => selectedIds.contains(f.folderId)).toList();
+  List<FolderModel> get selectedFolders {
+    final pool = folderSubs.isNotEmpty ? folderSubs : folders;
+    return pool.where((f) => selectedIds.contains(f.folderId)).toList();
+  }
 
   double get selectedTotalSizeMB =>
       selectedDocuments.fold(0, (total, d) => total + d.fileSizeMB);
@@ -111,15 +114,10 @@ mixin DocumentsMultiselectMixin on GetxController {
             await userController.decrementStorage(doc.fileSizeMB);
           }
           for (final folder in folderList) {
-            final folderDocsList = await docRepo.getFolderDocuments(
-              folder.folderId,
-            );
-            for (final doc in folderDocsList) {
-              await docRepo.deleteDocument(doc.documentId);
-              await SupabaseService.deleteFile(doc.fileUrl);
-              await userController.decrementStorage(doc.fileSizeMB);
+            await _deleteFolderRecursive(folder.folderId);
+            if (folder.parentId != null) {
+              await folderRepo.updateItemCount(folder.parentId!, -1);
             }
-            await folderRepo.deleteFolder(folder.folderId);
           }
           await loadAll();
           exitMultiSelect();
@@ -464,5 +462,19 @@ mixin DocumentsMultiselectMixin on GetxController {
         isScrollControlled: true,
       );
     }
+  }
+
+  Future<void> _deleteFolderRecursive(String folderId) async {
+    final docsRes = await docRepo.getFolderDocuments(folderId);
+    for (final doc in docsRes) {
+      await docRepo.deleteDocument(doc.documentId);
+      await SupabaseService.deleteFile(doc.fileUrl);
+      await userController.decrementStorage(doc.fileSizeMB);
+    }
+    final subs = await folderRepo.getSubFolders(folderId);
+    for (final sub in subs) {
+      await _deleteFolderRecursive(sub.folderId);
+    }
+    await folderRepo.deleteFolder(folderId);
   }
 }

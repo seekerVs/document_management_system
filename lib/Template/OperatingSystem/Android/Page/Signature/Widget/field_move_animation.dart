@@ -51,7 +51,10 @@ class _FieldMoveAnimationState extends State<FieldMoveAnimation>
         weight: 20,
       ),
       // Hold
-      TweenSequenceItem(tween: ConstantTween(const Offset(120, 80)), weight: 10),
+      TweenSequenceItem(
+        tween: ConstantTween(const Offset(120, 80)),
+        weight: 10,
+      ),
       // Drag within page 1
       TweenSequenceItem(
         tween: Tween(begin: const Offset(120, 80), end: const Offset(60, 120)),
@@ -70,7 +73,10 @@ class _FieldMoveAnimationState extends State<FieldMoveAnimation>
     ]).animate(_controller);
 
     _fieldPosition = TweenSequence([
-      TweenSequenceItem(tween: ConstantTween(const Offset(120, 80)), weight: 30),
+      TweenSequenceItem(
+        tween: ConstantTween(const Offset(120, 80)),
+        weight: 30,
+      ),
       // Drag within page
       TweenSequenceItem(
         tween: Tween(begin: const Offset(120, 80), end: const Offset(60, 120)),
@@ -90,16 +96,18 @@ class _FieldMoveAnimationState extends State<FieldMoveAnimation>
     _fieldScale = TweenSequence([
       TweenSequenceItem(tween: ConstantTween(1.0), weight: 20),
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 1.15).chain(
-          CurveTween(curve: Curves.easeOut),
-        ),
+        tween: Tween(
+          begin: 1.0,
+          end: 1.15,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 10,
       ),
       TweenSequenceItem(tween: ConstantTween(1.15), weight: 50),
       TweenSequenceItem(
-        tween: Tween(begin: 1.15, end: 1.0).chain(
-          CurveTween(curve: Curves.bounceOut),
-        ),
+        tween: Tween(
+          begin: 1.15,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.bounceOut)),
         weight: 10,
       ),
       TweenSequenceItem(tween: ConstantTween(1.0), weight: 10),
@@ -109,9 +117,10 @@ class _FieldMoveAnimationState extends State<FieldMoveAnimation>
       TweenSequenceItem(tween: ConstantTween(0.0), weight: 50),
       // Scroll down as we drag to page 2
       TweenSequenceItem(
-        tween: Tween(begin: 0.0, end: 160.0).chain(
-          CurveTween(curve: Curves.easeInOut),
-        ),
+        tween: Tween(
+          begin: 0.0,
+          end: 160.0,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
         weight: 30,
       ),
       TweenSequenceItem(tween: ConstantTween(160.0), weight: 20),
@@ -163,14 +172,16 @@ class _FieldMoveAnimationState extends State<FieldMoveAnimation>
                 child: Transform.scale(
                   scale: _fieldScale.value,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: cs.primary,
                       borderRadius: BorderRadius.circular(4),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -220,7 +231,7 @@ class _FieldMoveAnimationState extends State<FieldMoveAnimation>
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -262,17 +273,11 @@ class _FieldMoveAnimationState extends State<FieldMoveAnimation>
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: cs.primary.withOpacity(0.2),
+        color: cs.primary.withValues(alpha: 0.2),
         shape: BoxShape.circle,
-        border: Border.all(color: cs.primary.withOpacity(0.5), width: 2),
+        border: Border.all(color: cs.primary.withValues(alpha: 0.5), width: 2),
       ),
-      child: Center(
-        child: Icon(
-          Icons.touch_app,
-          color: cs.primary,
-          size: 24,
-        ),
-      ),
+      child: Center(child: Icon(Icons.touch_app, color: cs.primary, size: 24)),
     );
   }
 }

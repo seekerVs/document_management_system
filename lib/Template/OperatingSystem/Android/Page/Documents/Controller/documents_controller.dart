@@ -51,13 +51,24 @@ class DocumentsController extends GetxController
   final Rx<SortOrder> sortOrder = SortOrder.dateNewest.obs;
   final searchController = TextEditingController();
 
-  // Folder docs pool for multiselect operations inside folder view
+  // Folder contents pool for multiselect operations inside folder view
   final RxList<DocumentModel> _folderDocs = <DocumentModel>[].obs;
+  final RxList<FolderModel> _folderSubs = <FolderModel>[].obs;
+  
   @override
   RxList<DocumentModel> get folderDocs => _folderDocs;
+  @override
+  RxList<FolderModel> get folderSubs => _folderSubs;
 
-  void registerFolderDocs(List<DocumentModel> docs) => _folderDocs.value = docs;
-  void clearFolderDocs() => _folderDocs.clear();
+  void registerFolderContents(List<DocumentModel> docs, List<FolderModel> subs) {
+    _folderDocs.value = docs;
+    _folderSubs.value = subs;
+  }
+  
+  void clearFolderContents() {
+    _folderDocs.clear();
+    _folderSubs.clear();
+  }
 
   // Storage computed (Real-time synced)
   final RxDouble realtimeUsedStorageMB = 0.0.obs;

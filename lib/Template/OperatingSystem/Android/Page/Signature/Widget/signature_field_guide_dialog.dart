@@ -38,7 +38,7 @@ class _SignatureFieldGuideDialogState extends State<SignatureFieldGuideDialog> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -56,7 +56,7 @@ class _SignatureFieldGuideDialogState extends State<SignatureFieldGuideDialog> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: cs.primary.withOpacity(0.1),
+                      color: cs.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                   ),

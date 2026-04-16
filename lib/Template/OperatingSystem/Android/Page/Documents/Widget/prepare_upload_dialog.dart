@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
-import '../../../../../../Template/Utils/Constant/colors.dart';
 import '../../../../../../Template/Utils/Constant/texts.dart';
 import '../../../../../../Template/Utils/Validators/validators.dart';
 import '../../../../../../Template/Utils/Popups/dialog.dart';
@@ -62,7 +61,7 @@ class _PrepareUploadDialogState extends State<PrepareUploadDialog> {
     _nameController = TextEditingController(text: nameWithoutExt);
     _selectedFolderId.value = widget.initialFolderId ?? '';
     _selectedFolderName.value = AppText.myDocuments;
-    
+
     if (widget.initialFolderId != null) {
       _resolveInitialFolderName();
     }
@@ -72,7 +71,9 @@ class _PrepareUploadDialogState extends State<PrepareUploadDialog> {
     _isResolvingInitialFolder.value = true;
     try {
       final folders = await FolderRepository().getFolders();
-      final folder = folders.firstWhereOrNull((f) => f.folderId == widget.initialFolderId);
+      final folder = folders.firstWhereOrNull(
+        (f) => f.folderId == widget.initialFolderId,
+      );
       if (folder != null) {
         _selectedFolderName.value = folder.name;
       }
@@ -102,7 +103,9 @@ class _PrepareUploadDialogState extends State<PrepareUploadDialog> {
       final result = PrepareUploadResult(
         fileName: _nameController.text.trim(),
         extension: _extension,
-        folderId: _selectedFolderId.value.isEmpty ? null : _selectedFolderId.value,
+        folderId: _selectedFolderId.value.isEmpty
+            ? null
+            : _selectedFolderId.value,
       );
       Get.back(result: result);
     }
@@ -127,7 +130,9 @@ class _PrepareUploadDialogState extends State<PrepareUploadDialog> {
               decoration: BoxDecoration(
                 color: cs.surfaceContainerLowest,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+                border: Border.all(
+                  color: cs.outlineVariant.withValues(alpha: 0.5),
+                ),
               ),
               child: Row(
                 children: [
@@ -222,7 +227,9 @@ class _PrepareUploadDialogState extends State<PrepareUploadDialog> {
                 child: Row(
                   children: [
                     Icon(
-                      _selectedFolderId.value.isEmpty ? Icons.home_outlined : Icons.folder_outlined,
+                      _selectedFolderId.value.isEmpty
+                          ? Icons.home_outlined
+                          : Icons.folder_outlined,
                       size: 20,
                       color: cs.primary,
                     ),
@@ -232,7 +239,9 @@ class _PrepareUploadDialogState extends State<PrepareUploadDialog> {
                         if (_isResolvingInitialFolder.value) {
                           return Text(
                             'Loading...',
-                            style: textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
                           );
                         }
                         return Text(
@@ -244,7 +253,11 @@ class _PrepareUploadDialogState extends State<PrepareUploadDialog> {
                         );
                       }),
                     ),
-                    Icon(Icons.chevron_right, size: 20, color: cs.onSurfaceVariant),
+                    Icon(
+                      Icons.chevron_right,
+                      size: 20,
+                      color: cs.onSurfaceVariant,
+                    ),
                   ],
                 ),
               ),
@@ -258,10 +271,7 @@ class _PrepareUploadDialogState extends State<PrepareUploadDialog> {
           onPressed: () => Get.back(),
           isPrimary: false,
         ),
-        AppDialogAction(
-          label: 'Upload',
-          onPressed: _onUpload,
-        ),
+        AppDialogAction(label: 'Upload', onPressed: _onUpload),
       ],
     );
   }

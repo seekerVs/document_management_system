@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../Commons/Widgets/empty_state.dart';
@@ -5,10 +6,13 @@ import '../Controller/documents_controller.dart';
 import '../Controller/upload_controller.dart';
 import '../Model/document_model.dart';
 import '../Model/folder_model.dart';
+import '../Model/breadcrumb_segment.dart';
 import '../Widget/breadcrumb_trail.dart';
 import '../Widget/document_grid_card.dart';
 import '../Widget/document_list_tile.dart';
 import '../Widget/documents_shimmer.dart';
+import '../Widget/folder_grid_card.dart';
+import '../Widget/folder_list_tile.dart';
 import '../Widget/multiselect_bar.dart';
 import '../Widget/sort_menu.dart';
 import '../../../../../../Template/Utils/Exceptions/exceptions.dart';
@@ -31,11 +35,13 @@ class _FolderContentsViewState extends State<FolderContentsView> {
   late final UploadController _uploadController;
 
   final RxList<DocumentModel> docs = <DocumentModel>[].obs;
-  final RxList<DocumentModel> filteredDocs = <DocumentModel>[].obs;
+  final RxList<FolderModel> subFolders = <FolderModel>[].obs;
+  final RxList<dynamic> filteredItems = <dynamic>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isGridView = false.obs;
   final RxBool isSearching = false.obs;
   final TextEditingController searchController = TextEditingController();
+  late final List<BreadcrumbSegment> trail;
 
   Worker? _sortWorker;
 
@@ -44,37 +50,68 @@ class _FolderContentsViewState extends State<FolderContentsView> {
   @override
   void initState() {
     super.initState();
-    folder = Get.arguments as FolderModel;
+    final args = Get.arguments;
+    if (args is FolderModel) {
+      folder = args;
+      trail = [
+        BreadcrumbSegment(name: 'My Documents'),
+        BreadcrumbSegment(name: folder.name, folderId: folder.folderId),
+      ];
+    } else if (args is Map) {
+      folder = args['folder'] as FolderModel;
+      trail =
+          (args['trail'] as List<dynamic>?)?.cast<BreadcrumbSegment>() ??
+          [
+            BreadcrumbSegment(name: 'My Documents'),
+            BreadcrumbSegment(name: folder.name, folderId: folder.folderId),
+          ];
+    } else {
+      // Fallback
+      folder = args as FolderModel;
+      trail = [
+        BreadcrumbSegment(name: 'My Documents'),
+        BreadcrumbSegment(name: folder.name, folderId: folder.folderId),
+      ];
+    }
+
     _docsController = Get.find<DocumentsController>();
     _uploadController = Get.find<UploadController>();
     _sortWorker = ever(
       _docsController.sortOrder,
       (_) => _applyFilter(searchController.text),
     );
-    _loadDocs();
+    _loadContents();
   }
 
   @override
   void dispose() {
     _sortWorker?.dispose();
     searchController.dispose();
-    _docsController.clearFolderDocs();
+    _docsController.clearFolderContents();
     _docsController.exitMultiSelect();
     super.dispose();
   }
 
-  Future<void> _loadDocs() async {
+  Future<void> _loadContents() async {
     isLoading.value = true;
     try {
-      final snap = await FirebaseUtils.documentsRef
-          .where('ownerUid', isEqualTo: FirebaseUtils.currentUid)
-          .where('folderId', isEqualTo: folder.folderId)
-          .orderBy('updatedAt', descending: true)
-          .get();
-      docs.value = snap.docs
+      final results = await Future.wait([
+        FirebaseUtils.documentsRef
+            .where('ownerUid', isEqualTo: FirebaseUtils.currentUid)
+            .where('folderId', isEqualTo: folder.folderId)
+            .orderBy('updatedAt', descending: true)
+            .get(),
+        _docsController.folderRepo.getSubFolders(folder.folderId),
+      ]);
+
+      final docSnap = results[0] as QuerySnapshot;
+      docs.value = docSnap.docs
           .map((d) => DocumentModel.fromFirestore(d))
           .toList();
-      _docsController.registerFolderDocs(docs);
+
+      subFolders.value = results[1] as List<FolderModel>;
+
+      _syncWithController();
       _applyFilter(searchController.text);
     } catch (_) {
       AppDialogs.showSnackError('Failed to load folder contents.');
@@ -84,21 +121,29 @@ class _FolderContentsViewState extends State<FolderContentsView> {
   }
 
   void _applyFilter(String query) {
-    var result = docs.toList();
-    if (query.trim().isNotEmpty) {
-      result = result
-          .where(
-            (d) => d.name.toLowerCase().contains(query.trim().toLowerCase()),
-          )
-          .toList();
-    }
-    result.sort(
+    final q = query.trim().toLowerCase();
+
+    final filteredDocs = docs
+        .where((d) => d.name.toLowerCase().contains(q))
+        .toList();
+    final filteredSubs = subFolders
+        .where((f) => f.name.toLowerCase().contains(q))
+        .toList();
+
+    filteredDocs.sort(
       AppHelpers.documentComparator(_docsController.sortOrder.value)
           as int Function(DocumentModel, DocumentModel),
     );
-    filteredDocs.value = result;
-    // Keep controller in sync with current visible docs
-    _docsController.registerFolderDocs(result);
+    filteredSubs.sort(
+      AppHelpers.documentComparator(_docsController.sortOrder.value)
+          as int Function(FolderModel, FolderModel),
+    );
+
+    filteredItems.value = [...filteredSubs, ...filteredDocs];
+  }
+
+  void _syncWithController() {
+    _docsController.registerFolderContents(docs, subFolders);
   }
 
   void _onSearchChanged(String query) {
@@ -123,7 +168,10 @@ class _FolderContentsViewState extends State<FolderContentsView> {
         if (trimmedName.isEmpty) return;
         if (trimmedName.toLowerCase() == doc.name.toLowerCase()) return;
 
-        if (AppHelpers.nameExists(trimmedName, docs.map((d) => d.name))) {
+        if (AppHelpers.nameExists(
+          trimmedName,
+          _docsController.folderDocs.map((d) => d.name),
+        )) {
           AppDialogs.showSnackError('A file with this name already exists.');
           return;
         }
@@ -139,6 +187,7 @@ class _FolderContentsViewState extends State<FolderContentsView> {
             docs[i] = doc.copyWith(name: trimmedName);
             docs.refresh();
           }
+          _syncWithController();
           _applyFilter(searchController.text);
           AppDialogs.showSnackSuccess('Document renamed.');
         } catch (_) {
@@ -159,8 +208,11 @@ class _FolderContentsViewState extends State<FolderContentsView> {
             ref: FirebaseUtils.documentDoc(doc.documentId),
           );
           docs.removeWhere((d) => d.documentId == doc.documentId);
-          filteredDocs.removeWhere((d) => d.documentId == doc.documentId);
-          _docsController.registerFolderDocs(docs);
+          filteredItems.removeWhere(
+            (item) =>
+                item is DocumentModel && item.documentId == doc.documentId,
+          );
+          _syncWithController();
           await FirebaseUtils.folderDoc(
             folder.folderId,
           ).update({'itemCount': docs.length});
@@ -199,7 +251,7 @@ class _FolderContentsViewState extends State<FolderContentsView> {
           children: [
             Positioned.fill(
               child: RefreshIndicator(
-                onRefresh: _loadDocs,
+                onRefresh: _loadContents,
                 child: SingleChildScrollView(
                   physics: isLoading.value
                       ? const NeverScrollableScrollPhysics()
@@ -213,15 +265,18 @@ class _FolderContentsViewState extends State<FolderContentsView> {
                           : Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                BreadcrumbTrail(folderName: folder.name),
+                                BreadcrumbTrail(segments: trail),
                                 const SizedBox(height: 12),
                                 if (!isMultiSelect) _buildToolbar(context),
                                 const SizedBox(height: 12),
                                 _FolderBody(
-                                  docs: filteredDocs,
+                                  items: filteredItems,
                                   isGridView: isGridView,
-                                  onRename: _renameDoc,
-                                  onDelete: _deleteDoc,
+                                  folder: folder,
+                                  controller: _docsController,
+                                  trail: trail,
+                                  onRenameDoc: _renameDoc,
+                                  onDeleteDoc: _deleteDoc,
                                 ),
                               ],
                             ),
@@ -282,6 +337,10 @@ class _FolderContentsViewState extends State<FolderContentsView> {
                     _uploadController.showUploadSourceSheet(
                       folderId: folder.folderId,
                     );
+                  } else if (value == 'folder') {
+                    _docsController.showCreateFolderDialog(
+                      parentId: folder.folderId,
+                    );
                   }
                 },
                 itemBuilder: (_) => [
@@ -302,6 +361,24 @@ class _FolderContentsViewState extends State<FolderContentsView> {
                       ],
                     ),
                   ),
+                  if (folder.parentId == null)
+                    PopupMenuItem(
+                      value: 'folder',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.folder_open_outlined,
+                            size: 20,
+                            color: cs.onSurface,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'New folder',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
                 child: ElevatedButton.icon(
                   onPressed: () => _menuKey.currentState?.showButtonMenu(),
@@ -340,22 +417,28 @@ class _FolderContentsViewState extends State<FolderContentsView> {
 // Folder body
 
 class _FolderBody extends StatelessWidget {
-  final RxList<DocumentModel> docs;
+  final RxList<dynamic> items;
   final RxBool isGridView;
-  final void Function(DocumentModel) onRename;
-  final void Function(DocumentModel) onDelete;
+  final FolderModel folder;
+  final DocumentsController controller;
+  final List<BreadcrumbSegment> trail;
+  final void Function(DocumentModel) onRenameDoc;
+  final void Function(DocumentModel) onDeleteDoc;
 
   const _FolderBody({
-    required this.docs,
+    required this.items,
     required this.isGridView,
-    required this.onRename,
-    required this.onDelete,
+    required this.folder,
+    required this.controller,
+    required this.trail,
+    required this.onRenameDoc,
+    required this.onDeleteDoc,
   });
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (docs.isEmpty) {
+      if (items.isEmpty) {
         return const EmptyState(
           icon: Icons.folder_open_outlined,
           message: 'This folder is empty',
@@ -371,12 +454,22 @@ class _FolderBody extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
-      itemCount: docs.length,
-      itemBuilder: (_, i) => DocumentListTile(
-        doc: docs[i],
-        onRenameOverride: () => onRename(docs[i]),
-        onDeleteOverride: () => onDelete(docs[i]),
-      ),
+      itemCount: items.length,
+      itemBuilder: (_, i) {
+        final item = items[i];
+        if (item is FolderModel) {
+          return FolderListTile(
+            folder: item,
+            onTapOverride: () => controller.goToFolder(item, trail: trail),
+          );
+        }
+        final doc = item as DocumentModel;
+        return DocumentListTile(
+          doc: doc,
+          onRenameOverride: () => onRenameDoc(doc),
+          onDeleteOverride: () => onDeleteDoc(doc),
+        );
+      },
     );
   }
 
@@ -391,8 +484,17 @@ class _FolderBody extends StatelessWidget {
         mainAxisSpacing: 12,
         childAspectRatio: 0.95,
       ),
-      itemCount: docs.length,
-      itemBuilder: (_, i) => DocumentGridCard(doc: docs[i]),
+      itemCount: items.length,
+      itemBuilder: (_, i) {
+        final item = items[i];
+        if (item is FolderModel) {
+          return FolderGridCard(
+            folder: item,
+            onTapOverride: () => controller.goToFolder(item, trail: trail),
+          );
+        }
+        return DocumentGridCard(doc: item as DocumentModel);
+      },
     );
   }
 }

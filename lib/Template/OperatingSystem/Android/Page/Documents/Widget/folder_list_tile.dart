@@ -6,7 +6,8 @@ import '../Model/folder_model.dart';
 
 class FolderListTile extends GetView<DocumentsController> {
   final FolderModel folder;
-  const FolderListTile({super.key, required this.folder});
+  final VoidCallback? onTapOverride;
+  const FolderListTile({super.key, required this.folder, this.onTapOverride});
 
   @override
   Widget build(BuildContext context) {
@@ -16,9 +17,15 @@ class FolderListTile extends GetView<DocumentsController> {
       final isSelected = controller.isSelected(folder.folderId);
 
       return GestureDetector(
-        onTap: () => isMultiSelect
-            ? controller.toggleSelection(folder.folderId)
-            : controller.goToFolder(folder),
+        onTap: () {
+          if (isMultiSelect) {
+            controller.toggleSelection(folder.folderId);
+          } else if (onTapOverride != null) {
+            onTapOverride!();
+          } else {
+            controller.goToFolder(folder);
+          }
+        },
         onLongPress: () => controller.selectItem(folder.folderId),
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 4),

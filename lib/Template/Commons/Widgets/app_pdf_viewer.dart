@@ -95,9 +95,8 @@ class _AppPdfViewerState extends State<AppPdfViewer>
       final double x = -localOffset.dx * (targetScale - 1);
       final double y = -localOffset.dy * (targetScale - 1);
 
-      endMatrix = Matrix4.identity()
-        ..translate(x, y)
-        ..scale(targetScale);
+      endMatrix = Matrix4.translationValues(x, y, 0.0)
+        ..scaleByDouble(targetScale, targetScale, 1.0, 1.0);
     }
 
     _animation =

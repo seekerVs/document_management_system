@@ -12,7 +12,7 @@ class _NodeData {
   final _NodeType type;
   final String dateOrTitle;
   final String description;
-  final bool isCompletedAction; // For the green checkmark
+  final bool isCompletedAction;
 
   _NodeData({
     required this.type,
@@ -196,7 +196,7 @@ class TaskActivityTimeline extends StatelessWidget {
           // index corresponds to the top node of the connector.
           final node = nodes[index];
 
-          bool isGrey =
+          final bool isGrey =
               node.type == _NodeType.current || node.type == _NodeType.future;
 
           return SolidLineConnector(

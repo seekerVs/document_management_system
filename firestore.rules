@@ -12,9 +12,6 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == uid;
     }
 
-    function userExists(uid) {
-      return exists(/databases/$(database)/documents/users/$(uid));
-    }
 
     function isValidEmail(email) {
       return email is string && email.matches('.*@.*\\..*');
@@ -129,7 +126,6 @@ service cloud.firestore {
       // We rely on signerEmails list for collection-wide query safety
       return isSignedIn() && (
         (request.auth.token.email != null && request.auth.token.email.lower() in data.signerEmails)
-        || data.signers.any(s, s.signerUid == request.auth.uid)
       );
     }
   }

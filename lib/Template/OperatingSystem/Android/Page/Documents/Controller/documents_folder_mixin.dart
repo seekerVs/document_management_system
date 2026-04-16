@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
+import '../Model/breadcrumb_segment.dart';
 import '../../../../../Utils/Helpers/helpers.dart';
 import '../Model/document_model.dart';
 import '../Model/folder_model.dart';
@@ -19,19 +20,22 @@ mixin DocumentsFolderMixin on GetxController {
   RxList<FolderModel> get folders;
   RxList<DocumentModel> get documents;
 
+  RxList<DocumentModel> get folderDocs;
+  RxList<FolderModel> get folderSubs;
+
   Future<void> loadAll();
 
   // Create
-  void showCreateFolderDialog() {
+  void showCreateFolderDialog({String? parentId}) {
     AppDialogs.showInput(
       title: 'New Folder',
       hint: 'Folder name',
       confirmLabel: 'Create',
-      onConfirm: (name) => _createFolder(name),
+      onConfirm: (name) => _createFolder(name, parentId: parentId),
     );
   }
 
-  Future<void> _createFolder(String name) async {
+  Future<void> _createFolder(String name, {String? parentId}) async {
     try {
       final existingNames = [
         ...folders.map((f) => f.name),
@@ -43,11 +47,19 @@ mixin DocumentsFolderMixin on GetxController {
         folderId: const Uuid().v4(),
         ownerUid: docRepo.currentUid,
         name: resolvedName,
+        parentId: parentId,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
       await folderRepo.createFolder(folder);
-      folders.insert(0, folder);
+      if (parentId != null) {
+        await folderRepo.updateItemCount(parentId, 1);
+        folderSubs.insert(0, folder);
+      } else {
+        folders.insert(0, folder);
+      }
+
+      AppDialogs.showSnackSuccess('Folder created.');
     } on AppException catch (e) {
       AppDialogs.showSnackError(e.message);
     }
@@ -82,11 +94,23 @@ mixin DocumentsFolderMixin on GetxController {
     try {
       AppLoader.show(message: 'Renaming Folder...');
       await folderRepo.renameFolder(folder.folderId, trimmedName);
+
+      final updatedFolder = folder.copyWith(name: trimmedName);
+
+      // Update in root list if it exists there
       final i = folders.indexWhere((f) => f.folderId == folder.folderId);
       if (i != -1) {
-        folders[i] = folder.copyWith(name: trimmedName);
+        folders[i] = updatedFolder;
         folders.refresh();
       }
+
+      // Update in subfolders list if it exists there
+      final j = folderSubs.indexWhere((f) => f.folderId == folder.folderId);
+      if (j != -1) {
+        folderSubs[j] = updatedFolder;
+        folderSubs.refresh();
+      }
+
       AppDialogs.showSnackSuccess('Folder renamed.');
     } on AppException catch (e) {
       AppDialogs.showSnackError(e.message);
@@ -105,21 +129,55 @@ mixin DocumentsFolderMixin on GetxController {
 
   Future<void> _deleteFolder(FolderModel folder) async {
     try {
-      final folderDocs = await docRepo.getFolderDocuments(folder.folderId);
-      for (final doc in folderDocs) {
-        await docRepo.deleteDocument(doc.documentId);
-        await SupabaseService.deleteFile(doc.fileUrl);
-        await userController.decrementStorage(doc.fileSizeMB);
+      AppLoader.show(message: 'Deleting folder and contents...');
+      await _deleteFolderRecursive(folder.folderId);
+
+      if (folder.parentId != null) {
+        await folderRepo.updateItemCount(folder.parentId!, -1);
       }
-      await folderRepo.deleteFolder(folder.folderId);
+
       folders.removeWhere((f) => f.folderId == folder.folderId);
-      AppDialogs.showSnackSuccess('Folder deleted.');
+      folderSubs.removeWhere((f) => f.folderId == folder.folderId);
+
+      AppDialogs.showSnackSuccess('Folder and its contents deleted.');
     } on AppException catch (e) {
       AppDialogs.showSnackError(e.message);
+    } finally {
+      AppLoader.hide();
     }
   }
 
+  Future<void> _deleteFolderRecursive(String folderId) async {
+    // 1. Delete documents in this folder
+    final docs = await docRepo.getFolderDocuments(folderId);
+    for (final doc in docs) {
+      await docRepo.deleteDocument(doc.documentId);
+      await SupabaseService.deleteFile(doc.fileUrl);
+      await userController.decrementStorage(doc.fileSizeMB);
+    }
+
+    // 2. Find and delete subfolders recursively
+    final subFolders = await folderRepo.getSubFolders(folderId);
+    for (final sub in subFolders) {
+      await _deleteFolderRecursive(sub.folderId);
+    }
+
+    // 3. Delete the folder itself
+    await folderRepo.deleteFolder(folderId);
+  }
+
   // Navigate
-  void goToFolder(FolderModel folder) =>
-      Get.toNamed(MainRoutes.folderContents, arguments: folder);
+  void goToFolder(FolderModel folder, {List<BreadcrumbSegment>? trail}) {
+    final newTrail = [
+      ...?trail,
+      if (trail == null) BreadcrumbSegment(name: 'My Documents'),
+      BreadcrumbSegment(name: folder.name, folderId: folder.folderId),
+    ];
+
+    Get.toNamed(
+      MainRoutes.folderContents,
+      preventDuplicates: false,
+      arguments: {'folder': folder, 'trail': newTrail},
+    );
+  }
 }

@@ -78,8 +78,8 @@ class DocumentsToolbar extends GetView<DocumentsController> {
             () => IconButton(
               icon: Icon(
                 controller.isGridView.value
-                    ? Icons.grid_view_rounded
-                    : Icons.format_list_bulleted,
+                    ? Icons.format_list_bulleted
+                    : Icons.grid_view_rounded,
                 color: cs.onSurfaceVariant,
               ),
               onPressed: controller.toggleViewMode,

@@ -15,6 +15,19 @@ class FolderRepository extends BaseRepository {
     final result = await handleRequest(() async {
       final snap = await FirebaseUtils.foldersRef
           .where('ownerUid', isEqualTo: currentUid)
+          .where('parentId', isNull: true)
+          .orderBy('updatedAt', descending: true)
+          .get();
+      return snap.docs.map((d) => FolderModel.fromFirestore(d)).toList();
+    });
+    return result ?? [];
+  }
+
+  Future<List<FolderModel>> getSubFolders(String parentId) async {
+    final result = await handleRequest(() async {
+      final snap = await FirebaseUtils.foldersRef
+          .where('ownerUid', isEqualTo: currentUid)
+          .where('parentId', isEqualTo: parentId)
           .orderBy('updatedAt', descending: true)
           .get();
       return snap.docs.map((d) => FolderModel.fromFirestore(d)).toList();
@@ -57,8 +70,21 @@ class FolderRepository extends BaseRepository {
       });
 
   Future<void> deleteFolder(String folderId) => handleRequest(() async {
-    await FirebaseMethod.deleteDocument(ref: FirebaseUtils.folderDoc(folderId));
-  });
+        // 1. Get subfolders
+        final subFoldersSnap = await FirebaseUtils.foldersRef
+            .where('parentId', isEqualTo: folderId)
+            .get();
+
+        // 2. Delete each subfolder recursively
+        for (final subDoc in subFoldersSnap.docs) {
+          await deleteFolder(subDoc.id);
+        }
+
+        // 3. Delete the folder itself
+        await FirebaseMethod.deleteDocument(
+          ref: FirebaseUtils.folderDoc(folderId),
+        );
+      });
 
   Future<void> updateItemCount(String folderId, int delta) =>
       handleRequest(() async {
@@ -77,5 +103,34 @@ class FolderRepository extends BaseRepository {
       return snap.count ?? 0;
     });
     return result ?? 0;
+  }
+  Future<String> getOrCreateFolderByName(String name) async {
+    final result = await handleRequest(() async {
+      // 1. Try to find existing root folder
+      final snap = await FirebaseUtils.foldersRef
+          .where('ownerUid', isEqualTo: currentUid)
+          .where('parentId', isNull: true)
+          .where('name', isEqualTo: name)
+          .limit(1)
+          .get();
+
+      if (snap.docs.isNotEmpty) {
+        return snap.docs.first.id;
+      }
+
+      // 2. Not found, create it
+      final folderId = const Uuid().v4();
+      final folder = FolderModel(
+        folderId: folderId,
+        ownerUid: currentUid,
+        name: name,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      await FirebaseUtils.folderDoc(folderId).set(folder.toFirestore());
+      return folderId;
+    });
+    return result ?? '';
   }
 }
