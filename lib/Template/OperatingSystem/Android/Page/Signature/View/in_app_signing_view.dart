@@ -1,14 +1,14 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pdfx/pdfx.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:http/http.dart' as http;
 import '../../../../../Commons/Widgets/app_pdf_viewer.dart';
 import '../../../../../Commons/Widgets/app_button.dart';
 import '../../../../../Utils/Constant/enum.dart';
-import '../../../../../Utils/Services/pdf_renderer_service.dart';
 import '../Controller/in_app_signing_controller.dart';
 import '../Model/signature_field_model.dart';
+import '../Model/signature_request_model.dart';
 import '../Widget/signature_field_overlay.dart';
 import '../Widget/in_app_signing_splash_overlay.dart';
 import '../../../../../Utils/Services/supabase_service.dart';
@@ -22,40 +22,103 @@ class InAppSigningView extends StatefulWidget {
 
 class _InAppSigningViewState extends State<InAppSigningView> {
   final InAppSigningController _controller = Get.find<InAppSigningController>();
-  PdfDocument? _document;
-  String? _docId;
+  final List<PdfDocument> _documents = [];
+  final List<String> _docIds = [];
+  // Maps UUID (used as docId key) -> all aliases (name, legacy id) for backward compat
+  final Map<String, Set<String>> _docIdAliases = {};
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchDocument();
+    _fetchDocuments();
   }
 
-  Future<void> _fetchDocument() async {
+  Future<void> _fetchDocuments() async {
+    setState(() {
+      _isLoading = true;
+      _documents.clear();
+      _docIds.clear();
+    });
     try {
-      String url = _controller.request.documentUrl;
+      List<RequestDocumentModel> docs = _controller.request.documents;
 
-      // If documentUrl is a storage path (no host specified), get a signed URL
-      if (!url.startsWith('http')) {
-        url = await SupabaseService.getSignedUrl(url);
+      // Legacy Fallback: if 'documents' list is empty, use the single document fields
+      if (docs.isEmpty && _controller.request.documentId.isNotEmpty) {
+        debugPrint(
+          'InAppSigningView: Falling back to legacy single-document fields',
+        );
+        docs = [
+          RequestDocumentModel(
+            documentId: _controller.request.documentId,
+            documentName: _controller.request.documentName,
+            documentUrl: _controller.request.documentUrl,
+            storagePath: _controller.request.storagePath,
+          ),
+        ];
       }
 
-      _docId = url; // Use URL as doc ID for caching
+      debugPrint('InAppSigningView: Fetching ${docs.length} documents');
 
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final doc = await PdfDocument.openData(response.bodyBytes);
-        if (mounted) setState(() => _document = doc);
+      for (final docObj in docs) {
+        String url = docObj.documentUrl;
+        if (url.isEmpty) url = docObj.storagePath;
+
+        debugPrint('InAppSigningView: Document ${docObj.documentId} URL: $url');
+
+        if (url.isEmpty) {
+          debugPrint('InAppSigningView: Document URL is still empty.');
+          continue;
+        }
+
+        // If it's a storage path, get a signed URL
+        if (!url.startsWith('http')) {
+          debugPrint('InAppSigningView: Getting signed URL for $url');
+          url = await SupabaseService.getSignedUrl(url);
+          debugPrint('InAppSigningView: Signed URL: $url');
+        }
+
+        final response = await http.get(Uri.parse(url));
+        debugPrint('InAppSigningView: Download status: ${response.statusCode}');
+
+        if (response.statusCode == 200) {
+          final doc = await PdfDocument.openData(response.bodyBytes);
+          _documents.add(doc);
+          _docIds.add(docObj.documentId);
+          // Build aliases: the UUID itself + the document name (for legacy field IDs)
+          _docIdAliases[docObj.documentId] = {
+            docObj.documentId,
+            docObj.documentName,
+          };
+          debugPrint('InAppSigningView: Document loaded into PdfDocument');
+        } else {
+          debugPrint(
+            'InAppSigningView: Failed to download: ${response.statusCode} - ${response.body}',
+          );
+        }
       }
     } catch (e) {
-      debugPrint('Error fetching PDF: $e');
+      debugPrint('InAppSigningView: Critical error fetching PDFs: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading documents: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   void dispose() {
-    _document?.close();
-    if (_docId != null) PdfRendererService.clearCache(docId: _docId);
+    for (var doc in _documents) {
+      doc.dispose();
+    }
     super.dispose();
   }
 
@@ -108,18 +171,41 @@ class _InAppSigningViewState extends State<InAppSigningView> {
           body: Column(
             children: [
               Expanded(
-                child: Container(
-                  color: const Color(0xFFF5F5F5),
-                  child: _document == null
-                      ? const Center(child: CircularProgressIndicator())
-                      : AppPdfViewer(
-                          document: _document!,
-                          docId: _docId ?? 'default',
-                          fieldBuilder: (context, pageIndex, displayW, displayH) {
-                            return _buildPageFields(pageIndex, displayW, displayH);
-                          },
-                        ),
-                ),
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _documents.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red,
+                                  size: 48,
+                                ),
+                                const SizedBox(height: 16),
+                                const Text('No documents were loaded.'),
+                                const SizedBox(height: 8),
+                                ElevatedButton(
+                                  onPressed: _fetchDocuments,
+                                  child: const Text('Retry'),
+                                ),
+                              ],
+                            ),
+                          )
+                        : AppPdfViewer(
+                            documents: _documents,
+                            docIds: _docIds,
+                            fieldBuilder: (context, docId, pageIndex,
+                                displayW, displayH) {
+                              return _buildPageFields(
+                                docId,
+                                pageIndex,
+                                displayW,
+                                displayH,
+                              );
+                            },
+                          ),
               ),
               _BottomBar(controller: _controller),
             ],
@@ -129,8 +215,18 @@ class _InAppSigningViewState extends State<InAppSigningView> {
     });
   }
 
-  Widget _buildPageFields(int pageIndex, double displayW, double displayH) {
-    final fields = _controller.fields.where((f) => f.page == pageIndex).toList();
+  Widget _buildPageFields(
+    String documentId,
+    int pageIndex,
+    double displayW,
+    double displayH,
+  ) {
+    // Collect all known aliases for this document (UUID + legacy filename)
+    final aliases = _docIdAliases[documentId] ?? {documentId};
+
+    final fields = _controller.fields
+        .where((f) => aliases.contains(f.documentId) && f.page == pageIndex)
+        .toList();
 
     if (fields.isEmpty) return const SizedBox.shrink();
 

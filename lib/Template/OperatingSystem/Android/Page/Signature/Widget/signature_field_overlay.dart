@@ -175,27 +175,18 @@ class SignatureFieldOverlay extends StatelessWidget {
               ? BorderStyle.solid
               : BorderStyle.none,
         ),
-        boxShadow: isFieldSelected
+        boxShadow: (isFieldSelected && !isFilled)
             ? [
                 BoxShadow(
-                  color: color.withValues(alpha: isFilled ? 0.4 : 0.15),
+                  color: color.withValues(alpha: 0.15),
                   blurRadius: 8,
                   spreadRadius: 2,
                 ),
               ]
-            : (isFilled
-                  ? []
-                  : [
-                      BoxShadow(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.shadow.withValues(alpha: 0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]),
+            : [],
       ),
       child: Stack(
+        alignment: Alignment.center,
         clipBehavior: Clip.none,
         children: [
           if (isFieldSelected && isFilled)
@@ -203,55 +194,57 @@ class SignatureFieldOverlay extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: color, width: 2),
+                  border: Border.all(color: color),
                 ),
               ),
             ),
-          child ??
-              (isRect
-                  ? Align(
-                      alignment: Alignment.topLeft,
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          left: 2 * placeholderScale,
-                          top: 1 * placeholderScale,
+          if (child != null)
+            Center(child: child!)
+          else
+            (isRect
+                ? Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: 2 * placeholderScale,
+                        top: 1 * placeholderScale,
+                      ),
+                      child: Text(
+                        field.type == SignatureFieldType.textbox
+                            ? 'Add Text'
+                            : 'Date Signed',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: (8 * placeholderScale).clamp(7.0, 10.0),
+                          fontWeight: FontWeight.w300,
+                          letterSpacing: -0.2,
                         ),
-                        child: Text(
-                          field.type == SignatureFieldType.textbox
-                              ? 'Add Text'
-                              : 'Date Signed',
+                      ),
+                    ),
+                  )
+                : Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _fieldIcon(field.type),
+                          color: Colors.white,
+                          size: (14 * placeholderScale).clamp(12.0, 20.0),
+                        ),
+                        SizedBox(height: 1 * placeholderScale),
+                        Text(
+                          field.type == SignatureFieldType.initials
+                              ? 'Initial'
+                              : 'Sign',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: (8 * placeholderScale).clamp(7.0, 10.0),
+                            fontSize: (7 * placeholderScale).clamp(6.0, 10.0),
                             fontWeight: FontWeight.w300,
-                            letterSpacing: -0.2,
                           ),
                         ),
-                      ),
-                    )
-                  : Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _fieldIcon(field.type),
-                            color: Colors.white,
-                            size: (14 * placeholderScale).clamp(12.0, 20.0),
-                          ),
-                          SizedBox(height: 1 * placeholderScale),
-                          Text(
-                            field.type == SignatureFieldType.initials
-                                ? 'Initial'
-                                : 'Sign',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: (7 * placeholderScale).clamp(6.0, 10.0),
-                              fontWeight: FontWeight.w300,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )),
+                      ],
+                    ),
+                  )),
         ],
       ),
     );

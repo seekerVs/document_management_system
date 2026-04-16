@@ -34,12 +34,17 @@ class SignUpController extends GetxController {
       if (user != null) {
         await FolderRepository().initializeDefaultFolders(user.uid);
         await Get.find<UserController>().refreshUser();
+        AppLoader.hide();
         Get.offAllNamed(MainRoutes.dashboard);
+      } else {
+        AppLoader.hide();
       }
     } on AppException catch (e) {
-      errorMessage.value = e.message;
-    } finally {
       AppLoader.hide();
+      errorMessage.value = e.message;
+    } catch (e) {
+      AppLoader.hide();
+      errorMessage.value = 'Account creation failed. Please try again.';
     }
   }
 

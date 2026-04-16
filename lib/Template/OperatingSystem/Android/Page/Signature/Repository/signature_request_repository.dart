@@ -17,13 +17,14 @@ class SignatureRequestRepository {
     final result = await ApiService.post('/signing/create-request', {
       'requestedByUid': request.requestedByUid,
       'requesterName': requesterName,
+      'documents': request.documents.map((d) => d.toMap()).toList(),
       'documentId': request.documentId,
       'documentName': request.documentName,
       'documentUrl': request.documentUrl,
       'storagePath': request.storagePath,
       'signingOrderEnabled': request.signingOrderEnabled,
       'signers': request.signers.map((s) => s.toMap()).toList(),
-      'requesterEmail': ?requesterEmail,
+      'requesterEmail': requesterEmail,
       if (message != null && message.isNotEmpty) 'message': message,
     });
 

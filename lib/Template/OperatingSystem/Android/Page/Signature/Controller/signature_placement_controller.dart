@@ -51,6 +51,7 @@ class SignaturePlacementController extends GetxController {
     SignatureFieldType type,
     double pageWidth,
     double pageHeight,
+    String documentId,
     int pageIndex,
   ) {
     final signer = activeSigner;
@@ -64,6 +65,7 @@ class SignaturePlacementController extends GetxController {
     final field = SignatureFieldModel(
       fieldId: const Uuid().v4(),
       type: type,
+      documentId: documentId,
       page: pageIndex,
       x: ((pageWidth / 2) - (fieldW / 2)) / pageWidth,
       y: ((pageHeight / 2) - (fieldH / 2)) / pageHeight,
@@ -71,7 +73,9 @@ class SignaturePlacementController extends GetxController {
       height: fieldH / pageHeight,
     );
     _updateSignerFields(signer, [...signer.fields, field]);
+    selectField(field.fieldId);
   }
+
 
   // Selection methods
   void selectField(String id) => selectedFieldId.value = id;
@@ -163,6 +167,7 @@ class SignaturePlacementController extends GetxController {
   // Move field to a different page (Drag & Drop)
   void moveFieldToPage(
     String fieldId,
+    String newDocumentId,
     int newPageIndex,
     double normalizedX,
     double normalizedY,
@@ -183,6 +188,7 @@ class SignaturePlacementController extends GetxController {
 
     // 2. Update model properties
     final updatedField = targetField.copyWith(
+      documentId: newDocumentId,
       page: newPageIndex,
       x: normalizedX,
       y: normalizedY,

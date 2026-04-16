@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:pdfx/pdfx.dart';
+import 'package:pdfrx/pdfrx.dart';
 import '../../../../../Utils/Constant/enum.dart';
 import '../../../../../Commons/Widgets/app_pdf_viewer.dart';
 import '../Model/document_model.dart';
@@ -48,7 +48,7 @@ class _DocumentViewerViewState extends State<DocumentViewerView> {
 
   @override
   void dispose() {
-    _pdfDocument?.close();
+    _pdfDocument?.dispose();
     super.dispose();
   }
 
@@ -153,9 +153,9 @@ class _DocumentViewerViewState extends State<DocumentViewerView> {
 
   Widget _buildPdfBody() {
     return AppPdfViewer(
-      document: _pdfDocument!,
-      docId: doc.documentId,
-      fieldBuilder: (ctx, page, w, h) {
+      documents: [_pdfDocument!],
+      docIds: [doc.documentId],
+      fieldBuilder: (ctx, docId, page, w, h) {
         if (task == null) return const SizedBox.shrink();
 
         final signedSigners = task!.signers.where(
@@ -165,7 +165,8 @@ class _DocumentViewerViewState extends State<DocumentViewerView> {
 
         for (var signer in signedSigners) {
           for (var field in signer.fields) {
-            if (field.page == page) {
+            // Updated filtering to check both documentId and page
+            if ((field.documentId == docId) && field.page == page) {
               Widget? overlayChild;
               final isImage =
                   field.type == SignatureFieldType.signature ||

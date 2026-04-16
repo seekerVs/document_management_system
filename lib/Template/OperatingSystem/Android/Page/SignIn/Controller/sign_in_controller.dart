@@ -29,12 +29,17 @@ class SignInController extends GetxController {
       );
       if (user != null) {
         await Get.find<UserController>().refreshUser();
+        AppLoader.hide();
         Get.offAllNamed(MainRoutes.dashboard);
+      } else {
+        AppLoader.hide();
       }
     } on AppException catch (e) {
-      errorMessage.value = e.message;
-    } finally {
       AppLoader.hide();
+      errorMessage.value = e.message;
+    } catch (e) {
+      AppLoader.hide();
+      errorMessage.value = 'Sign in failed. Please check your credentials.';
     }
   }
 
@@ -46,12 +51,17 @@ class SignInController extends GetxController {
       final user = await _repo.signInWithGoogle();
       if (user != null) {
         await Get.find<UserController>().refreshUser();
+        AppLoader.hide();
         Get.offAllNamed(MainRoutes.dashboard);
+      } else {
+        AppLoader.hide();
       }
     } on AppException catch (e) {
-      AppDialogs.showSnackError(e.message);
-    } finally {
       AppLoader.hide();
+      AppDialogs.showSnackError(e.message);
+    } catch (e) {
+      AppLoader.hide();
+      AppDialogs.showSnackError('Google sign in failed.');
     }
   }
 

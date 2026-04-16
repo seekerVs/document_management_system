@@ -76,7 +76,7 @@ class InAppSigningController extends GetxController {
       signatureImages.clear();
       savedProfileSignature.value = null;
 
-      // Auto-fill all "Date Signed" fields for the current signer
+      // Auto-fill all "Date Signed" fields for the current signer across all documents
       for (final field in signer.fields) {
         if (field.type == SignatureFieldType.dateSigned) {
           fieldValues[field.fieldId] = AppFormatter.dateShort(DateTime.now());
@@ -135,8 +135,14 @@ class InAppSigningController extends GetxController {
       );
       if (firstUnfilled != null) {
         onFieldTap(firstUnfilled);
+        _scrollToField(firstUnfilled);
       }
     }
+  }
+
+  void _scrollToField(SignatureFieldModel field) {
+    // This will be implemented/triggered in the View via a listener or dynamic event
+    update(['scroll_to_field']);
   }
 
   void _scheduleTemplateDetection() {
@@ -217,15 +223,19 @@ class InAppSigningController extends GetxController {
 
     // Check if the document actually needs what we have, and only for fields not yet filled
     final needsSignature = fields.any(
-      (f) => f.type == SignatureFieldType.signature && !isFieldFilled(f.fieldId),
+      (f) =>
+          f.type == SignatureFieldType.signature && !isFieldFilled(f.fieldId),
     );
     final needsInitials = fields.any(
       (f) => f.type == SignatureFieldType.initials && !isFieldFilled(f.fieldId),
     );
 
-    final hasFilledSignatureOrInitial = fields.any((f) =>
-        (f.type == SignatureFieldType.signature || f.type == SignatureFieldType.initials) &&
-        isFieldFilled(f.fieldId));
+    final hasFilledSignatureOrInitial = fields.any(
+      (f) =>
+          (f.type == SignatureFieldType.signature ||
+              f.type == SignatureFieldType.initials) &&
+          isFieldFilled(f.fieldId),
+    );
 
     // EDGE CASE: If they already have a signature or initial filled (e.g. from resuming a postponed session,
     // or adding one manually before network resolved the URL), DO NOT interrupt them with the prompt.

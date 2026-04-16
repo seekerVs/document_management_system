@@ -3,6 +3,7 @@ import '../../../../../Utils/Constant/enum.dart';
 class SignatureFieldModel {
   final String fieldId;
   final SignatureFieldType type;
+  final String documentId;
   final int page;
   final double x;
   final double y;
@@ -14,6 +15,7 @@ class SignatureFieldModel {
   SignatureFieldModel({
     required this.fieldId,
     required this.type,
+    required this.documentId,
     required this.page,
     required this.x,
     required this.y,
@@ -30,6 +32,7 @@ class SignatureFieldModel {
         (t) => t.name == (data['type'] ?? 'signature'),
         orElse: () => SignatureFieldType.signature,
       ),
+      documentId: data['documentId'] ?? '',
       page: data['page'] ?? 0,
       x: (data['x'] ?? 0).toDouble(),
       y: (data['y'] ?? 0).toDouble(),
@@ -44,6 +47,7 @@ class SignatureFieldModel {
     return {
       'fieldId': fieldId,
       'type': type.name,
+      'documentId': documentId,
       'page': page,
       'x': x,
       'y': y,
@@ -56,6 +60,7 @@ class SignatureFieldModel {
 
   SignatureFieldModel copyWith({
     SignatureFieldType? type,
+    String? documentId,
     int? page,
     double? x,
     double? y,
@@ -67,6 +72,7 @@ class SignatureFieldModel {
     return SignatureFieldModel(
       fieldId: fieldId,
       type: type ?? this.type,
+      documentId: documentId ?? this.documentId,
       page: page ?? this.page,
       x: x ?? this.x,
       y: y ?? this.y,

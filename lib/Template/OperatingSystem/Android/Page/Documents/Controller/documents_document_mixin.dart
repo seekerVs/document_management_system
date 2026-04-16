@@ -10,6 +10,7 @@ import '../../../../../../Template/Utils/Services/supabase_service.dart';
 import '../../Profile/Controller/user_controller.dart';
 import '../../../../../Commons/Widgets/document_details_sheet.dart';
 import '../../../../../../Template/Utils/Popups/full_screen_loader.dart';
+import 'documents_controller.dart';
 
 mixin DocumentsDocumentMixin on GetxController {
   DocumentRepository get docRepo;
@@ -99,8 +100,18 @@ mixin DocumentsDocumentMixin on GetxController {
 
   // Open / Details
 
-  void openDocument(DocumentModel doc) =>
+  void openDocument(DocumentModel doc) {
+    final controller = this as DocumentsController;
+    if (controller.isPickerMode.value) {
+      if (!doc.isPdf) {
+        AppDialogs.showSnackError('Please select a PDF document.');
+        return;
+      }
+      controller.onPickCallback?.call(doc);
+    } else {
       Get.toNamed(MainRoutes.documentViewer, arguments: doc);
+    }
+  }
 
   void showDocumentDetails(DocumentModel doc) {
     Get.bottomSheet(DocumentDetailsSheet(doc: doc), isScrollControlled: true);

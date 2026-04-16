@@ -329,69 +329,73 @@ class _FolderContentsViewState extends State<FolderContentsView> {
           padding: const EdgeInsets.only(top: 12, bottom: 4),
           child: Row(
             children: [
-              PopupMenuButton<String>(
-                key: _menuKey,
-                position: PopupMenuPosition.under,
-                onSelected: (value) {
-                  if (value == 'upload') {
-                    _uploadController.showUploadSourceSheet(
-                      folderId: folder.folderId,
-                    );
-                  } else if (value == 'folder') {
-                    _docsController.showCreateFolderDialog(
-                      parentId: folder.folderId,
-                    );
-                  }
-                },
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    value: 'upload',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.upload_file_outlined,
-                          size: 20,
-                          color: cs.onSurface,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Upload file',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (folder.parentId == null)
-                    PopupMenuItem(
-                      value: 'folder',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.folder_open_outlined,
-                            size: 20,
-                            color: cs.onSurface,
+              Obx(
+                () => _docsController.isPickerMode.value
+                    ? const SizedBox.shrink()
+                    : PopupMenuButton<String>(
+                        key: _menuKey,
+                        position: PopupMenuPosition.under,
+                        onSelected: (value) {
+                          if (value == 'upload') {
+                            _uploadController.showUploadSourceSheet(
+                              folderId: folder.folderId,
+                            );
+                          } else if (value == 'folder') {
+                            _docsController.showCreateFolderDialog(
+                              parentId: folder.folderId,
+                            );
+                          }
+                        },
+                        itemBuilder: (_) => [
+                          PopupMenuItem(
+                            value: 'upload',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.upload_file_outlined,
+                                  size: 20,
+                                  color: cs.onSurface,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Upload file',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'New folder',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
+                          if (folder.parentId == null)
+                            PopupMenuItem(
+                              value: 'folder',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.folder_open_outlined,
+                                    size: 20,
+                                    color: cs.onSurface,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'New folder',
+                                    style: Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                ],
+                              ),
+                            ),
                         ],
+                        child: ElevatedButton.icon(
+                          onPressed: () => _menuKey.currentState?.showButtonMenu(),
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('New'),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: Size.zero,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                ],
-                child: ElevatedButton.icon(
-                  onPressed: () => _menuKey.currentState?.showButtonMenu(),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('New'),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: Size.zero,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                  ),
-                ),
               ),
               const Spacer(),
               Obx(

@@ -1,10 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import '../../../../../Commons/Styles/style.dart';
 import '../../../../../Commons/Widgets/app_button.dart';
-import 'package:pdfx/pdfx.dart';
+import 'package:pdfrx/pdfrx.dart';
 import '../../../../../Commons/Widgets/app_pdf_viewer.dart';
+import '../../../../../Utils/Services/supabase_service.dart';
 import '../Controller/signature_request_controller.dart';
+import '../Model/selected_document.dart';
 
 class SelectDocumentView extends GetView<SignatureRequestController> {
   const SelectDocumentView({super.key});
@@ -26,50 +31,55 @@ class SelectDocumentView extends GetView<SignatureRequestController> {
           ),
         ),
         body: Obx(() {
-          final doc = controller.selectedDocument.value;
           return Column(
             children: [
               Expanded(
-                child: ListView(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
-                  children: [
-                    if (doc != null) ...[
-                      _DocumentTile(controller: controller),
-                      const SizedBox(height: 8),
-                    ],
-                    // Add another document row
-                    GestureDetector(
-                      onTap: controller.showDocumentSourceSheet,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        decoration: AppStyle.cardOf(context),
-                        child: Row(
+                  child: Column(
+                    children: [
+                      ...controller.selectedDocuments.map(
+                        (doc) => Column(
                           children: [
-                            Icon(
-                              Icons.add,
-                              color: Theme.of(context).colorScheme.primary,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              doc == null
-                                  ? 'Select a document'
-                                  : 'Add another document',
-                              style: Theme.of(context).textTheme.titleSmall
-                                  ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
-                                  ),
-                            ),
+                            _DocumentTile(controller: controller, doc: doc),
+                            const SizedBox(height: 8),
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                      // Add another document row
+                      GestureDetector(
+                        onTap: controller.showDocumentSourceSheet,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          decoration: AppStyle.cardOf(context),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.add,
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                controller.selectedDocuments.isEmpty
+                                    ? 'Select a document'
+                                    : 'Add another document',
+                                style: Theme.of(context).textTheme.titleSmall
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               _BottomActions(controller: controller),
@@ -83,11 +93,11 @@ class SelectDocumentView extends GetView<SignatureRequestController> {
 
 class _DocumentTile extends StatelessWidget {
   final SignatureRequestController controller;
-  const _DocumentTile({required this.controller});
+  final SelectedDocument doc;
+  const _DocumentTile({required this.controller, required this.doc});
 
   @override
   Widget build(BuildContext context) {
-    final doc = controller.selectedDocument.value!;
     return Container(
       decoration: AppStyle.cardOf(context),
       child: ListTile(
@@ -116,25 +126,30 @@ class _DocumentTile extends StatelessWidget {
                 ),
               ),
               body: FutureBuilder<PdfDocument>(
-                future: PdfDocument.openFile(doc.file.path),
+                future: _loadPdf(doc),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (snapshot.hasError || !snapshot.hasData) {
                     return Center(
-                      child: Text(
-                        'Failed to load PDF',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Text(
+                          'Failed to load PDF: ${snapshot.error ?? "Unknown error"}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
                         ),
                       ),
                     );
                   }
                   return AppPdfViewer(
-                    document: snapshot.data!,
-                    docId: doc.name,
-                    fieldBuilder: (ctx, page, w, h) => const SizedBox.shrink(),
+                    documents: [snapshot.data!],
+                    docIds: [doc.name],
+                    fieldBuilder: (ctx, docId, page, w, h) =>
+                        const SizedBox.shrink(),
                   );
                 },
               ),
@@ -180,6 +195,29 @@ class _DocumentTile extends StatelessWidget {
       ),
     );
   }
+
+  Future<PdfDocument> _loadPdf(SelectedDocument doc) async {
+    if (await doc.file.exists() && await doc.file.length() > 0) {
+      return PdfDocument.openFile(doc.file.path);
+    }
+
+    if (doc.storagePath == null || doc.storagePath!.isEmpty) {
+      throw Exception('Document path is missing and no storage path provided.');
+    }
+
+    // Download from Supabase
+    final signedUrl = await SupabaseService.getSignedUrl(doc.storagePath!);
+    final response = await http.get(Uri.parse(signedUrl));
+    if (response.statusCode != 200) {
+      throw Exception('Failed to download document from cloud.');
+    }
+
+    final tempDir = await getTemporaryDirectory();
+    final tempFile = File('${tempDir.path}/${doc.documentId ?? "temp"}.pdf');
+    await tempFile.writeAsBytes(response.bodyBytes);
+
+    return PdfDocument.openFile(tempFile.path);
+  }
 }
 
 class _BottomActions extends StatelessWidget {
@@ -196,7 +234,7 @@ class _BottomActions extends StatelessWidget {
           Obx(
             () => AppButton.primary(
               label: 'Next',
-              onPressed: controller.selectedDocument.value != null
+              onPressed: controller.selectedDocuments.isNotEmpty
                   ? controller.goToAddRecipients
                   : null,
             ),

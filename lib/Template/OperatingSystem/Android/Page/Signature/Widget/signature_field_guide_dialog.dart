@@ -23,6 +23,12 @@ class SignatureFieldGuideDialog extends StatefulWidget {
 
 class _SignatureFieldGuideDialogState extends State<SignatureFieldGuideDialog> {
   bool _dontShowAgain = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    _dontShowAgain = !StorageService.shouldShowFieldGuide();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,9 +151,7 @@ class _SignatureFieldGuideDialogState extends State<SignatureFieldGuideDialog> {
                   AppButton.primary(
                     label: 'Got it',
                     onPressed: () async {
-                      if (_dontShowAgain) {
-                        await StorageService.setFieldGuidePreference(false);
-                      }
+                      await StorageService.setFieldGuidePreference(!_dontShowAgain);
                       Get.back();
                     },
                   ),

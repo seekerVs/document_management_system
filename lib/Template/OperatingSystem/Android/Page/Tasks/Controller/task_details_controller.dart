@@ -4,8 +4,6 @@ import '../../Activity/Model/activity_model.dart';
 import '../../Activity/Repository/activity_repository.dart';
 import '../../Signature/Model/signature_request_model.dart';
 import '../../Signature/Controller/in_app_signing_controller.dart';
-import '../../Documents/Model/document_model.dart';
-import '../../../../../Utils/Constant/enum.dart';
 import '../../../../../Utils/Routes/main_routes.dart';
 
 class TaskDetailsController extends GetxController {
@@ -54,22 +52,9 @@ class TaskDetailsController extends GetxController {
   }
 
   void openDocument() {
-    // Construct a minimal DocumentModel for the viewer
-    final doc = DocumentModel(
-      documentId: task.documentId,
-      ownerUid: task.requestedByUid,
-      name: task.documentName,
-      fileUrl: task.documentUrl,
-      storagePath: task.storagePath,
-      fileSizeMB: 0,
-      createdAt: task.createdAt,
-      updatedAt: task.createdAt,
-      status: DocumentStatus.pending,
-    );
-
     Get.toNamed(
-      MainRoutes.documentViewer,
-      arguments: {'doc': doc, 'task': task},
+      MainRoutes.requestDocuments,
+      arguments: {'task': task},
     );
   }
 }

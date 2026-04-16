@@ -27,6 +27,7 @@ import '../../OperatingSystem/Android/Page/Tasks/Controller/tasks_controller.dar
 import '../../OperatingSystem/Android/Page/Tasks/Controller/task_details_controller.dart';
 import '../../OperatingSystem/Android/Page/Tasks/View/tasks_view.dart';
 import '../../OperatingSystem/Android/Page/Tasks/View/task_details_view.dart';
+import '../../OperatingSystem/Android/Page/Tasks/View/request_documents_view.dart';
 import '../../OperatingSystem/Android/Page/Signature/View/in_app_signing_view.dart';
 import '../../OperatingSystem/Android/Page/Signature/View/request_review_view.dart';
 import '../../OperatingSystem/Android/Page/Signature/View/signature_placement_view.dart';
@@ -104,6 +105,10 @@ class AppRoutes {
       binding: BindingsBuilder(
         () => Get.lazyPut(() => TaskDetailsController(), fenix: true),
       ),
+    ),
+    GetPage(
+      name: MainRoutes.requestDocuments,
+      page: () => const RequestDocumentsView(),
     ),
 
     // ─── Signature request flow ───────────────────────────────────────────

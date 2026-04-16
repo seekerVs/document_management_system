@@ -65,6 +65,11 @@ class TaskDetailsView extends GetView<TaskDetailsController> {
 
   Widget _buildHeader(BuildContext context) {
     final task = controller.task;
+    final docCount = task.documents.isNotEmpty ? task.documents.length : 1;
+    final titleText = docCount > 1
+        ? '${task.documentName} +${docCount - 1} more'
+        : task.documentName;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -82,7 +87,7 @@ class TaskDetailsView extends GetView<TaskDetailsController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            task.documentName,
+            titleText,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
               color: Theme.of(context).colorScheme.onSurface,
@@ -125,7 +130,7 @@ class TaskDetailsView extends GetView<TaskDetailsController> {
         children: [
           Expanded(
             child: AppButton.outlined(
-              label: 'View',
+              label: 'View Documents',
               onPressed: controller.openDocument,
             ),
           ),

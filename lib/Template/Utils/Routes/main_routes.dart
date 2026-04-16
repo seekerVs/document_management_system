@@ -20,6 +20,7 @@ class MainRoutes {
   static const inAppSigning = '/in-app-signing';
   static const tasks = '/tasks';
   static const taskDetails = '/task-details';
+  static const requestDocuments = '/request-documents';
 
 
   // Forgot password flow

@@ -51,6 +51,21 @@ class DocumentsController extends GetxController
   final Rx<SortOrder> sortOrder = SortOrder.dateNewest.obs;
   final searchController = TextEditingController();
 
+  // Picker Mode State
+  final RxBool isPickerMode = false.obs;
+  void Function(DocumentModel)? onPickCallback;
+
+  void startPickerMode(void Function(DocumentModel) onPick) {
+    isPickerMode.value = true;
+    onPickCallback = onPick;
+    exitMultiSelect(); // Ensure multiselect is off
+  }
+
+  void stopPickerMode() {
+    isPickerMode.value = false;
+    onPickCallback = null;
+  }
+
   // Folder contents pool for multiselect operations inside folder view
   final RxList<DocumentModel> _folderDocs = <DocumentModel>[].obs;
   final RxList<FolderModel> _folderSubs = <FolderModel>[].obs;

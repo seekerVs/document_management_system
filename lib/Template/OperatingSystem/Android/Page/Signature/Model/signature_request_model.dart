@@ -126,11 +126,44 @@ class SignerModel {
   }
 }
 
+class RequestDocumentModel {
+  final String documentId;
+  final String documentName;
+  final String documentUrl;
+  final String storagePath;
+
+  RequestDocumentModel({
+    required this.documentId,
+    required this.documentName,
+    required this.documentUrl,
+    required this.storagePath,
+  });
+
+  factory RequestDocumentModel.fromMap(Map<String, dynamic> data) {
+    return RequestDocumentModel(
+      documentId: data['documentId'] ?? '',
+      documentName: data['documentName'] ?? '',
+      documentUrl: data['documentUrl'] ?? '',
+      storagePath: data['storagePath'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'documentId': documentId,
+      'documentName': documentName,
+      'documentUrl': documentUrl,
+      'storagePath': storagePath,
+    };
+  }
+}
+
 // ─── Signature Request model ──────────────────────────────────────────────────
 
 class SignatureRequestModel {
   final String requestId;
-  final String documentId;
+  final List<RequestDocumentModel> documents;
+  final String documentId; // Kept for legacy compatibility (points to documents[0])
   final String documentName;
   final String documentUrl;
   final String storagePath;
@@ -145,6 +178,7 @@ class SignatureRequestModel {
 
   SignatureRequestModel({
     required this.requestId,
+    required this.documents,
     required this.documentId,
     required this.documentName,
     required this.documentUrl,
@@ -161,12 +195,17 @@ class SignatureRequestModel {
 
   factory SignatureRequestModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    final List<RequestDocumentModel> docs = (data['documents'] as List<dynamic>? ?? [])
+        .map((d) => RequestDocumentModel.fromMap(d as Map<String, dynamic>))
+        .toList();
+
     return SignatureRequestModel(
       requestId: doc.id,
-      documentId: data['documentId'] ?? '',
-      documentName: data['documentName'] ?? '',
-      documentUrl: data['documentUrl'] ?? '',
-      storagePath: data['storagePath'] ?? '',
+      documents: docs,
+      documentId: data['documentId'] ?? (docs.isNotEmpty ? docs[0].documentId : ''),
+      documentName: data['documentName'] ?? (docs.isNotEmpty ? docs[0].documentName : ''),
+      documentUrl: data['documentUrl'] ?? (docs.isNotEmpty ? docs[0].documentUrl : ''),
+      storagePath: data['storagePath'] ?? (docs.isNotEmpty ? docs[0].storagePath : ''),
       requestedByUid: data['requestedByUid'] ?? '',
       requesterName: data['requesterName'],
       signers: (data['signers'] as List<dynamic>? ?? [])
@@ -193,6 +232,7 @@ class SignatureRequestModel {
 
   Map<String, dynamic> toFirestore() {
     return {
+      'documents': documents.map((d) => d.toMap()).toList(),
       'documentId': documentId,
       'documentName': documentName,
       'documentUrl': documentUrl,
@@ -231,6 +271,7 @@ class SignatureRequestModel {
       .firstOrNull;
 
   SignatureRequestModel copyWith({
+    List<RequestDocumentModel>? documents,
     String? documentName,
     String? documentUrl,
     String? storagePath,
@@ -241,12 +282,14 @@ class SignatureRequestModel {
     bool? signingOrderEnabled,
     DateTime? completedAt,
   }) {
+    final nextDocs = documents ?? this.documents;
     return SignatureRequestModel(
       requestId: requestId,
-      documentId: documentId,
-      documentName: documentName ?? this.documentName,
-      documentUrl: documentUrl ?? this.documentUrl,
-      storagePath: storagePath ?? this.storagePath,
+      documents: nextDocs,
+      documentId: nextDocs.isNotEmpty ? nextDocs[0].documentId : documentId,
+      documentName: documentName ?? (nextDocs.isNotEmpty ? nextDocs[0].documentName : this.documentName),
+      documentUrl: documentUrl ?? (nextDocs.isNotEmpty ? nextDocs[0].documentUrl : this.documentUrl),
+      storagePath: storagePath ?? (nextDocs.isNotEmpty ? nextDocs[0].storagePath : this.storagePath),
       requestedByUid: requestedByUid,
       requesterName: requesterName ?? this.requesterName,
       signers: signers ?? this.signers,

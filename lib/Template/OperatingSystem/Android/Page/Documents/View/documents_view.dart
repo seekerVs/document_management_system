@@ -18,72 +18,92 @@ class DocumentsView extends GetView<DocumentsController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: _buildAppBar(context),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              behavior: HitTestBehavior.opaque,
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return SingleChildScrollView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 800),
-                        child: DocumentsShimmer(
-                          isGridView: controller.isGridView.value,
+    return PopScope(
+      onPopInvokedWithResult: (didPop, dynamic result) {
+        if (controller.isPickerMode.value) controller.stopPickerMode();
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: _buildAppBar(context),
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () => FocusScope.of(context).unfocus(),
+                behavior: HitTestBehavior.opaque,
+                child: Obx(() {
+                  if (controller.isLoading.value) {
+                    return SingleChildScrollView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 800),
+                          child: DocumentsShimmer(
+                            isGridView: controller.isGridView.value,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: controller.loadAll,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 800),
+                          child: Column(
+                            children: [
+                              _SearchBar(),
+                              const SizedBox(height: 12),
+                              Obx(
+                                () => controller.isPickerMode.value
+                                    ? const SizedBox.shrink()
+                                    : const StorageBanner(),
+                              ),
+                              DocumentsToolbar(),
+                              const SizedBox(height: 8),
+                              _Body(),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   );
-                }
-
-                return RefreshIndicator(
-                  onRefresh: controller.loadAll,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 800),
-                        child: Column(
-                          children: [
-                            _SearchBar(),
-                            const SizedBox(height: 12),
-                            const StorageBanner(),
-                            DocumentsToolbar(),
-                            const SizedBox(height: 8),
-                            _Body(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
+                }),
+              ),
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: Obx(
-        () => controller.isMultiSelect.value
-            ? const MultiSelectBar()
-            : const SizedBox.shrink(),
+          ],
+        ),
+        bottomNavigationBar: Obx(
+          () => controller.isMultiSelect.value
+              ? const MultiSelectBar()
+              : const SizedBox.shrink(),
+        ),
       ),
     );
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      title: const Text('My Document'),
-      leading: IconButton(
-        icon: const Icon(Icons.chevron_left),
-        onPressed: () => Get.back(),
+      title: Obx(
+        () => Text(
+          controller.isPickerMode.value ? 'Select Document' : 'My Document',
+        ),
+      ),
+      leading: Obx(
+        () => IconButton(
+          icon: Icon(
+            controller.isPickerMode.value ? Icons.close : Icons.chevron_left,
+          ),
+          onPressed: () {
+            if (controller.isPickerMode.value) controller.stopPickerMode();
+            Get.back();
+          },
+        ),
       ),
       actions: [
         Obx(

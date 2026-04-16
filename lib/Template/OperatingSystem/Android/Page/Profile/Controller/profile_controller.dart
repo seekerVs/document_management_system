@@ -360,15 +360,16 @@ class ProfileController extends GetxController {
           final uid = FirebaseUtils.currentUid;
           if (uid == null) throw const SessionExpiredException();
           await FirebaseUtils.auth.currentUser!.delete();
+          AppLoader.hide();
           Get.offAllNamed(MainRoutes.signIn);
         } on AppException catch (e) {
+          AppLoader.hide();
           AppDialogs.showSnackError(e.message);
         } catch (_) {
+          AppLoader.hide();
           AppDialogs.showSnackError(
             'Please sign out and sign in again before deleting your account.',
           );
-        } finally {
-          AppLoader.hide();
         }
       },
     );

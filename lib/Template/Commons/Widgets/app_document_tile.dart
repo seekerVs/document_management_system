@@ -30,7 +30,7 @@ class AppDocumentTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.fromLTRB(12, 12, trailingWidget != null ? 4 : 12, 12),
         decoration: AppStyle.cardOf(context),
         child: Row(
           children: [

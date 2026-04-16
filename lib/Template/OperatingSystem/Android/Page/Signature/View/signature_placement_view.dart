@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pdfx/pdfx.dart';
+import 'package:http/http.dart' as http;
+import 'package:pdfrx/pdfrx.dart';
 import '../../../../../Commons/Styles/style.dart';
 import '../../../../../Commons/Widgets/app_button.dart';
 import '../../../../../Utils/Routes/main_routes.dart';
-import '../../../../../Utils/Services/pdf_renderer_service.dart';
+import '../../../../../Utils/Services/supabase_service.dart';
 import '../../../../../Commons/Widgets/app_pdf_viewer.dart';
 import '../Controller/signature_placement_controller.dart';
 import '../Controller/signature_request_controller.dart';
 import '../Widget/field_toolbar.dart';
+import '../Widget/signature_field_guide_dialog.dart';
 import '../Widget/signature_field_overlay.dart';
 import '../Widget/signer_switcher.dart';
 
@@ -25,54 +27,84 @@ class _SignaturePlacementViewState extends State<SignaturePlacementView> {
   final SignatureRequestController _requestController =
       Get.find<SignatureRequestController>();
 
-  PdfDocument? _document;
-  String? _docId;
-  Size _defaultPageSize = const Size(600, 800);
+  final List<PdfDocument> _documents = [];
+  final List<String> _docIds = [];
+  // Key: DocumentId -> PageIndex -> Size
+  final Map<String, Map<int, Size>> _pageSizeCache = {};
+
+  bool _isLoading = true;
   int _currentPageIndex = 0;
+  String _currentDocId = '';
 
   @override
   void initState() {
     super.initState();
-    _initDocument();
+    _initDocuments();
   }
 
   @override
   void dispose() {
-    _document?.close();
-    if (_docId != null) PdfRendererService.clearCache(docId: _docId);
+    for (var doc in _documents) {
+      doc.dispose();
+    }
     super.dispose();
   }
 
-  Future<void> _initDocument() async {
-    final obj = _requestController.selectedDocument.value;
-    if (obj != null) {
-      _docId = obj.file.path;
-      try {
-        final doc = await PdfDocument.openFile(obj.file.path);
-        final firstPage = await doc.getPage(1);
-        _defaultPageSize = Size(firstPage.width, firstPage.height);
-        await firstPage.close();
-        if (mounted) setState(() => _document = doc);
-      } catch (e) {
-        debugPrint('Error opening PDF: $e');
+  Future<void> _initDocuments() async {
+    setState(() => _isLoading = true);
+    try {
+      // Clear existing state for clean load/retry
+      _documents.clear();
+      _docIds.clear();
+      _pageSizeCache.clear();
+
+      for (final docObj in _requestController.selectedDocuments) {
+        debugPrint('Opening document: ${docObj.name}');
+        PdfDocument doc;
+
+        doc = await (docObj.documentId != null && docObj.storagePath != null
+            ? PdfDocument.openData(
+                (await http.get(
+                  Uri.parse(
+                    await SupabaseService.getSignedUrl(docObj.storagePath!),
+                  ),
+                )).bodyBytes,
+              )
+            : PdfDocument.openFile(docObj.file.path));
+
+        final page = doc.pages.first;
+        _pageSizeCache[docObj.name] = {0: Size(page.width, page.height)};
+
+        _documents.add(doc);
+        _docIds.add(docObj.name);
+        debugPrint(
+          'Document ${docObj.name} opened successfully. Pages: ${doc.pages.length}',
+        );
       }
+      if (_docIds.isNotEmpty) _currentDocId = _docIds[0];
+    } catch (e, stack) {
+      debugPrint('Error opening PDFs: $e');
+      debugPrint('Stack trace: $stack');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final docObj = _requestController.selectedDocument.value;
     final cs = Theme.of(context).colorScheme;
     final screenW = MediaQuery.of(context).size.width;
-
-    // Standard mobile width calculation
-    final availableW = (screenW - 32).clamp(0.0, 600.0);
+    final availableW = (screenW - 16).clamp(0.0, 600.0);
 
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {},
       child: Scaffold(
         backgroundColor: cs.surface,
-        appBar: _buildAppBar(docObj?.name ?? 'Place Fields'),
+        appBar: _buildAppBar(
+          _docIds.length > 1
+              ? 'Place Fields'
+              : (_docIds.firstOrNull ?? 'Place Fields'),
+        ),
         body: GestureDetector(
           onTap: _controller.deselectField,
           child: Column(
@@ -88,35 +120,42 @@ class _SignaturePlacementViewState extends State<SignaturePlacementView> {
                 );
               }),
               Expanded(
-                child: Container(
-                  color: const Color(0xFFF5F5F5),
-                  child: _document == null
-                      ? const Center(child: CircularProgressIndicator())
-                      : AppPdfViewer(
-                          document: _document!,
-                          docId: _docId ?? 'default',
-                          maxWidth: availableW,
-                          onScroll: (offset, _) =>
-                              _handleScrollUpdate(offset, availableW),
-                          pageOverlayBuilder:
-                              (ctx, pageIndex, displayW, displayH) {
-                                return _buildPageOverlay(
-                                  ctx,
-                                  pageIndex,
-                                  displayW,
-                                  displayH,
-                                );
-                              },
-                          fieldBuilder: (ctx, pageIndex, displayW, displayH) {
-                            return _buildPageFields(
-                              ctx,
-                              pageIndex,
-                              displayW,
-                              displayH,
-                            );
-                          },
-                        ),
-                ),
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : AppPdfViewer(
+                        documents: _documents,
+                        docIds: _docIds,
+                        maxWidth: availableW,
+                        onFieldMove: (fieldId, docId, pageIndex, x, y) {
+                          _controller.moveFieldToPage(
+                            fieldId,
+                            docId,
+                            pageIndex,
+                            x,
+                            y,
+                          );
+                        },
+                        onPageChanged: (docId, pageIndex) {
+                          setState(() {
+                            _currentDocId = docId;
+                            _currentPageIndex = pageIndex;
+                          });
+                        },
+                        fieldBuilder: (ctx, docId, pageIndex, displayW, displayH) {
+                          // Update page size cache for accurate spawning
+                          final docMap = _pageSizeCache[docId] ?? {};
+                          docMap[pageIndex] = Size(displayW, displayH);
+                          _pageSizeCache[docId] = docMap;
+
+                          return _buildPageFields(
+                            ctx,
+                            docId,
+                            pageIndex,
+                            displayW,
+                            displayH,
+                          );
+                        },
+                      ),
               ),
               _buildBottomArea(),
             ],
@@ -124,21 +163,6 @@ class _SignaturePlacementViewState extends State<SignaturePlacementView> {
         ),
       ),
     );
-  }
-
-  void _handleScrollUpdate(double offset, double displayW) {
-    final displayH =
-        displayW * (_defaultPageSize.height / _defaultPageSize.width);
-    final pageStride = displayH + 12;
-
-    final newIndex = (offset / pageStride).round().clamp(
-      0,
-      (_document?.pagesCount ?? 1) - 1,
-    );
-
-    if (newIndex != _currentPageIndex) {
-      _currentPageIndex = newIndex;
-    }
   }
 
   PreferredSizeWidget _buildAppBar(String title) {
@@ -165,6 +189,20 @@ class _SignaturePlacementViewState extends State<SignaturePlacementView> {
             ),
             onPressed: isFieldSelected ? _controller.deselectField : Get.back,
           ),
+          actions: [
+            if (!isFieldSelected)
+              IconButton(
+                icon: Icon(Icons.help_outline, color: cs.onSurfaceVariant),
+                tooltip: 'Guide',
+                onPressed: () {
+                  Get.dialog(
+                    const SignatureFieldGuideDialog(),
+                    barrierDismissible: false,
+                  );
+                },
+              ),
+            if (!isFieldSelected) const SizedBox(width: 8),
+          ],
         );
       }),
     );
@@ -189,12 +227,21 @@ class _SignaturePlacementViewState extends State<SignaturePlacementView> {
           SignatureFieldToolbar(
             controller: _controller,
             onAddField: (type) {
-              final screenW = MediaQuery.of(context).size.width;
-              final displayW = (screenW - 32).clamp(0.0, 600.0);
-              final displayH =
-                  displayW * (_defaultPageSize.height / _defaultPageSize.width);
+              // Current page dimensions from cache
+              final docMap = _pageSizeCache[_currentDocId] ?? {};
+              final Size pageSize = docMap[_currentPageIndex] ?? const Size(600, 800);
 
-              _controller.addField(type, displayW, displayH, _currentPageIndex);
+              // Use the actual rendered dimensions for spawning calculation
+              final double actualDisplayW = pageSize.width;
+              final double actualDisplayH = pageSize.height;
+
+              _controller.addField(
+                type,
+                actualDisplayW,
+                actualDisplayH,
+                _currentDocId,
+                _currentPageIndex,
+              );
             },
             onShowReassign: _showReassignMenu,
             onShowChangeType: () {}, // Handled internally
@@ -274,42 +321,19 @@ class _SignaturePlacementViewState extends State<SignaturePlacementView> {
     );
   }
 
-  Widget _buildPageOverlay(
-    BuildContext context,
-    int pageIndex,
-    double displayW,
-    double displayH,
-  ) {
-    return Positioned.fill(
-      child: DragTarget<String>(
-        onWillAcceptWithDetails: (details) => true,
-        onAcceptWithDetails: (details) {
-          final RenderBox box = context.findRenderObject() as RenderBox;
-          final Offset localOffset = box.globalToLocal(details.offset);
-
-          // Normalize the position relative to this page
-          // Since we now use pointerDragAnchorStrategy in the overlay,
-          // localOffset is already adjusted to center the field under the finger.
-          final double normX = (localOffset.dx / displayW).clamp(0.0, 1.0);
-          final double normY = (localOffset.dy / displayH).clamp(0.0, 1.0);
-
-          _controller.moveFieldToPage(details.data, pageIndex, normX, normY);
-        },
-        builder: (context, candidateData, rejectedData) =>
-            const SizedBox.expand(),
-      ),
-    );
-  }
-
   Widget _buildPageFields(
     BuildContext context,
+    String documentId,
     int pageIndex,
     double displayW,
     double displayH,
   ) {
     return Obx(() {
       final fields = _controller.allFields
-          .where((e) => e.field.page == pageIndex)
+          .where(
+            (e) =>
+                e.field.documentId == documentId && e.field.page == pageIndex,
+          )
           .toList();
 
       return Stack(

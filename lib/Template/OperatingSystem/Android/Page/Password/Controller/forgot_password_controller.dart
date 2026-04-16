@@ -39,11 +39,14 @@ class ForgotPasswordController extends GetxController {
       await _repo.sendOtp(emailController.text);
       verifiedEmail.value = emailController.text.trim().toLowerCase();
       _startResendTimer();
+      AppLoader.hide();
       Get.toNamed(MainRoutes.otpVerify);
     } on AppException catch (e) {
-      errorMessage.value = e.message;
-    } finally {
       AppLoader.hide();
+      errorMessage.value = e.message;
+    } catch (e) {
+      AppLoader.hide();
+      errorMessage.value = 'An unexpected error occurred. Please try again.';
     }
   }
 
@@ -60,12 +63,15 @@ class ForgotPasswordController extends GetxController {
     try {
       await _repo.verifyOtp(verifiedEmail.value, code);
       verifiedCode.value = code;
+      AppLoader.hide();
       Get.toNamed(MainRoutes.newPassword);
     } on AppException catch (e) {
+      AppLoader.hide();
       errorMessage.value = e.message;
       _clearOtp();
-    } finally {
+    } catch (e) {
       AppLoader.hide();
+      errorMessage.value = 'Verification failed. Please try again.';
     }
   }
 
@@ -81,12 +87,15 @@ class ForgotPasswordController extends GetxController {
         code: verifiedCode.value,
         newPassword: newPasswordController.text,
       );
+      AppLoader.hide();
       AppDialogs.showSnackSuccess('Password updated. Please sign in.');
       Get.offAllNamed(MainRoutes.signIn);
     } on AppException catch (e) {
-      errorMessage.value = e.message;
-    } finally {
       AppLoader.hide();
+      errorMessage.value = e.message;
+    } catch (e) {
+      AppLoader.hide();
+      errorMessage.value = 'Failed to reset password. Please try again.';
     }
   }
 

@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'Template/Utils/Constant/texts.dart';
 import 'Template/Utils/Themes/theme.dart';
 import 'firebase_options.dart';
@@ -17,20 +18,27 @@ import 'Template/Utils/Services/storage_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Check if Firebase is already initialized to avoid duplicate app errors in the background isolate
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  }
   debugPrint('Handling a background message: ${message.messageId}');
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // MUST register onBackgroundMessage as early as possible (before any await calls if possible)
+  // to prevent 'duplicate background isolate' warnings on Android.
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   // Initialize storage (Hive)
   await StorageService.init();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
+  // Initialize pdfrx for low-level PDF metadata access
+  await pdfrxFlutterInitialize(dismissPdfiumWasmWarnings: true);
   // Initialize notifications
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final notificationService = Get.put(NotificationService());
   await notificationService.init();
 

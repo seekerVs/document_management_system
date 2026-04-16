@@ -20,6 +20,7 @@ import '../../../../../Utils/Popups/dialog.dart';
 import '../../../../../Utils/Popups/full_screen_loader.dart';
 import '../../../../../Utils/Services/supabase_service.dart';
 import '../../Profile/Controller/user_controller.dart';
+import 'documents_controller.dart';
 
 mixin DocumentsMultiselectMixin on GetxController {
   DocumentRepository get docRepo;
@@ -69,6 +70,8 @@ mixin DocumentsMultiselectMixin on GetxController {
   }
 
   void toggleSelection(String id) {
+    if ((this as DocumentsController).isPickerMode.value) return;
+
     if (selectedIds.contains(id)) {
       selectedIds.remove(id);
       if (selectedIds.isEmpty) exitMultiSelect();
