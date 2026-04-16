@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../Utils/Exceptions/exceptions.dart';
@@ -15,6 +16,19 @@ class TasksController extends GetxController {
 
   final RxList<SignatureRequestModel> tasks = <SignatureRequestModel>[].obs;
   final RxBool isLoading = false.obs;
+  final RxBool isPageLoading = false.obs;
+  final RxInt currentPage = 1.obs;
+  final RxList<SignatureRequestModel> _allTasks = <SignatureRequestModel>[].obs;
+
+  static const int pageSize = 10;
+  int get totalPages => math.max(1, (_allTasks.length / pageSize).ceil());
+
+  List<SignatureRequestModel> get pagedTasks {
+    final start = (currentPage.value - 1) * pageSize;
+    if (start >= _allTasks.length) return [];
+    final end = math.min(start + pageSize, _allTasks.length);
+    return _allTasks.sublist(start, end);
+  }
 
   @override
   void onReady() {
@@ -28,7 +42,9 @@ class TasksController extends GetxController {
     isLoading.value = true;
     try {
       final result = await _repo.getAssignedRequests();
-      tasks.value = result;
+      _allTasks.value = result;
+      currentPage.value = 1;
+      _refreshCurrentPage();
       _resolveRequesterNames(); // Kick off background resolution for Unknowns
     } on AppException catch (e) {
       AppDialogs.showSnackError(e.message);
@@ -66,20 +82,38 @@ class TasksController extends GetxController {
 
   // Resolve requester names in background for older docs missing the field
   Future<void> _resolveRequesterNames() async {
-    final unknownTasks = tasks
+    final unknownTasks = _allTasks
         .where((t) => t.requesterName == null || t.requesterName == 'Unknown')
         .toList();
     if (unknownTasks.isEmpty) return;
 
-    for (var task in unknownTasks) {
+    for (final task in unknownTasks) {
       final name = await _userRepo.getNameById(task.requestedByUid);
       if (name != null) {
-        final index = tasks.indexWhere((t) => t.requestId == task.requestId);
+        final index = _allTasks.indexWhere((t) => t.requestId == task.requestId);
         if (index != -1) {
-          tasks[index] = tasks[index].copyWith(requesterName: name);
+          _allTasks[index] = _allTasks[index].copyWith(requesterName: name);
+          _refreshCurrentPage();
         }
       }
     }
+  }
+
+  void goToPage(int page) {
+    final clamped = page.clamp(1, totalPages).toInt();
+    if (currentPage.value == clamped) return;
+    isPageLoading.value = true;
+    currentPage.value = clamped;
+    _refreshCurrentPage();
+    isPageLoading.value = false;
+  }
+
+  Future<void> nextPage() async => goToPage(currentPage.value + 1);
+
+  Future<void> previousPage() async => goToPage(currentPage.value - 1);
+
+  void _refreshCurrentPage() {
+    tasks.value = pagedTasks;
   }
 
 }

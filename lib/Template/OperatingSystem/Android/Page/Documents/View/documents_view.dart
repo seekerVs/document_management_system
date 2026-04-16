@@ -47,42 +47,37 @@ class DocumentsView extends GetView<DocumentsController> {
                     );
                   }
 
-                  return RefreshIndicator(
-                    onRefresh: controller.loadAll,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 800),
-                          child: Column(
-                            children: [
-                              _SearchBar(),
-                              const SizedBox(height: 12),
-                              Obx(
-                                () => controller.isPickerMode.value
-                                    ? const SizedBox.shrink()
-                                    : const StorageBanner(),
-                              ),
-                              DocumentsToolbar(),
-                              const SizedBox(height: 8),
-                              _Body(),
-                            ],
-                          ),
+                return RefreshIndicator(
+                  onRefresh: controller.loadAll,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 800),
+                        child: Column(
+                          children: [
+                            _SearchBar(),
+                            const SizedBox(height: 12),
+                            const StorageBanner(),
+                            DocumentsToolbar(),
+                            const SizedBox(height: 8),
+                            _Body(),
+                          ],
                         ),
                       ),
                     ),
-                  );
-                }),
-              ),
+                  ),
+                );
+              }),
             ),
-          ],
-        ),
-        bottomNavigationBar: Obx(
-          () => controller.isMultiSelect.value
-              ? const MultiSelectBar()
-              : const SizedBox.shrink(),
-        ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: Obx(
+        () => controller.isMultiSelect.value
+            ? const MultiSelectBar()
+            : const SizedBox.shrink(),
       ),
     );
   }
@@ -122,7 +117,7 @@ class DocumentsView extends GetView<DocumentsController> {
   }
 }
 
-// Search bar
+// ─── Search Bar ───────────────────────────────────────────────────────────────
 
 class _SearchBar extends GetView<DocumentsController> {
   @override
@@ -149,7 +144,7 @@ class _SearchBar extends GetView<DocumentsController> {
   }
 }
 
-// Body
+// ─── Body ─────────────────────────────────────────────────────────────────────
 
 class _Body extends GetView<DocumentsController> {
   @override
@@ -187,7 +182,8 @@ class _Body extends GetView<DocumentsController> {
   }
 }
 
-// Grid body
+// ─── Grid Body ────────────────────────────────────────────────────────────────
+
 class _GridBody extends GetView<DocumentsController> {
   const _GridBody();
 
@@ -217,7 +213,7 @@ class _GridBody extends GetView<DocumentsController> {
   }
 }
 
-// List body
+// ─── List Body ────────────────────────────────────────────────────────────────
 
 class _ListBody extends GetView<DocumentsController> {
   const _ListBody();
@@ -240,7 +236,252 @@ class _ListBody extends GetView<DocumentsController> {
   }
 }
 
-// Grid item helper
+// ─── Pagination Bar ───────────────────────────────────────────────────────────
+
+class _PaginationBar extends GetView<DocumentsController> {
+  const _PaginationBar();
+
+  static const double _chipSize = 48.0;
+  static const double _chipSpacing = 4.0;
+  static const double _borderRadius = 10.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final totalPages = controller.totalPages;
+      if (totalPages <= 1) return const SizedBox.shrink();
+
+      final current = controller.currentPage.value;
+      final pages = _buildVisiblePages(current, totalPages);
+      final isBusy = controller.isPageLoading.value;
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ← Prev button
+                _PageNavButton(
+                  icon: Icons.chevron_left_rounded,
+                  enabled: current > 1 && !isBusy,
+                  onTap: controller.previousPage,
+                  size: _chipSize,
+                  borderRadius: _borderRadius,
+                ),
+                const SizedBox(width: _chipSpacing),
+
+                ...pages.map((page) {
+                  if (page == 0) {
+                    return SizedBox(
+                      width: _chipSize + _chipSpacing,
+                      height: _chipSize,
+                    );
+                  }
+                  if (page == -1) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: _chipSpacing / 2,
+                      ),
+                      child: _EllipsisChip(
+                        size: _chipSize,
+                        borderRadius: _borderRadius,
+                      ),
+                    );
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: _chipSpacing / 2,
+                    ),
+                    child: _PageNumberChip(
+                      page: page,
+                      isActive: page == current,
+                      onTap: isBusy ? null : () => controller.goToPage(page),
+                      size: _chipSize,
+                      borderRadius: _borderRadius,
+                    ),
+                  );
+                }),
+
+                const SizedBox(width: _chipSpacing),
+                // → Next button
+                _PageNavButton(
+                  icon: Icons.chevron_right_rounded,
+                  enabled: current < totalPages && !isBusy,
+                  onTap: controller.nextPage,
+                  size: _chipSize,
+                  borderRadius: _borderRadius,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  List<int> _buildVisiblePages(int current, int total) {
+    if (total <= 4) {
+      final pages = List.generate(total, (i) => i + 1);
+      while (pages.length < 4) {
+        pages.add(0);
+      }
+      return pages;
+    }
+
+    if (current <= 2) {
+      return [1, 2, -1, total];
+    }
+
+    if (current >= total - 1) {
+      return [1, -1, total - 1, total];
+    }
+
+    return [1, current, -1, total];
+  }
+}
+
+// ─── Page Number Chip ─────────────────────────────────────────────────────────
+
+class _PageNumberChip extends StatelessWidget {
+  final int page;
+  final bool isActive;
+  final VoidCallback? onTap;
+  final double size;
+  final double borderRadius;
+
+  const _PageNumberChip({
+    required this.page,
+    required this.isActive,
+    required this.onTap,
+    required this.size,
+    required this.borderRadius,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeInOut,
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: isActive ? cs.primary : Colors.transparent,
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: isActive
+            ? null
+            : Border.all(color: cs.outlineVariant, width: 1.2),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(borderRadius),
+          onTap: onTap,
+          child: Center(
+            child: Text(
+              '$page',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                color: isActive ? cs.onPrimary : cs.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Ellipsis Chip ────────────────────────────────────────────────────────────
+
+class _EllipsisChip extends StatelessWidget {
+  final double size;
+  final double borderRadius;
+
+  const _EllipsisChip({required this.size, required this.borderRadius});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(color: cs.outlineVariant, width: 1.2),
+      ),
+      child: Center(
+        child: Text(
+          '···',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: cs.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.5,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Page Nav Button ──────────────────────────────────────────────────────────
+
+class _PageNavButton extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final Future<void> Function() onTap;
+  final double size;
+  final double borderRadius;
+
+  const _PageNavButton({
+    required this.icon,
+    required this.enabled,
+    required this.onTap,
+    required this.size,
+    required this.borderRadius,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: enabled
+              ? cs.outlineVariant
+              : cs.outlineVariant.withValues(alpha: 0.4),
+          width: 1.2,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(borderRadius),
+          onTap: enabled ? () => onTap() : null,
+          child: Center(
+            child: Icon(
+              icon,
+              size: 18,
+              color: enabled ? cs.primary : cs.onSurface.withValues(alpha: 0.3),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Grid Item Helper ─────────────────────────────────────────────────────────
 
 class _Item {
   final FolderModel? folder;
