@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../Commons/Widgets/empty_state.dart';
+import '../../../../../Utils/Constant/enum.dart';
 import '../Controller/documents_controller.dart';
 import '../Model/document_model.dart';
 import '../Model/folder_model.dart';
@@ -12,7 +13,6 @@ import '../Widget/folder_grid_card.dart';
 import '../Widget/folder_list_tile.dart';
 import '../Widget/multiselect_bar.dart';
 import '../Widget/storage_banner.dart';
-import '../../../../../Commons/Widgets/app_pagination_bar.dart';
 
 class DocumentsView extends GetView<DocumentsController> {
   const DocumentsView({super.key});
@@ -64,15 +64,6 @@ class DocumentsView extends GetView<DocumentsController> {
                               DocumentsToolbar(),
                               const SizedBox(height: 8),
                               _Body(),
-                              Obx(() => AppPaginationBar(
-                                    totalPages: controller.totalPages,
-                                    currentPage: controller.currentPage.value,
-                                    isLoading: controller.isPageLoading.value,
-                                    isVisible: !controller.isSearching.value,
-                                    onPageChanged: controller.goToPage,
-                                    onNext: controller.nextPage,
-                                    onPrevious: controller.previousPage,
-                                  )),
                             ],
                           ),
                         ),
@@ -162,19 +153,37 @@ class _Body extends GetView<DocumentsController> {
   Widget build(BuildContext context) {
     return Obx(() {
       if (controller.isSearching.value) {
-        if (controller.searchResults.isEmpty) {
-          return const EmptyState(
+        final typeFilter = controller.itemTypeFilter.value;
+        final hasFolderResults = controller.folderSearchResults.isNotEmpty;
+        final hasDocumentResults = controller.searchResults.isNotEmpty;
+
+        if (!hasFolderResults && !hasDocumentResults) {
+          return EmptyState(
             icon: Icons.search_off,
-            message: 'No documents found',
+            message: _searchEmptyMessage(typeFilter),
           );
         }
-        return ListView.builder(
+
+        return ListView(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           padding: EdgeInsets.zero,
-          itemCount: controller.searchResults.length,
-          itemBuilder: (_, i) =>
-              DocumentListTile(doc: controller.searchResults[i]),
+          children: [
+            if (hasFolderResults && typeFilter == DocumentTypeFilter.all)
+              const _SearchSectionLabel('Folders'),
+            if (hasFolderResults)
+              ...controller.folderSearchResults.map(
+                (folder) => FolderListTile(folder: folder),
+              ),
+            if (hasFolderResults && hasDocumentResults)
+              const SizedBox(height: 8),
+            if (hasDocumentResults && typeFilter == DocumentTypeFilter.all)
+              const _SearchSectionLabel('PDFs'),
+            if (hasDocumentResults)
+              ...controller.searchResults.map(
+                (doc) => DocumentListTile(doc: doc),
+              ),
+          ],
         );
       }
 
@@ -247,7 +256,6 @@ class _ListBody extends GetView<DocumentsController> {
   }
 }
 
-
 // ─── Grid Item Helper ─────────────────────────────────────────────────────────
 
 class _Item {
@@ -257,4 +265,33 @@ class _Item {
 
   _Item.folder(this.folder) : document = null;
   _Item.document(this.document) : folder = null;
+}
+
+class _SearchSectionLabel extends StatelessWidget {
+  final String title;
+  const _SearchSectionLabel(this.title);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 6),
+      child: Text(
+        title,
+        style: Theme.of(
+          context,
+        ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+}
+
+String _searchEmptyMessage(DocumentTypeFilter typeFilter) {
+  switch (typeFilter) {
+    case DocumentTypeFilter.folders:
+      return 'No folders found';
+    case DocumentTypeFilter.pdfs:
+      return 'No PDFs found';
+    case DocumentTypeFilter.all:
+      return 'No documents or folders found';
+  }
 }

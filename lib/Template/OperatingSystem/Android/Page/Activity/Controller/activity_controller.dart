@@ -1,5 +1,6 @@
-import 'dart:math' as math;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../../Utils/Constant/enum.dart';
 import '../Repository/activity_repository.dart';
 import '../Model/activity_model.dart';
 import '../../Profile/Repository/user_repository.dart';
@@ -7,21 +8,41 @@ import '../../Profile/Repository/user_repository.dart';
 class ActivityController extends GetxController {
   final ActivityRepository _repo = ActivityRepository();
   final UserRepository _userRepo = UserRepository();
-  
+
   final RxBool isLoading = true.obs;
-  final RxBool isPageLoading = false.obs;
-  final RxInt currentPage = 1.obs;
+  final RxBool isSearching = false.obs;
+  final Rx<DocumentTypeFilter> itemTypeFilter = DocumentTypeFilter.all.obs;
   final RxList<ActivityModel> activities = <ActivityModel>[].obs;
   final RxList<ActivityModel> _allActivities = <ActivityModel>[].obs;
+  final TextEditingController searchController = TextEditingController();
+  final RxString _searchQuery = ''.obs;
 
-  static const int pageSize = 10;
-  int get totalPages => math.max(1, (_allActivities.length / pageSize).ceil());
+  int get allActivitiesCount => _allActivities.length;
 
-  List<ActivityModel> get pagedActivities {
-    final start = (currentPage.value - 1) * pageSize;
-    if (start >= _allActivities.length) return [];
-    final end = math.min(start + pageSize, _allActivities.length);
-    return _allActivities.sublist(start, end);
+  List<ActivityModel> get _filteredByType {
+    switch (itemTypeFilter.value) {
+      case DocumentTypeFilter.all:
+        return _allActivities;
+      case DocumentTypeFilter.folders:
+        return _allActivities.where(_isFolderActivity).toList();
+      case DocumentTypeFilter.pdfs:
+        return _allActivities.where((a) => !_isFolderActivity(a)).toList();
+    }
+  }
+
+  List<ActivityModel> get _filteredActivities {
+    final query = _searchQuery.value.trim().toLowerCase();
+    final source = _filteredByType;
+    if (query.isEmpty) return source;
+
+    return source.where((activity) {
+      final name = (activity.documentName ?? '').toLowerCase();
+      final actor = activity.actorName.toLowerCase();
+      final action = activity.action.name.toLowerCase();
+      return name.contains(query) ||
+          actor.contains(query) ||
+          action.contains(query);
+    }).toList();
   }
 
   @override
@@ -56,27 +77,50 @@ class ActivityController extends GetxController {
       }
 
       _allActivities.value = resolvedActivities;
-      currentPage.value = 1;
       _refreshCurrentPage();
     } finally {
       isLoading.value = false;
     }
   }
 
-  void goToPage(int page) {
-    final clamped = page.clamp(1, totalPages).toInt();
-    if (currentPage.value == clamped) return;
-    isPageLoading.value = true;
-    currentPage.value = clamped;
+  void applyItemTypeFilter(DocumentTypeFilter filter) {
+    if (itemTypeFilter.value == filter) return;
+    itemTypeFilter.value = filter;
     _refreshCurrentPage();
-    isPageLoading.value = false;
   }
 
-  Future<void> nextPage() async => goToPage(currentPage.value + 1);
+  void onSearchChanged(String query) {
+    final trimmed = query.trim();
+    _searchQuery.value = trimmed;
+    isSearching.value = trimmed.isNotEmpty;
+    _refreshCurrentPage();
+  }
 
-  Future<void> previousPage() async => goToPage(currentPage.value - 1);
+  void clearSearch() {
+    searchController.clear();
+    _searchQuery.value = '';
+    isSearching.value = false;
+    _refreshCurrentPage();
+  }
 
   void _refreshCurrentPage() {
-    activities.value = pagedActivities;
+    activities.assignAll(_filteredActivities);
+  }
+
+  bool _isFolderActivity(ActivityModel activity) {
+    if (activity.action == ActivityAction.folderCreated ||
+        activity.action == ActivityAction.folderDeleted) {
+      return true;
+    }
+
+    final name = (activity.documentName ?? '').trim().toLowerCase();
+    if (name.isEmpty) return false;
+    return !name.endsWith('.pdf');
+  }
+
+  @override
+  void onClose() {
+    searchController.dispose();
+    super.onClose();
   }
 }

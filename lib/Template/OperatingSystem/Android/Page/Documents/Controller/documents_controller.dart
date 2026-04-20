@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dart:math' as math;
 import '../../Profile/Model/user_model.dart';
 import '../Model/document_model.dart';
 import '../Model/folder_model.dart';
@@ -46,15 +45,13 @@ class DocumentsController extends GetxController
 
   @override
   final RxList<DocumentModel> searchResults = <DocumentModel>[].obs;
+  final RxList<FolderModel> folderSearchResults = <FolderModel>[].obs;
   final RxBool isLoading = false.obs;
-  final RxBool isPageLoading = false.obs;
   final RxBool isSearching = false.obs;
   final RxBool isGridView = true.obs;
   final Rx<SortOrder> sortOrder = SortOrder.dateNewest.obs;
-  final RxInt currentPage = 1.obs;
+  final Rx<DocumentTypeFilter> itemTypeFilter = DocumentTypeFilter.all.obs;
   final searchController = TextEditingController();
-
-  static const int pageSize = 10;
 
   // Picker Mode State
   final RxBool isPickerMode = false.obs;
@@ -107,29 +104,9 @@ class DocumentsController extends GetxController
   final RxList<FolderModel> _allFolders = <FolderModel>[].obs;
   final RxList<DocumentModel> _allDocuments = <DocumentModel>[].obs;
 
-  // Total combined item count
-  int get _totalItemCount => _allFolders.length + _allDocuments.length;
-
-  int get totalPages => math.max(1, (_totalItemCount / pageSize).ceil());
-
-  // Paged folders for current page
-  List<FolderModel> get pagedFolders {
-    final start = (currentPage.value - 1) * pageSize;
-    final end = math.min(start + pageSize, _allFolders.length);
-    if (start >= _allFolders.length) return [];
-    return _allFolders.sublist(start, end);
-  }
-
-  // Paged documents for current page (after folders fill their slots)
-  List<DocumentModel> get pagedDocuments {
-    final start = (currentPage.value - 1) * pageSize;
-    final foldersOnPage = pagedFolders.length;
-    final docsStart = math.max(0, start - _allFolders.length);
-    final slotsLeft = pageSize - foldersOnPage;
-    if (slotsLeft <= 0 || docsStart >= _allDocuments.length) return [];
-    final docsEnd = math.min(docsStart + slotsLeft, _allDocuments.length);
-    return _allDocuments.sublist(docsStart, docsEnd);
-  }
+  int get folderCount => _allFolders.length;
+  int get pdfCount => _allDocuments.length;
+  int get allItemCount => folderCount + pdfCount;
 
   late final void Function(String) _debouncedSearch;
 
@@ -139,7 +116,7 @@ class DocumentsController extends GetxController
   void onInit() {
     super.onInit();
     _debouncedSearch = AppHelpers.debounce(
-      _searchDocuments,
+      _searchByType,
       const Duration(milliseconds: 500),
     );
   }
@@ -170,8 +147,7 @@ class DocumentsController extends GetxController
       realtimeTotalItems.value = (results[3] as int) + (results[4] as int);
 
       _applySortToAll();
-      currentPage.value = 1;
-      _refreshCurrentPage();
+      _refreshVisibleItems();
 
       await _userController.syncStorageUsage(realtimeUsedStorageMB.value);
     } on AppException catch (e) {
@@ -181,24 +157,21 @@ class DocumentsController extends GetxController
     }
   }
 
-  // Pagination
-
-  void goToPage(int page) {
-    final clamped = page.clamp(1, totalPages);
-    if (currentPage.value == clamped) return;
-    isPageLoading.value = true;
-    currentPage.value = clamped;
-    _refreshCurrentPage();
-    isPageLoading.value = false;
-  }
-
-  Future<void> nextPage() async => goToPage(currentPage.value + 1);
-
-  Future<void> previousPage() async => goToPage(currentPage.value - 1);
-
-  void _refreshCurrentPage() {
-    folders.value = pagedFolders;
-    documents.value = pagedDocuments;
+  void _refreshVisibleItems() {
+    switch (itemTypeFilter.value) {
+      case DocumentTypeFilter.all:
+        folders.assignAll(_allFolders);
+        documents.assignAll(_allDocuments);
+        break;
+      case DocumentTypeFilter.folders:
+        folders.assignAll(_allFolders);
+        documents.clear();
+        break;
+      case DocumentTypeFilter.pdfs:
+        folders.clear();
+        documents.assignAll(_allDocuments);
+        break;
+    }
   }
 
   // Search
@@ -207,16 +180,43 @@ class DocumentsController extends GetxController
     if (query.trim().isEmpty) {
       isSearching.value = false;
       searchResults.clear();
+      folderSearchResults.clear();
       return;
     }
     isSearching.value = true;
     _debouncedSearch(query.trim());
   }
 
-  Future<void> _searchDocuments(String query) async {
+  Future<void> _searchByType(String query) async {
+    searchResults.clear();
+    folderSearchResults.clear();
+
     try {
-      final results = await _docRepo.searchDocuments(query);
-      searchResults.value = results;
+      switch (itemTypeFilter.value) {
+        case DocumentTypeFilter.folders:
+          final normalizedQuery = query.toLowerCase();
+          folderSearchResults.value = _allFolders
+              .where(
+                (folder) => folder.name.toLowerCase().contains(normalizedQuery),
+              )
+              .toList();
+          break;
+        case DocumentTypeFilter.pdfs:
+          searchResults.value = await _docRepo.searchDocuments(query);
+          break;
+        case DocumentTypeFilter.all:
+          final normalizedQuery = query.toLowerCase();
+          final folders = _allFolders
+              .where(
+                (folder) => folder.name.toLowerCase().contains(normalizedQuery),
+              )
+              .toList();
+          final docs = await _docRepo.searchDocuments(query);
+
+          folderSearchResults.value = folders;
+          searchResults.value = docs;
+          break;
+      }
     } on AppException catch (e) {
       AppDialogs.showSnackError(e.message);
     }
@@ -226,6 +226,7 @@ class DocumentsController extends GetxController
     searchController.clear();
     isSearching.value = false;
     searchResults.clear();
+    folderSearchResults.clear();
   }
 
   // Sort
@@ -233,8 +234,18 @@ class DocumentsController extends GetxController
   void applySortOrder(SortOrder order) {
     sortOrder.value = order;
     _applySortToAll();
-    currentPage.value = 1;
-    _refreshCurrentPage();
+    _refreshVisibleItems();
+  }
+
+  void applyItemTypeFilter(DocumentTypeFilter filter) {
+    if (itemTypeFilter.value == filter) return;
+    itemTypeFilter.value = filter;
+    _refreshVisibleItems();
+
+    final query = searchController.text.trim();
+    if (isSearching.value && query.isNotEmpty) {
+      _searchByType(query);
+    }
   }
 
   void _applySortToAll() {

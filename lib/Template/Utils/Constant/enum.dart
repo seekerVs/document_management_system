@@ -16,14 +16,11 @@ enum SortOrder {
   type,
 }
 
+enum DocumentTypeFilter { all, folders, pdfs }
+
 enum FolderColor { blue, green, red, yellow, purple, orange }
 
-enum SignatureRequestStatus {
-  pending,
-  inProgress,
-  completed,
-  expired,
-}
+enum SignatureRequestStatus { pending, inProgress, completed, expired }
 
 enum SignerStatus { pending, signed }
 

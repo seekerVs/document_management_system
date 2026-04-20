@@ -1,6 +1,6 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../../Utils/Constant/enum.dart';
 import '../../../../../Utils/Exceptions/exceptions.dart';
 import '../../../../../Utils/Firebase/firebase_utils.dart';
 import '../../../../../Utils/Popups/dialog.dart';
@@ -16,18 +16,56 @@ class TasksController extends GetxController {
 
   final RxList<SignatureRequestModel> tasks = <SignatureRequestModel>[].obs;
   final RxBool isLoading = false.obs;
-  final RxBool isPageLoading = false.obs;
-  final RxInt currentPage = 1.obs;
+  final RxBool isSearching = false.obs;
+  final Rx<SortOrder> sortOrder = SortOrder.dateNewest.obs;
+  final Rx<DocumentTypeFilter> itemTypeFilter = DocumentTypeFilter.all.obs;
   final RxList<SignatureRequestModel> _allTasks = <SignatureRequestModel>[].obs;
+  final TextEditingController searchController = TextEditingController();
+  final RxString _searchQuery = ''.obs;
 
-  static const int pageSize = 10;
-  int get totalPages => math.max(1, (_allTasks.length / pageSize).ceil());
+  int get allTasksCount => _allTasks.length;
 
-  List<SignatureRequestModel> get pagedTasks {
-    final start = (currentPage.value - 1) * pageSize;
-    if (start >= _allTasks.length) return [];
-    final end = math.min(start + pageSize, _allTasks.length);
-    return _allTasks.sublist(start, end);
+  List<SignatureRequestModel> get _filteredAndSortedTasks {
+    final query = _searchQuery.value.trim().toLowerCase();
+
+    final filteredByType = _allTasks.where((task) {
+      switch (itemTypeFilter.value) {
+        case DocumentTypeFilter.all:
+          return true;
+        case DocumentTypeFilter.folders:
+          return !_isPdfTask(task);
+        case DocumentTypeFilter.pdfs:
+          return _isPdfTask(task);
+      }
+    }).toList();
+
+    final filtered = query.isEmpty
+        ? filteredByType
+        : filteredByType.where((task) {
+            final docName = task.documentName.toLowerCase();
+            final requester = (task.requesterName ?? 'unknown').toLowerCase();
+            return docName.contains(query) || requester.contains(query);
+          }).toList();
+
+    filtered.sort((a, b) {
+      switch (sortOrder.value) {
+        case SortOrder.nameAsc:
+          return a.documentName.toLowerCase().compareTo(
+            b.documentName.toLowerCase(),
+          );
+        case SortOrder.nameDesc:
+          return b.documentName.toLowerCase().compareTo(
+            a.documentName.toLowerCase(),
+          );
+        case SortOrder.dateOldest:
+          return a.createdAt.compareTo(b.createdAt);
+        case SortOrder.dateNewest:
+        default:
+          return b.createdAt.compareTo(a.createdAt);
+      }
+    });
+
+    return filtered;
   }
 
   @override
@@ -43,7 +81,6 @@ class TasksController extends GetxController {
     try {
       final result = await _repo.getAssignedRequests();
       _allTasks.value = result;
-      currentPage.value = 1;
       _refreshCurrentPage();
       _resolveRequesterNames(); // Kick off background resolution for Unknowns
     } on AppException catch (e) {
@@ -90,7 +127,9 @@ class TasksController extends GetxController {
     for (final task in unknownTasks) {
       final name = await _userRepo.getNameById(task.requestedByUid);
       if (name != null) {
-        final index = _allTasks.indexWhere((t) => t.requestId == task.requestId);
+        final index = _allTasks.indexWhere(
+          (t) => t.requestId == task.requestId,
+        );
         if (index != -1) {
           _allTasks[index] = _allTasks[index].copyWith(requesterName: name);
           _refreshCurrentPage();
@@ -99,21 +138,43 @@ class TasksController extends GetxController {
     }
   }
 
-  void goToPage(int page) {
-    final clamped = page.clamp(1, totalPages).toInt();
-    if (currentPage.value == clamped) return;
-    isPageLoading.value = true;
-    currentPage.value = clamped;
+  void onSearchChanged(String query) {
+    final trimmed = query.trim();
+    _searchQuery.value = trimmed;
+    isSearching.value = trimmed.isNotEmpty;
     _refreshCurrentPage();
-    isPageLoading.value = false;
   }
 
-  Future<void> nextPage() async => goToPage(currentPage.value + 1);
+  void clearSearch() {
+    searchController.clear();
+    _searchQuery.value = '';
+    isSearching.value = false;
+    _refreshCurrentPage();
+  }
 
-  Future<void> previousPage() async => goToPage(currentPage.value - 1);
+  void applySortOrder(SortOrder order) {
+    if (sortOrder.value == order) return;
+    sortOrder.value = order;
+    _refreshCurrentPage();
+  }
+
+  void applyItemTypeFilter(DocumentTypeFilter filter) {
+    if (itemTypeFilter.value == filter) return;
+    itemTypeFilter.value = filter;
+    _refreshCurrentPage();
+  }
 
   void _refreshCurrentPage() {
-    tasks.value = pagedTasks;
+    tasks.assignAll(_filteredAndSortedTasks);
   }
 
+  bool _isPdfTask(SignatureRequestModel task) {
+    return task.documentName.toLowerCase().endsWith('.pdf');
+  }
+
+  @override
+  void onClose() {
+    searchController.dispose();
+    super.onClose();
+  }
 }
